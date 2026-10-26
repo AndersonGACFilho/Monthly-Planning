@@ -3,7 +3,6 @@ data/
 *.db
 *.db-wal
 *.db-shm
-*.lock
 
 # Bills and spreadsheets: only masked fixtures and versioned templates are allowed
 *.pdf

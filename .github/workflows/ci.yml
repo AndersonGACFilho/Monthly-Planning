@@ -1,0 +1,155 @@
+# TST-07: tests, Javadoc and coverage on every push; PRs merge only when green.
+# POR-15: app.jar built once; jlink + tauri build per OS; one portable zip for Windows and Linux.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan coverage (AGT-08)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check_plan_coverage.py
+
+  backend:
+    name: Backend (tests, Javadoc, coverage)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Verify
+        working-directory: backend
+        run: ./mvnw -B verify
+      - name: Javadoc and coverage reports (DOC-04, TST-04)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-reports
+          path: |
+            backend/target/reports/apidocs
+            backend/target/site/jacoco
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: backend/target/app.jar
+
+  frontend:
+    name: Frontend (types, lint, i18n, tests, build)
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run i18n:check
+      - run: npm test
+      - run: npm run build
+
+  shell:
+    name: Shell unit tests
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux libraries for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Frontend build needed by tauri::generate_context
+        working-directory: frontend
+        run: npm ci && npm run build
+      - working-directory: src-tauri
+        run: cargo test
+
+  package:
+    name: Portable package (${{ matrix.os }})
+    needs: [backend, frontend, shell]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            os: windows
+            shell: src-tauri/target/release/PlanejamentoMensal.exe
+          - runner: ubuntu-22.04
+            os: linux
+            shell: src-tauri/target/release/PlanejamentoMensal
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: backend/target
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Linux libraries for Tauri
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Minimal JRE (jlink)
+        run: python scripts/build_runtime.py backend/target/app.jar build/runtime
+      - name: Tauri build
+        run: frontend/node_modules/.bin/tauri build
+      - name: Assemble portable folder
+        run: >-
+          python scripts/assemble_portable.py --os ${{ matrix.os }} --shell ${{ matrix.shell }}
+          --jar backend/target/app.jar --runtime build/runtime --out dist/PlanejamentoMensal
+      - name: Portable smoke test (IMP-07)
+        run: python scripts/portable_smoke.py dist/PlanejamentoMensal --os ${{ matrix.os }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-${{ matrix.os }}
+          path: dist/PlanejamentoMensal
+
+  bundle:
+    name: Single zip for Windows and Linux (POR-15)
+    needs: package
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: portable-linux
+          path: PlanejamentoMensal
+      - uses: actions/download-artifact@v4
+        with:
+          name: portable-windows
+          path: PlanejamentoMensal
+      - name: Restore execute bits lost by artifacts
+        run: chmod +x PlanejamentoMensal/PlanejamentoMensal PlanejamentoMensal/backend/runtime-linux/bin/*
+      - name: Zip
+        run: zip -r -9 "PlanejamentoMensal-${GITHUB_SHA::7}.zip" PlanejamentoMensal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PlanejamentoMensal-zip
+          path: PlanejamentoMensal-*.zip

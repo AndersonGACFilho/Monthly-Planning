@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions of the main window. OS integrations only through Tauri plugins (POR-06).",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "opener:default",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-write-image",
+    "notification:default"
+  ]
+}

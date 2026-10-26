@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { RouterProvider } from 'react-router';
+import { BackendGate } from './BackendGate';
 import { createAppRouter } from './router';
 
 /**
- * Root component: server-state cache and router.
+ * Root component: server-state cache, wait for the local service, router.
  *
  * @returns the app
  */
@@ -15,7 +16,9 @@ export function App() {
   const [router] = useState(createAppRouter);
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <BackendGate>
+        <RouterProvider router={router} />
+      </BackendGate>
     </QueryClientProvider>
   );
 }
