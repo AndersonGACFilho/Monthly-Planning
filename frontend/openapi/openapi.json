@@ -15,6 +15,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Spending categories with colour, icon and optional parent (RF-06, RF-07, I18N-07).",
+    "name" : "category-controller"
+  }, {
     "description" : "Credit cards with finals, holder, default member and closing/due cycles (RF-02 to RF-05).",
     "name" : "card-controller"
   }, {
@@ -86,7 +89,7 @@
       },
       "post" : {
         "description" : "Creates a card with its first cycle.",
-        "operationId" : "create_1",
+        "operationId" : "create_2",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -117,7 +120,7 @@
     "/api/cards/{id}" : {
       "delete" : {
         "description" : "Deletes a card without entries or additional cards.",
-        "operationId" : "remove_1",
+        "operationId" : "remove_2",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -213,7 +216,7 @@
       },
       "put" : {
         "description" : "Replaces the data of a card; closing and due day change through <code>cycles</code>.",
-        "operationId" : "replace_1",
+        "operationId" : "replace_2",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -298,6 +301,201 @@
         },
         "summary" : "Changes closing and due day from a billing period on, without touching past bills (RF-04).",
         "tags" : [ "card-controller" ]
+      }
+    },
+    "/api/categories" : {
+      "get" : {
+        "description" : "Lists categories by name; \"not classified\" is always present.",
+        "operationId" : "categories",
+        "parameters" : [ {
+          "description" : "page, size and sort",
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        }, {
+          "description" : "paging assembler",
+          "in" : "query",
+          "name" : "resources",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/PagedResourcesAssemblerCategory"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelCategoryModel"
+                }
+              }
+            },
+            "description" : "one page of categories"
+          }
+        },
+        "summary" : "Lists categories by name; \"not classified\" is always present.",
+        "tags" : [ "category-controller" ]
+      },
+      "post" : {
+        "description" : "Creates a category.",
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CategoryRequest"
+              }
+            }
+          },
+          "description" : "category data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates a category.",
+        "tags" : [ "category-controller" ]
+      }
+    },
+    "/api/categories/defaults" : {
+      "post" : {
+        "description" : "Creates the initial categories in a language, if the user has none yet (I18N-07).",
+        "operationId" : "defaults",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/InitialSetRequest"
+              }
+            }
+          },
+          "description" : "language chosen on first use",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelCategoryModel"
+                }
+              }
+            },
+            "description" : "the categories created (empty if there were already user categories)"
+          }
+        },
+        "summary" : "Creates the initial categories in a language, if the user has none yet (I18N-07).",
+        "tags" : [ "category-controller" ]
+      }
+    },
+    "/api/categories/{id}" : {
+      "delete" : {
+        "description" : "Deletes a category nothing points to.",
+        "operationId" : "remove_1",
+        "parameters" : [ {
+          "description" : "category id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes a category nothing points to.",
+        "tags" : [ "category-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one category.",
+        "operationId" : "category",
+        "parameters" : [ {
+          "description" : "category id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            },
+            "description" : "the category"
+          }
+        },
+        "summary" : "Returns one category.",
+        "tags" : [ "category-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces a category.",
+        "operationId" : "replace_1",
+        "parameters" : [ {
+          "description" : "category id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CategoryRequest"
+              }
+            }
+          },
+          "description" : "new data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            },
+            "description" : "the updated category"
+          }
+        },
+        "summary" : "Replaces a category.",
+        "tags" : [ "category-controller" ]
       }
     },
     "/api/members" : {
@@ -738,6 +936,90 @@
         },
         "required" : [ "bank", "defaultMemberId", "holderName", "lastDigits", "nickname" ]
       },
+      "CategoryModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a category.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "color" : {
+            "type" : "string",
+            "description" : "Colour."
+          },
+          "icon" : {
+            "type" : "string",
+            "description" : "Icon name."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name."
+          },
+          "parentId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Parent category."
+          },
+          "system" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> for \"not classified\"."
+          }
+        }
+      },
+      "CategoryRequest" : {
+        "type" : "object",
+        "description" : "Data to create or replace a category (RF-06).",
+        "properties" : {
+          "color" : {
+            "type" : "string",
+            "description" : "colour as <code>#RRGGBB</code>",
+            "minLength" : 1,
+            "pattern" : "#[0-9a-fA-F]{6}"
+          },
+          "icon" : {
+            "type" : "string",
+            "description" : "icon name in kebab-case",
+            "minLength" : 1,
+            "pattern" : "[a-z0-9-]{1,40}"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "name",
+            "maxLength" : 40,
+            "minLength" : 0
+          },
+          "parentId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "parent category for a subcategory, optional"
+          }
+        },
+        "required" : [ "color", "icon", "name" ]
+      },
+      "CollectionModelCategoryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "categories" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "CollectionModelEntityModelRelationDescription" : {
         "type" : "object",
         "properties" : {
@@ -827,6 +1109,19 @@
             "description" : "relation name used in <code>_links</code>"
           }
         }
+      },
+      "InitialSetRequest" : {
+        "type" : "object",
+        "description" : "Language of the initial categories (I18N-07).",
+        "properties" : {
+          "language" : {
+            "type" : "string",
+            "description" : "<code>pt-BR</code> or <code>en-US</code>",
+            "minLength" : 1,
+            "pattern" : "pt-BR|en-US"
+          }
+        },
+        "required" : [ "language" ]
       },
       "Link" : {
         "type" : "object",
@@ -1032,6 +1327,28 @@
           }
         }
       },
+      "PagedModelCategoryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "categories" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
       "PagedModelMemberModel" : {
         "type" : "object",
         "properties" : {
@@ -1055,6 +1372,15 @@
         }
       },
       "PagedResourcesAssemblerCard" : {
+        "type" : "object",
+        "properties" : {
+          "forceFirstAndLastRels" : {
+            "type" : "boolean",
+            "writeOnly" : true
+          }
+        }
+      },
+      "PagedResourcesAssemblerCategory" : {
         "type" : "object",
         "properties" : {
           "forceFirstAndLastRels" : {
