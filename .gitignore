@@ -1,0 +1,34 @@
+# Runtime data (SQLite, exports, backups, logs) never goes to git
+data/
+*.db
+*.db-wal
+*.db-shm
+*.lock
+
+# Bills and spreadsheets: only masked fixtures and versioned templates are allowed
+*.pdf
+*.xlsx
+*.xls
+*.csv
+!backend/src/test/resources/fixtures/**/*.pdf
+!backend/src/test/resources/fixtures/**/*.xlsx
+
+# Build outputs
+backend/target/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+src-tauri/target/
+src-tauri/gen/
+dist/
+
+# IDE and OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+.env
+.env.*

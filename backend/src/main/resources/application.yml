@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: planejamento-mensal
+  main:
+    banner-mode: off
+
+server:
+  # Only reachable from this computer; the shell passes the port it picked (POR-08).
+  address: 127.0.0.1
+  port: ${PORT:0}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
