@@ -67,7 +67,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] RNF-09 — Javadoc + automated tests per feature as in §15 · all · accept: RNF-09 = DOC-04 + TST-04 green · CI · after: DOC-04, TST-04 · done (d859619)
 - [x] I18N-13 — CI test: same keys in both languages, frontend and backend (`MessageKeysConsistencyTest`) · i18n · accept: I18N-13 · MessageKeysConsistencyTest, locales test · after: I18N-04, I18N-06 · done (629bd6a backend, fb66d73 frontend)
 - [x] AGT-08 — CI test: every SPEC id appears in this plan · ci · accept: missing id breaks the build (AGT-08) · PlanCoverageTest · after: TST-07 · done (6c7066c; CI step in plan job)
-- [x] IMP-08 — Suggest `CLAUDE.md` content (read plan first, §19 cycle, §13/§15/§17 standards); the user writes the file (origin §19 table) · docs · accept: user-approved file exists · — · after: AGT-05 · done (fbd8c73, docs/CLAUDE.suggested.md)
+- [x] IMP-08 — Suggest `CLAUDE.md` content (read plan first, §19 cycle, §13/§15/§17 standards); the user writes the file (origin §19 table) · docs · accept: user-approved file exists · — · after: AGT-05 · done (fbd8c73, docs/AGENTS.suggested.md)
 
 ## M1 — Domain and registries (Money, BillingPeriod, members, cards, categories)
 

@@ -1,6 +1,6 @@
-# Suggested CLAUDE.md (IMP-08)
+# Suggested AGENTS.md (IMP-08)
 
-SPEC §19 says the user writes `CLAUDE.md`. This is a proposal; copy it to `CLAUDE.md` at the repository root and edit as you like.
+SPEC §19 says the user writes the agent rules file (`AGENTS.md` or its alternative name). This is a proposal; copy it to the repository root and edit as you like.
 
 ---
 
