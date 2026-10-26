@@ -1,0 +1,181 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "description" : "Local HAL API of the Planejamento Mensal desktop app. Start at GET /api.",
+    "title" : "Planejamento Mensal API",
+    "version" : "v1"
+  },
+  "servers" : [ {
+    "url" : "/"
+  } ],
+  "security" : [ {
+    "sessionToken" : [ ]
+  } ],
+  "tags" : [ {
+    "description" : "API entry point: the only URL the interface knows (API-07).",
+    "name" : "root-controller"
+  }, {
+    "description" : "HAL profile that documents the custom link relations of the API (API-10).",
+    "name" : "profile-controller"
+  } ],
+  "paths" : {
+    "/api" : {
+      "get" : {
+        "description" : "Returns links to every top-level resource and to the HAL profile.",
+        "operationId" : "root",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RepresentationModelObject"
+                }
+              }
+            },
+            "description" : "entry point with <code>self</code>, <code>profile</code> and one link per top-level resource"
+          }
+        },
+        "summary" : "Returns links to every top-level resource and to the HAL profile.",
+        "tags" : [ "root-controller" ]
+      }
+    },
+    "/api/profile" : {
+      "get" : {
+        "description" : "Lists every custom relation.",
+        "operationId" : "profile",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelEntityModelRelationDescription"
+                }
+              }
+            },
+            "description" : "all relations, each with a <code>self</code> link"
+          }
+        },
+        "summary" : "Lists every custom relation.",
+        "tags" : [ "profile-controller" ]
+      }
+    },
+    "/api/profile/{name}" : {
+      "get" : {
+        "description" : "Describes one custom relation.",
+        "operationId" : "relation",
+        "parameters" : [ {
+          "description" : "relation name, such as <code>rename</code>",
+          "in" : "path",
+          "name" : "name",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelRelationDescription"
+                }
+              }
+            },
+            "description" : "the relation description"
+          }
+        },
+        "summary" : "Describes one custom relation.",
+        "tags" : [ "profile-controller" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CollectionModelEntityModelRelationDescription" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "relationDescriptionList" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/EntityModelRelationDescription"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "EntityModelRelationDescription" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "what following the relation does"
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "relation name used in <code>_links</code>"
+          }
+        }
+      },
+      "Link" : {
+        "type" : "object",
+        "properties" : {
+          "deprecation" : {
+            "type" : "string"
+          },
+          "href" : {
+            "type" : "string"
+          },
+          "hreflang" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "profile" : {
+            "type" : "string"
+          },
+          "templated" : {
+            "type" : "boolean"
+          },
+          "title" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Links" : {
+        "type" : "object",
+        "additionalProperties" : {
+          "$ref" : "#/components/schemas/Link"
+        }
+      },
+      "RepresentationModelObject" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "sessionToken" : {
+        "in" : "header",
+        "name" : "X-Session-Token",
+        "type" : "apiKey"
+      }
+    }
+  }
+}

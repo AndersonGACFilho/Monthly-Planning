@@ -35,6 +35,12 @@ server:
   tomcat:
     basedir: ${app.home}/data/tmp/tomcat
 
+springdoc:
+  paths-to-match: /api/**
+  writer-with-order-by-keys: true
+  writer-with-default-pretty-printer: true
+  default-produces-media-type: application/hal+json
+
 management:
   endpoints:
     web:

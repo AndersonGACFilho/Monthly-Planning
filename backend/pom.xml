@@ -24,6 +24,8 @@
         <argLine/>
         <archunit.version>1.5.1</archunit.version>
         <jacoco.version>0.8.16</jacoco.version>
+        <springdoc.version>3.2.0</springdoc.version>
+        <therapi.version>0.15.0</therapi.version>
     </properties>
 
     <dependencies>
@@ -58,6 +60,19 @@
         <dependency>
             <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-community-dialects</artifactId>
+        </dependency>
+
+        <dependency>
+            <!-- API-12: OpenAPI contract, read by Orval in the frontend -->
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+        <dependency>
+            <!-- DOC-05: controller Javadoc available at runtime for the OpenAPI descriptions -->
+            <groupId>com.github.therapi</groupId>
+            <artifactId>therapi-runtime-javadoc</artifactId>
+            <version>${therapi.version}</version>
         </dependency>
 
         <dependency>
@@ -106,6 +121,19 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.github.therapi</groupId>
+                            <artifactId>therapi-runtime-javadoc-scribe</artifactId>
+                            <version>${therapi.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -126,6 +154,9 @@
                         <APP_HOME>${project.build.directory}/test-app-home</APP_HOME>
                         <APP_SESSION_TOKEN>test-session-token</APP_SESSION_TOKEN>
                     </environmentVariables>
+                    <systemPropertyVariables>
+                        <openapi.contract>${project.basedir}/../frontend/openapi/openapi.json</openapi.contract>
+                    </systemPropertyVariables>
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*IT.java</include>
