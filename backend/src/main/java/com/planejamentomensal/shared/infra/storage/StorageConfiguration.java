@@ -36,13 +36,28 @@ public class StorageConfiguration {
     }
 
     /**
+     * Takes the single-instance lock before anything opens the database (POR-10).
+     *
+     * @param paths app paths
+     * @param force {@code app.lock.force}: the user confirmed taking over an orphaned lock
+     * @return the acquired lock, released when the application stops
+     */
+    @Bean(destroyMethod = "release")
+    public InstanceLock instanceLock(AppPaths paths, @Value("${app.lock.force:false}") boolean force) {
+        InstanceLock lock = InstanceLock.forCurrentProcess(paths.data());
+        lock.acquire(force);
+        return lock;
+    }
+
+    /**
      * Creates the connection pool for the SQLite file in {@code data/}.
      *
      * @param paths app paths
+     * @param lock  single-instance lock; required so the database is only opened after it is held
      * @return pooled data source with the POR-11 pragmas set on every connection
      */
     @Bean
-    public DataSource dataSource(AppPaths paths) {
+    public DataSource dataSource(AppPaths paths, InstanceLock lock) {
         HikariConfig config = new HikariConfig();
         config.setPoolName("sqlite");
         config.setJdbcUrl("jdbc:sqlite:" + paths.database());
