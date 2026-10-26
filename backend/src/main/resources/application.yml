@@ -3,11 +3,27 @@ spring:
     name: planejamento-mensal
   main:
     banner-mode: off
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      location: ${app.home}/data/tmp
+
+app:
+  # Folder of the executables; the shell passes it (POR-03). Development falls back to the working dir.
+  home: ${APP_HOME:${user.dir}}
 
 server:
   # Only reachable from this computer; the shell passes the port it picked (POR-08).
   address: 127.0.0.1
   port: ${PORT:0}
+  tomcat:
+    basedir: ${app.home}/data/tmp/tomcat
 
 management:
   endpoints:
