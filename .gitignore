@@ -32,3 +32,9 @@ dist/
 Thumbs.db
 .env
 .env.*
+
+# Generated from frontend/openapi/openapi.json by Orval (npm run api:generate)
+frontend/src/api/generated/
+
+# Local tool settings
+.claude/

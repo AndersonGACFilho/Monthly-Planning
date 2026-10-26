@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "Planejamento Mensal",
+    "loading": "Carregando…",
+    "menu": "Menu principal"
+  },
+  "nav": {
+    "overview": "Visão geral",
+    "incomes": "Rendas e contas",
+    "expenses": "Despesas",
+    "entries": "Lançamentos",
+    "import": "Importação",
+    "reviewQueue": "Fila de validação",
+    "templates": "Templates",
+    "deliveries": "Envios",
+    "settings": "Ajustes"
+  },
+  "page": {
+    "comingSoon": "Esta tela ainda será construída."
+  },
+  "error": {
+    "unexpected": "Algo deu errado.",
+    "network": "Não foi possível falar com o serviço local."
+  }
+}

@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Breakpoint of SPEC section 14: expanded sidebar and all columns from 1200 px. */
+@theme {
+  --breakpoint-wide: 1200px;
+}
+
+/* Colour tokens, light by default and dark when the system asks for it (UI-08). */
+:root {
+  --color-surface: #ffffff;
+  --color-surface-muted: #f4f5f7;
+  --color-border: #dde1e6;
+  --color-text: #1b1f24;
+  --color-text-muted: #59636e;
+  --color-accent: #2563eb;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface: #16191d;
+    --color-surface-muted: #1f2328;
+    --color-border: #30363d;
+    --color-text: #e6e8eb;
+    --color-text-muted: #9aa4af;
+    --color-accent: #6ea8fe;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 800px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+}

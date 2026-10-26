@@ -1,0 +1,25 @@
+{
+  "app": {
+    "name": "Planejamento Mensal",
+    "loading": "Loading…",
+    "menu": "Main menu"
+  },
+  "nav": {
+    "overview": "Overview",
+    "incomes": "Incomes and members",
+    "expenses": "Expenses",
+    "entries": "Card entries",
+    "import": "Import",
+    "reviewQueue": "Review queue",
+    "templates": "Templates",
+    "deliveries": "Deliveries",
+    "settings": "Settings"
+  },
+  "page": {
+    "comingSoon": "This screen is not built yet."
+  },
+  "error": {
+    "unexpected": "Something went wrong.",
+    "network": "Could not reach the local service."
+  }
+}
