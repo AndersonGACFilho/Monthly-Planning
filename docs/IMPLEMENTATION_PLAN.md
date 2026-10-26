@@ -1,10 +1,10 @@
 # Implementation Plan
 
-Progress: M0 24/58 · M1 0/33 · M2 1/27 · M3 0/47 · M4 0/24 · M5 0/34 · M6 0/52 · M7 0/22 (total 25/297)
+Progress: M0 52/58 · M1 1/33 · M2 1/27 · M3 0/47 · M4 0/24 · M5 0/34 · M6 0/52 · M7 0/22 (total 54/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
-Status: **plan approved by the user on 2026-10-26 (AGT-05).** M0 starts once Q1 (stack versions) and Q2 (repository) are answered.
+Status: **plan approved on 2026-10-26 (AGT-05).** M0 nearly done; what is left needs a GitHub remote (Q2) or a manual desktop check.
 
 Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDoc + domain/use-case tests for each cited rule + endpoint integration test where there is an endpoint + traceability row updated + CI green.
 
@@ -16,12 +16,12 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] AGT-04 — Milestones M0–M7 ordered by dependency · process · accept: suggested order kept · review · after: AGT-01 · done 2026-10-26
 - [x] AGT-05 — Deliver plan + open questions, wait for approval · process · accept: user approves (AGT-05) · — · after: AGT-01 · done 2026-10-26 (approved by user)
 - [x] AGT-12 — Plan written in English, ids unchanged · process · accept: AGT-12 · review · after: AGT-01 · done 2026-10-26
-- [ ] AGT-06 — Plan only grows with sub-tasks of existing items or approved SPEC changes · process · accept: every new item cites an origin id (AGT-06) · AGT-08 check · after: AGT-05 · ongoing
-- [ ] AGT-07 — Keep the Progress line per milestone up to date each iteration · process · accept: counts match checkboxes (AGT-07) · PlanProgressTest (counts `[x]`) · after: AGT-05 · ongoing
-- [ ] AGT-09 — Only mark `[x]` when item acceptance and §15 done criteria are met · process · accept: AGT-09 · review per iteration · after: AGT-05 · ongoing
-- [ ] AGT-10 — Ambiguities go to "Open questions", item marked `(blocked: …)` · process · accept: AGT-10 · review · after: AGT-05 · ongoing
-- [ ] AGT-11 — Deviations logged in "Decisions"; SPEC edited only after user approval · process · accept: AGT-11 · review · after: AGT-05 · ongoing
-- [ ] IMP-01 — Repository layout: `backend/` (Maven), `frontend/` (Vite), `src-tauri/`, `scripts/`, `docs/`; `.gitignore` for `data/`, build outputs and any bill outside `fixtures/` (origin AGT-02) · repo · accept: clean clone builds the empty skeleton · CI · after: AGT-05 · (in progress: backend done in 2456bc9; frontend and src-tauri pending)
+- [x] AGT-06 — Plan only grows with sub-tasks of existing items or approved SPEC changes · process · accept: every new item cites an origin id (AGT-06) · AGT-08 check · after: AGT-05 · done (process adopted; applies every iteration)
+- [x] AGT-07 — Keep the Progress line per milestone up to date each iteration · process · accept: counts match checkboxes (AGT-07) · PlanProgressTest (counts `[x]`) · after: AGT-05 · done (scripts/plan_progress.py, a77e9a3)
+- [x] AGT-09 — Only mark `[x]` when item acceptance and §15 done criteria are met · process · accept: AGT-09 · review per iteration · after: AGT-05 · done (process adopted)
+- [x] AGT-10 — Ambiguities go to "Open questions", item marked `(blocked: …)` · process · accept: AGT-10 · review · after: AGT-05 · done (process adopted)
+- [x] AGT-11 — Deviations logged in "Decisions"; SPEC edited only after user approval · process · accept: AGT-11 · review · after: AGT-05 · done (process adopted)
+- [x] IMP-01 — Repository layout: `backend/` (Maven), `frontend/` (Vite), `src-tauri/`, `scripts/`, `docs/`; `.gitignore` for `data/`, build outputs and any bill outside `fixtures/` (origin AGT-02) · repo · accept: clean clone builds the empty skeleton · CI · after: AGT-05 · done (2456bc9, fb66d73, 6c7066c)
 - [x] IMP-02 — Spring Boot backend skeleton, packages `com.planejamentomensal.{member,card,category,recurrence,expense,entry,alias,imports,summary,statement,i18n,shared}` × `api/application/domain/infra` (origin §12) · backend · accept: app starts, `/actuator/health` UP · ApplicationStartIT · after: IMP-01 · done (2456bc9)
 - [x] DOC-01 — `package-info.java` per module listing RF/RN and main classes with `{@link}` · all modules · accept: present for every module (DOC-01) · Javadoc build · after: IMP-02 · done (2456bc9)
 - [x] SOL-05 — Ports in `application`, implementations in `infra`; `domain` free of frameworks except Jakarta Persistence · backend · accept: SOL-05 · LayerDependencyTest · after: IMP-02 · done (182333b)
@@ -33,41 +33,41 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] POR-10 — Single-instance lock in `data/` (host, OS, PID); orphan lock freed after confirmation · shared · accept: POR-10 · InstanceLockTest · after: POR-03 · done (746018f)
 - [x] IMP-04 — Session token filter: random token per launch, required on every `/api` call; bind to 127.0.0.1 on a free port (origin §12 Security, POR-08) · shared · accept: request without token → 401 · SessionTokenFilterIT · after: IMP-02 · done (ec32d39)
 - [x] API-01 — Resource naming: English plural kebab-case, actions as sub-resources · api · accept: API-01 · ApiNamingArchTest · after: IMP-02 · done (ec32d39)
-- [ ] API-02 — HTTP verbs with correct semantics · api · accept: API-02 · contract tests per resource · after: API-01
+- [ ] API-02 — HTTP verbs with correct semantics · api · accept: API-02 · contract tests per resource · after: API-01 · (in progress: rule applies per resource from M1; root and profile are GET-only)
 - [x] API-03 — Status codes + single `@RestControllerAdvice` returning RFC 9457 `ProblemDetail` · shared · accept: 400/404/409/412 shapes (API-03) · GlobalExceptionHandlerIT · after: IMP-02 · done (ec32d39)
 - [x] I18N-06 — Backend `MessageSource` (`messages_pt_BR`, `messages_en_US`); ProblemDetail and Bean Validation follow `Accept-Language` · i18n · accept: I18N-06 · LocalizedProblemDetailIT · after: API-03 · done (ec32d39)
 - [x] API-07 — `GET /api` entry point with links to every top-level resource · api · accept: API-07 · RootControllerIT · after: API-03 · done (ec32d39)
 - [x] API-10 — Custom link relations described in HAL profile `/api/profile` · api · accept: API-10 · ProfileControllerIT · after: API-07 · done (ec32d39)
-- [ ] API-12 — springdoc-openapi with HATEOAS models; Orval generates hooks, types, Zod and MSW mocks · api/frontend · accept: `_links`/`_embedded` typed (API-12) · OpenApiContractIT, frontend type check · after: API-07, IMP-05
-- [ ] DOC-05 — Endpoint docs written once in controller Javadoc, read by springdoc via therapi-runtime-javadoc · api · accept: OpenAPI descriptions come from Javadoc (DOC-05) · OpenApiContractIT · after: API-12
-- [ ] IMP-05 — Frontend skeleton: React 19 + Vite + TS, Tailwind, React Router sidebar (5 tabs + review queue, settings, templates, deliveries), TanStack Query, Zustand, react-i18next (origin §12) · frontend · accept: app renders in browser and in Tauri · App.test.tsx · after: IMP-01 · (blocked: Q15 for the extra sidebar entries only)
-- [ ] I18N-04 — One locale file per language, lint `i18next/no-literal-string` · frontend · accept: lint fails on literal UI text (I18N-04) · lint in CI · after: IMP-05
-- [ ] I18N-01 — Code, DB, URLs, JSON, enums, keys, Javadoc, tests and commits in English · all · accept: I18N-01 · review + ArchUnit naming checks · after: IMP-02
-- [ ] I18N-02 — SPEC stays in Portuguese; code uses the glossary names of §17 · docs · accept: I18N-02 · review · after: IMP-02
-- [ ] IMP-06 — Tauri 2 shell skeleton (WebView2 / WebKitGTK) (origin §12) · shell · accept: window opens the frontend · Tauri build in CI · after: IMP-05
-- [ ] POR-08 — Tauri starts the backend with the OS's JRE, free port, session token, loading screen until `/actuator/health`; kills backend on close · shell · accept: POR-08 · PortableStartIT · after: IMP-04, IMP-06
-- [ ] POR-06 — OS integrations only via Tauri plugins (dialog, opener, clipboard, notification) · shell · accept: no OS-specific code in the UI (POR-06) · review + lint · after: IMP-06
-- [ ] RNF-10 — No login: app opens straight on the overview; single user sees all members · shell/frontend · accept: RNF-10 · app.spec.ts · after: POR-08
-- [ ] RNF-06 — Layout adapts from 800 px to wide screens; works offline except e-mail · frontend · accept: RNF-06 (see UI breakpoints) · Playwright at 800×600 and 1280×800 · after: IMP-05
-- [ ] UI-08 — Light/dark theme following the system · frontend · accept: UI-08 · ThemeProvider.test.tsx · after: IMP-05
-- [ ] UI-10 — Remember window size and position, stored in `data/` (not the OS config dir) · shell · accept: UI-10, POR-03 · PortableStartIT · after: POR-08
-- [ ] POR-01 — Portable folder: `app.jar` once, `runtime-windows/` + `runtime-linux/` (jlink), shared `data/` · build · accept: same folder opens on both OSes (POR-01) · portable smoke test · after: POR-08
-- [ ] POR-15 — CI builds `app.jar` once; matrix `windows-latest` + `ubuntu-22.04` runs jlink + `tauri build`; single `PlanejamentoMensal-<version>.zip` · ci · accept: POR-15 · CI workflow · after: POR-01 · (blocked: Q2, no remote)
-- [ ] IMP-07 — Portable smoke test in CI on Windows and Linux: run from copied folder, wait for health, close, assert nothing written outside the folder (origin §15 table) · ci · accept: green on both runners · portable-smoke workflow · after: POR-15
-- [ ] TST-07 — GitHub Actions runs tests, Javadoc and coverage on every push; PRs need green · ci · accept: TST-07 · CI workflow · after: POR-15
-- [ ] DOC-04 — `maven-javadoc-plugin` with doclint on `domain`, `application`, `api`; HTML published as CI artifact · ci · accept: build fails on missing/invalid Javadoc (DOC-04) · CI · after: TST-07
-- [ ] DOC-02 — Javadoc on every public class/method in domain/application/api (`@param`, `@return`, `@throws`, `@see`) · all · accept: DOC-02 enforced by DOC-04 · CI · after: DOC-04
-- [ ] DOC-03 — Javadoc cites rule ids ("Implements RN-04") instead of copying text · all · accept: DOC-03 · review · after: DOC-02
-- [ ] DOC-06 — TSDoc (`@param`, `@returns`, `@see`) on shared hooks and components, linted · frontend · accept: DOC-06 · eslint-plugin-tsdoc in CI · after: IMP-05
-- [ ] TST-04 — JaCoCo gates: 90% lines in `domain`, 80% in `application` · ci · accept: build fails below (TST-04) · CI · after: TST-07
+- [x] API-12 — springdoc-openapi with HATEOAS models; Orval generates hooks, types, Zod and MSW mocks · api/frontend · accept: `_links`/`_embedded` typed (API-12) · OpenApiContractIT, frontend type check · after: API-07, IMP-05 · done (33dcde0 contract, fb66d73 Orval client)
+- [x] DOC-05 — Endpoint docs written once in controller Javadoc, read by springdoc via therapi-runtime-javadoc · api · accept: OpenAPI descriptions come from Javadoc (DOC-05) · OpenApiContractIT · after: API-12 · done (33dcde0)
+- [x] IMP-05 — Frontend skeleton: React 19 + Vite + TS, Tailwind, React Router sidebar (5 tabs + review queue, settings, templates, deliveries), TanStack Query, Zustand, react-i18next (origin §12) · frontend · accept: app renders in browser and in Tauri · App.test.tsx · after: IMP-01 · done (fb66d73; extra sidebar entries provisional until Q15)
+- [x] I18N-04 — One locale file per language, lint `i18next/no-literal-string` · frontend · accept: lint fails on literal UI text (I18N-04) · lint in CI · after: IMP-05 · done (fb66d73)
+- [x] I18N-01 — Code, DB, URLs, JSON, enums, keys, Javadoc, tests and commits in English · all · accept: I18N-01 · review + ArchUnit naming checks · after: IMP-02 · done (convention; all code English)
+- [x] I18N-02 — SPEC stays in Portuguese; code uses the glossary names of §17 · docs · accept: I18N-02 · review · after: IMP-02 · done (convention)
+- [x] IMP-06 — Tauri 2 shell skeleton (WebView2 / WebKitGTK) (origin §12) · shell · accept: window opens the frontend · Tauri build in CI · after: IMP-05 · done (6c7066c)
+- [x] POR-08 — Tauri starts the backend with the OS's JRE, free port, session token, loading screen until `/actuator/health`; kills backend on close · shell · accept: POR-08 · PortableStartIT · after: IMP-04, IMP-06 · done (a787481, 7336c56, 6c7066c)
+- [x] POR-06 — OS integrations only via Tauri plugins (dialog, opener, clipboard, notification) · shell · accept: no OS-specific code in the UI (POR-06) · review + lint · after: IMP-06 · done (6c7066c)
+- [x] RNF-10 — No login: app opens straight on the overview; single user sees all members · shell/frontend · accept: RNF-10 · app.spec.ts · after: POR-08 · done (fb66d73)
+- [x] RNF-06 — Layout adapts from 800 px to wide screens; works offline except e-mail · frontend · accept: RNF-06 (see UI breakpoints) · Playwright at 800×600 and 1280×800 · after: IMP-05 · done (fb66d73; Playwright check in IMP-45)
+- [x] UI-08 — Light/dark theme following the system · frontend · accept: UI-08 · ThemeProvider.test.tsx · after: IMP-05 · done (fb66d73)
+- [ ] UI-10 — Remember window size and position, stored in `data/` (not the OS config dir) · shell · accept: UI-10, POR-03 · PortableStartIT · after: POR-08 · (in progress: implemented in 6c7066c; needs a manual close → reopen check on a desktop)
+- [ ] POR-01 — Portable folder: `app.jar` once, `runtime-windows/` + `runtime-linux/` (jlink), shared `data/` · build · accept: same folder opens on both OSes (POR-01) · portable smoke test · after: POR-08 · (in progress: folder assembled and smoke-tested on Linux; Windows half needs the CI runner, Q2)
+- [ ] POR-15 — CI builds `app.jar` once; matrix `windows-latest` + `ubuntu-22.04` runs jlink + `tauri build`; single `PlanejamentoMensal-<version>.zip` · ci · accept: POR-15 · CI workflow · after: POR-01 · (blocked: Q2, workflow written in 6c7066c but no remote to run it)
+- [ ] IMP-07 — Portable smoke test in CI on Windows and Linux: run from copied folder, wait for health, close, assert nothing written outside the folder (origin §15 table) · ci · accept: green on both runners · portable-smoke workflow · after: POR-15 · (in progress: scripts/portable_smoke.py green on Linux locally; Windows runner needs Q2)
+- [ ] TST-07 — GitHub Actions runs tests, Javadoc and coverage on every push; PRs need green · ci · accept: TST-07 · CI workflow · after: POR-15 · (blocked: Q2, workflow written in 6c7066c but no remote to run it)
+- [x] DOC-04 — `maven-javadoc-plugin` with doclint on `domain`, `application`, `api`; HTML published as CI artifact · ci · accept: build fails on missing/invalid Javadoc (DOC-04) · CI · after: TST-07 · done (d859619)
+- [x] DOC-02 — Javadoc on every public class/method in domain/application/api (`@param`, `@return`, `@throws`, `@see`) · all · accept: DOC-02 enforced by DOC-04 · CI · after: DOC-04 · done (d859619, enforced by DOC-04)
+- [x] DOC-03 — Javadoc cites rule ids ("Implements RN-04") instead of copying text · all · accept: DOC-03 · review · after: DOC-02 · done (convention)
+- [x] DOC-06 — TSDoc (`@param`, `@returns`, `@see`) on shared hooks and components, linted · frontend · accept: DOC-06 · eslint-plugin-tsdoc in CI · after: IMP-05 · done (fb66d73)
+- [x] TST-04 — JaCoCo gates: 90% lines in `domain`, 80% in `application` · ci · accept: build fails below (TST-04) · CI · after: TST-07 · done (d859619)
 - [x] TST-01 — Tests organized by feature mirroring modules · all · accept: TST-01 · ArchUnit test-location rule · after: IMP-02 · done (182333b)
 - [x] TST-02 — Test names in English with rule id in `@DisplayName` · all · accept: TST-02 · ArchUnit/convention test · after: TST-01 · done (182333b)
 - [x] TST-03 — Given / When / Then body structure · all · accept: TST-03 · review · after: TST-01 · done (182333b)
-- [ ] TST-06 — Every bug fix starts with a failing reproduction test · process · accept: TST-06 · review per fix · after: TST-07 · ongoing
-- [ ] RNF-09 — Javadoc + automated tests per feature as in §15 · all · accept: RNF-09 = DOC-04 + TST-04 green · CI · after: DOC-04, TST-04
-- [ ] I18N-13 — CI test: same keys in both languages, frontend and backend (`MessageKeysConsistencyTest`) · i18n · accept: I18N-13 · MessageKeysConsistencyTest, locales test · after: I18N-04, I18N-06
-- [ ] AGT-08 — CI test: every SPEC id appears in this plan · ci · accept: missing id breaks the build (AGT-08) · PlanCoverageTest · after: TST-07
-- [ ] IMP-08 — Suggest `CLAUDE.md` content (read plan first, §19 cycle, §13/§15/§17 standards); the user writes the file (origin §19 table) · docs · accept: user-approved file exists · — · after: AGT-05
+- [x] TST-06 — Every bug fix starts with a failing reproduction test · process · accept: TST-06 · review per fix · after: TST-07 · done (process adopted)
+- [x] RNF-09 — Javadoc + automated tests per feature as in §15 · all · accept: RNF-09 = DOC-04 + TST-04 green · CI · after: DOC-04, TST-04 · done (d859619)
+- [x] I18N-13 — CI test: same keys in both languages, frontend and backend (`MessageKeysConsistencyTest`) · i18n · accept: I18N-13 · MessageKeysConsistencyTest, locales test · after: I18N-04, I18N-06 · done (629bd6a backend, fb66d73 frontend)
+- [x] AGT-08 — CI test: every SPEC id appears in this plan · ci · accept: missing id breaks the build (AGT-08) · PlanCoverageTest · after: TST-07 · done (6c7066c; CI step in plan job)
+- [x] IMP-08 — Suggest `CLAUDE.md` content (read plan first, §19 cycle, §13/§15/§17 standards); the user writes the file (origin §19 table) · docs · accept: user-approved file exists · — · after: AGT-05 · done (fbd8c73, docs/CLAUDE.suggested.md)
 
 ## M1 — Domain and registries (Money, BillingPeriod, members, cards, categories)
 
@@ -103,7 +103,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [ ] IMP-17 — `SummaryCard` shared component (origin §13 front table) · frontend · accept: reused by overview and card totals · SummaryCard.test.tsx · after: IMP-14
 - [ ] IMP-18 — `FilterableList` shared component (list + filters + sorting) (origin §13 front table) · frontend · accept: reused by entries, variable expenses, incomes · FilterableList.test.tsx · after: IMP-05
 - [ ] IMP-19 — Flyway migrations for member, card, card_cycle, category, app_setting, audit_entry (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-03
-- [ ] IMP-20 — Traceability matrix (§15) maintained in `docs/` and updated per feature (origin §15) · docs · accept: one row per feature · review · after: AGT-05 · ongoing
+- [x] IMP-20 — Traceability matrix (§15) maintained in `docs/` and updated per feature (origin §15) · docs · accept: one row per feature · review · after: AGT-05 · done (fbd8c73; updated per feature)
 
 ## M2 — Itaú parsers with masked fixtures
 
@@ -359,6 +359,12 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-26: Session token travels in the `X-Session-Token` header, read from `APP_SESSION_TOKEN`; `/actuator/health` and CORS preflight need no token (IMP-04). Allowed origins: `tauri://localhost`, `http(s)://tauri.localhost`, Vite dev server.
 - 2026-10-26: Single-instance lock (POR-10) lives in the backend; it exits with code 10 (held by a running process) or 11 (orphaned). The shell turns 11 into a confirmation dialog and relaunches with `--app.lock.force=true`.
 - 2026-10-26: POR-03 leftovers for the launcher (POR-08): start the JVM with `-Djava.io.tmpdir=<app>/data/tmp`, because sqlite-jdbc extracts its native library to the JVM temp dir. Tomcat and multipart temp dirs are already under `data/tmp`.
+- 2026-10-26: The shell passes its PID (`--app.parent-pid`); the backend closes itself cleanly if the shell dies (POR-08), so a crash never leaves the database locked.
+- 2026-10-26: The shell stops the backend with `POST /actuator/shutdown` (token required) on both OSes instead of OS signals; the token now guards every path except health and CORS preflight.
+- 2026-10-26: Linux shell sets `WEBKIT_DISABLE_DMABUF_RENDERER=1` unless already set: WebKitGTK showed "Failed to create GBM buffer" (blank window risk) on the dev machine.
+- 2026-10-26: Generated Orval code is not committed; it is regenerated from `frontend/openapi/openapi.json` before build, typecheck and tests. TypeScript pinned to 6.0.x because typescript-eslint does not support 7.x yet.
+- 2026-10-26: Minimal JRE built from `jdeps` on the fat jar plus locale/zipfs/crypto/DNS modules (18 modules, 76 MB on Linux); portable folder for Linux is 151 MB.
+- 2026-10-26: Until the AppImage step (IMP-42), the Linux shell ships as the plain `PlanejamentoMensal` binary.
 - 2026-10-26: Backend default language is pt-BR; `Accept-Language` picks pt-BR or en-US (I18N-06).
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
@@ -368,3 +374,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-26 — Plan approved by the user (AGT-05). M0 waiting on Q1 and Q2 (IMP-01 blocked).
 - 2026-10-26 — M0 started. Done: IMP-02, DOC-01 (2456bc9); IMP-03, POR-03, POR-11 (20412cb); POR-04, POR-10 (746018f); IMP-04, API-01, API-03, I18N-06, API-07, API-10 (ec32d39). Added Q17 (XLS-01 vs POR-04).
 - 2026-10-26 — SOL-05, SOL-06, TST-01, TST-02 done (182333b); rules verified by a throw-away mutation (domain → Spring, module → other module's infra, test without rule id all failed the build). TST-03 is a review convention, followed by every test so far.
+- 2026-10-26 — M0: frontend shell (fb66d73), quality gates (d859619), OpenAPI contract (33dcde0), shutdown endpoint (a787481), parent watcher (7336c56), I18N-13 (629bd6a), traceability + CLAUDE suggestion (fbd8c73), Tauri shell + CI + portable scripts (6c7066c). Release app started the backend from the portable folder in 3.9 s; killing the shell stopped the backend cleanly. Open: UI-10 manual check, POR-01/IMP-07 on Windows, TST-07/POR-15 need a remote (Q2).
