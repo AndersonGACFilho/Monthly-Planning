@@ -8,6 +8,7 @@ import com.planejamentomensal.member.application.MemberQueries;
 import com.planejamentomensal.member.application.MemberRepository;
 import com.planejamentomensal.member.application.SaveMemberUseCase;
 import com.planejamentomensal.member.domain.Member;
+import com.planejamentomensal.shared.api.ActivePatch;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
 import jakarta.validation.Valid;

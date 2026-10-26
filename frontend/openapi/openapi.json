@@ -15,6 +15,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Credit cards with finals, holder, default member and closing/due cycles (RF-02 to RF-05).",
+    "name" : "card-controller"
+  }, {
     "description" : "User settings (IMP-10): thresholds, auto-validation, spreadsheet and e-mail options, language.",
     "name" : "settings-controller"
   }, {
@@ -43,6 +46,258 @@
         },
         "summary" : "Returns links to every top-level resource and to the HAL profile.",
         "tags" : [ "root-controller" ]
+      }
+    },
+    "/api/cards" : {
+      "get" : {
+        "description" : "Lists cards, sorted by nickname by default.",
+        "operationId" : "cards",
+        "parameters" : [ {
+          "description" : "page, size and sort",
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        }, {
+          "description" : "paging assembler",
+          "in" : "query",
+          "name" : "resources",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/PagedResourcesAssemblerCard"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelCardModel"
+                }
+              }
+            },
+            "description" : "one page of cards"
+          }
+        },
+        "summary" : "Lists cards, sorted by nickname by default.",
+        "tags" : [ "card-controller" ]
+      },
+      "post" : {
+        "description" : "Creates a card with its first cycle.",
+        "operationId" : "create_1",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CardRequest"
+              }
+            }
+          },
+          "description" : "card data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates a card with its first cycle.",
+        "tags" : [ "card-controller" ]
+      }
+    },
+    "/api/cards/{id}" : {
+      "delete" : {
+        "description" : "Deletes a card without entries or additional cards.",
+        "operationId" : "remove_1",
+        "parameters" : [ {
+          "description" : "card id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes a card without entries or additional cards.",
+        "tags" : [ "card-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one card with its version as <code>ETag</code>.",
+        "operationId" : "card",
+        "parameters" : [ {
+          "description" : "card id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            },
+            "description" : "the card"
+          }
+        },
+        "summary" : "Returns one card with its version as <code>ETag</code>.",
+        "tags" : [ "card-controller" ]
+      },
+      "patch" : {
+        "description" : "Activates or inactivates a card.",
+        "operationId" : "patch_1",
+        "parameters" : [ {
+          "description" : "card id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ActivePatch"
+              }
+            }
+          },
+          "description" : "new active flag",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            },
+            "description" : "the updated card"
+          }
+        },
+        "summary" : "Activates or inactivates a card.",
+        "tags" : [ "card-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces the data of a card; closing and due day change through <code>cycles</code>.",
+        "operationId" : "replace_1",
+        "parameters" : [ {
+          "description" : "card id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CardRequest"
+              }
+            }
+          },
+          "description" : "new data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            },
+            "description" : "the updated card"
+          }
+        },
+        "summary" : "Replaces the data of a card; closing and due day change through <code>cycles</code>.",
+        "tags" : [ "card-controller" ]
+      }
+    },
+    "/api/cards/{id}/cycles" : {
+      "post" : {
+        "description" : "Changes closing and due day from a billing period on, without touching past bills (RF-04).",
+        "operationId" : "changeCycle",
+        "parameters" : [ {
+          "description" : "card id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CycleRequest"
+              }
+            }
+          },
+          "description" : "new days and first period",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            },
+            "description" : "the updated card"
+          }
+        },
+        "summary" : "Changes closing and due day from a billing period on, without touching past bills (RF-04).",
+        "tags" : [ "card-controller" ]
       }
     },
     "/api/members" : {
@@ -362,7 +617,7 @@
     "schemas" : {
       "ActivePatch" : {
         "type" : "object",
-        "description" : "Partial change of the active flag (RF-01).",
+        "description" : "Partial change of the active flag of a member, card or category (RF-01).",
         "properties" : {
           "active" : {
             "type" : "boolean",
@@ -370,6 +625,118 @@
           }
         },
         "required" : [ "active" ]
+      },
+      "CardModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a card.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Active flag."
+          },
+          "bank" : {
+            "type" : "string",
+            "description" : "Issuer.",
+            "enum" : [ "ITAU" ]
+          },
+          "cycles" : {
+            "type" : "array",
+            "description" : "Cycles, oldest first; empty for additional cards.",
+            "items" : {
+              "$ref" : "#/components/schemas/Cycle"
+            }
+          },
+          "defaultMemberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Default member."
+          },
+          "holderName" : {
+            "type" : "string",
+            "description" : "Holder name."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "lastDigits" : {
+            "type" : "array",
+            "description" : "Finals.",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "nickname" : {
+            "type" : "string",
+            "description" : "Nickname."
+          },
+          "primaryCardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Primary card of an additional card."
+          }
+        }
+      },
+      "CardRequest" : {
+        "type" : "object",
+        "description" : "Data to create or replace a card (RF-02, RF-03, RF-05).",
+        "properties" : {
+          "bank" : {
+            "type" : "string",
+            "description" : "issuer",
+            "enum" : [ "ITAU" ]
+          },
+          "closingDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "closing day of the first cycle (used on creation)",
+            "maximum" : 31,
+            "minimum" : 1
+          },
+          "defaultMemberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "default member"
+          },
+          "dueDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "due day of the first cycle (used on creation)",
+            "maximum" : 31,
+            "minimum" : 1
+          },
+          "holderName" : {
+            "type" : "string",
+            "description" : "holder name as on the bill",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "lastDigits" : {
+            "type" : "array",
+            "description" : "finals, 4 digits each",
+            "items" : {
+              "type" : "string",
+              "pattern" : "\\d{4}"
+            },
+            "minItems" : 1
+          },
+          "nickname" : {
+            "type" : "string",
+            "description" : "nickname",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "primaryCardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "primary card for an additional card, optional"
+          }
+        },
+        "required" : [ "bank", "defaultMemberId", "holderName", "lastDigits", "nickname" ]
       },
       "CollectionModelEntityModelRelationDescription" : {
         "type" : "object",
@@ -389,6 +756,53 @@
             "$ref" : "#/components/schemas/Links"
           }
         }
+      },
+      "Cycle" : {
+        "type" : "object",
+        "description" : "Cycle of a card, valid from a period.",
+        "properties" : {
+          "closingDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "closing day"
+          },
+          "dueDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "due day"
+          },
+          "validFrom" : {
+            "type" : "string",
+            "description" : "first billing period, <code>yyyy-MM</code>"
+          }
+        }
+      },
+      "CycleRequest" : {
+        "type" : "object",
+        "description" : "New closing and due day from a billing period on (RF-04).",
+        "properties" : {
+          "closingDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "closing day",
+            "maximum" : 31,
+            "minimum" : 1
+          },
+          "dueDay" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "due day",
+            "maximum" : 31,
+            "minimum" : 1
+          },
+          "validFrom" : {
+            "type" : "string",
+            "description" : "first billing period, <code>yyyy-MM</code>",
+            "minLength" : 1,
+            "pattern" : "\\d{4}-\\d{2}"
+          }
+        },
+        "required" : [ "validFrom" ]
       },
       "EntityModelMapStringString" : {
         "type" : "object",
@@ -596,6 +1010,28 @@
           }
         }
       },
+      "PagedModelCardModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "cards" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/CardModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
       "PagedModelMemberModel" : {
         "type" : "object",
         "properties" : {
@@ -615,6 +1051,15 @@
           },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PagedResourcesAssemblerCard" : {
+        "type" : "object",
+        "properties" : {
+          "forceFirstAndLastRels" : {
+            "type" : "boolean",
+            "writeOnly" : true
           }
         }
       },
