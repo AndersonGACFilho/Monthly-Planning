@@ -45,4 +45,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        # shutdown lets the shell stop the backend cleanly on Windows and Linux (POR-08, POR-11)
+        include: health,shutdown
+  endpoint:
+    shutdown:
+      access: unrestricted

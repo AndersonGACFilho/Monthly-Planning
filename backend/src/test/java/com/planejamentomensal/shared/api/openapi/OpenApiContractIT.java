@@ -1,5 +1,6 @@
 package com.planejamentomensal.shared.api.openapi;
 
+import static com.planejamentomensal.shared.api.ApiTestSupport.authorized;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,7 +29,7 @@ class OpenApiContractIT {
     private MockMvc mockMvc;
 
     private String currentContract() throws Exception {
-        String json = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
+        String json = mockMvc.perform(authorized(get("/v3/api-docs"))).andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         return json.strip() + "\n";
     }

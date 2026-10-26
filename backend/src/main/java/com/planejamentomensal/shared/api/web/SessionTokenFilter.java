@@ -17,9 +17,10 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Rejects API calls that do not carry the session token created by the shell.
  *
- * <p>Implements the security row of SPEC section 12 (IMP-04): only the app window, which received the token
- * at launch, can call {@code /api}. The health endpoint stays open so the shell can wait for startup
- * (POR-08); CORS preflight requests carry no token and are let through to the CORS handling.</p>
+ * <p>Implements the security row of SPEC section 12 (IMP-04): only the app window and the shell, which
+ * received the token at launch, can call the API, the OpenAPI document or the shutdown endpoint. The health
+ * endpoint stays open so the shell can wait for startup (POR-08); CORS preflight requests carry no token
+ * and are let through to the CORS handling.</p>
  *
  * @since 1.0
  */
@@ -44,11 +45,14 @@ public class SessionTokenFilter extends OncePerRequestFilter {
         this.expected = token.getBytes(StandardCharsets.UTF_8);
     }
 
+    /** Path the shell polls before it has anything else to do (POR-08). */
+    public static final String HEALTH_PATH = "/actuator/health";
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI().substring(request.getContextPath().length());
-        boolean api = path.equals("/api") || path.startsWith("/api/");
-        return !api || HttpMethod.OPTIONS.matches(request.getMethod());
+        boolean health = path.equals(HEALTH_PATH) || path.startsWith(HEALTH_PATH + "/");
+        return health || HttpMethod.OPTIONS.matches(request.getMethod());
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.planejamentomensal.shared.api.web;
 import static com.planejamentomensal.shared.api.ApiTestSupport.authorized;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,6 +51,14 @@ class SessionTokenFilterIT {
     @DisplayName("POR-08: health stays reachable without token so the shell can wait for startup")
     void healthNeedsNoToken() throws Exception {
         mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("POR-08: shutdown endpoint and OpenAPI document need the session token")
+    void shutdownAndDocsNeedToken() throws Exception {
+        mockMvc.perform(post("/actuator/shutdown")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/v3/api-docs")).andExpect(status().isUnauthorized());
+        mockMvc.perform(authorized(get("/v3/api-docs"))).andExpect(status().isOk());
     }
 
     @Test

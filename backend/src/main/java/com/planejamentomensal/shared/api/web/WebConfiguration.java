@@ -33,7 +33,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * Registers the session token filter before any other filter.
+     * Registers the session token filter before any other filter, for every path.
      *
      * @param token session token passed by the shell ({@code app.session-token})
      * @return the filter registration
@@ -42,7 +42,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     public FilterRegistrationBean<SessionTokenFilter> sessionTokenFilter(@Value("${app.session-token:}") String token) {
         FilterRegistrationBean<SessionTokenFilter> registration = new FilterRegistrationBean<>(new SessionTokenFilter(token));
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
-        registration.addUrlPatterns("/api", "/api/*");
+        registration.addUrlPatterns("/*");
         return registration;
     }
 
