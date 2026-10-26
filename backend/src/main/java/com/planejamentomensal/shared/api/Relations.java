@@ -13,6 +13,12 @@ import org.springframework.hateoas.LinkRelation;
  */
 public enum Relations implements LinkRelation {
 
+    /** Delete a resource; present only when deleting is allowed. */
+    DELETE("delete", "Delete the resource; only offered when nothing depends on it."),
+    /** Make an inactive resource active again. */
+    ACTIVATE("activate", "Make the resource active again (PATCH with active=true)."),
+    /** Inactivate a resource that cannot be deleted. */
+    INACTIVATE("inactivate", "Inactivate the resource (PATCH with active=false); used when it has history (RF-01)."),
     /** Rename the description of a bill entry (create or replace its alias). */
     RENAME("rename", "Rename the displayed description of a bill entry (RF-46 to RF-48)."),
     /** Remove the alias and show the card's original description again. */

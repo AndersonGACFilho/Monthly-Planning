@@ -4,7 +4,7 @@ import com.planejamentomensal.shared.domain.StaleVersionException;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Optimistic concurrency over HTTP: {@code ETag} from the JPA version and {@code If-Match} checks (API-04).
+ * Optimistic concurrency over HTTP: {@code ETag} from the JPA version and {@code If-Match} parsing (API-04).
  *
  * @since 1.0
  */
@@ -36,25 +36,21 @@ public final class ETags {
     }
 
     /**
-     * Checks an {@code If-Match} header against the stored version.
+     * Reads the version named by an {@code If-Match} header.
      *
-     * @param ifMatch header value, or {@code null} when the client sent none (then nothing is checked)
-     * @param current stored version
-     * @throws StaleVersionException if the header names another version
+     * @param ifMatch header value, possibly {@code null}, {@code *} or weak ({@code W/"3"})
+     * @return the version, or {@code null} when nothing must be checked
+     * @throws StaleVersionException if the header is not a version of this API
      */
-    public static void checkIfMatch(String ifMatch, long current) {
+    public static Long expectedVersion(String ifMatch) {
         if (ifMatch == null || ifMatch.isBlank() || ifMatch.trim().equals("*")) {
-            return;
+            return null;
         }
         String value = ifMatch.trim().replaceFirst("^W/", "").replace("\"", "");
-        long expected;
         try {
-            expected = Long.parseLong(value);
+            return Long.parseLong(value);
         } catch (NumberFormatException e) {
-            throw new StaleVersionException(-1, current);
-        }
-        if (expected != current) {
-            throw new StaleVersionException(expected, current);
+            throw new StaleVersionException(-1, -1);
         }
     }
 }

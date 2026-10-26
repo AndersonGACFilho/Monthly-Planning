@@ -12,6 +12,9 @@
     "sessionToken" : [ ]
   } ],
   "tags" : [ {
+    "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
+    "name" : "member-controller"
+  }, {
     "description" : "User settings (IMP-10): thresholds, auto-validation, spreadsheet and e-mail options, language.",
     "name" : "settings-controller"
   }, {
@@ -40,6 +43,217 @@
         },
         "summary" : "Returns links to every top-level resource and to the HAL profile.",
         "tags" : [ "root-controller" ]
+      }
+    },
+    "/api/members" : {
+      "get" : {
+        "description" : "Lists members, sorted by code by default.",
+        "operationId" : "members",
+        "parameters" : [ {
+          "description" : "page, size and sort",
+          "in" : "query",
+          "name" : "pageable",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/Pageable"
+          }
+        }, {
+          "description" : "paging assembler",
+          "in" : "query",
+          "name" : "resources",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/PagedResourcesAssemblerMember"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelMemberModel"
+                }
+              }
+            },
+            "description" : "one page of members with paging links"
+          }
+        },
+        "summary" : "Lists members, sorted by code by default.",
+        "tags" : [ "member-controller" ]
+      },
+      "post" : {
+        "description" : "Creates a member.",
+        "operationId" : "create",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MemberRequest"
+              }
+            }
+          },
+          "description" : "member data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MemberModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates a member.",
+        "tags" : [ "member-controller" ]
+      }
+    },
+    "/api/members/{id}" : {
+      "delete" : {
+        "description" : "Deletes a member that nothing references.",
+        "operationId" : "remove",
+        "parameters" : [ {
+          "description" : "member id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes a member that nothing references.",
+        "tags" : [ "member-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one member with its version as <code>ETag</code>.",
+        "operationId" : "member",
+        "parameters" : [ {
+          "description" : "member id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MemberModel"
+                }
+              }
+            },
+            "description" : "the member"
+          }
+        },
+        "summary" : "Returns one member with its version as <code>ETag</code>.",
+        "tags" : [ "member-controller" ]
+      },
+      "patch" : {
+        "description" : "Activates or inactivates a member.",
+        "operationId" : "patch",
+        "parameters" : [ {
+          "description" : "member id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ActivePatch"
+              }
+            }
+          },
+          "description" : "new active flag",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MemberModel"
+                }
+              }
+            },
+            "description" : "the updated member"
+          }
+        },
+        "summary" : "Activates or inactivates a member.",
+        "tags" : [ "member-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces the data of a member.",
+        "operationId" : "replace",
+        "parameters" : [ {
+          "description" : "member id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/MemberRequest"
+              }
+            }
+          },
+          "description" : "new data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MemberModel"
+                }
+              }
+            },
+            "description" : "the updated member"
+          }
+        },
+        "summary" : "Replaces the data of a member.",
+        "tags" : [ "member-controller" ]
       }
     },
     "/api/profile" : {
@@ -146,6 +360,17 @@
   },
   "components" : {
     "schemas" : {
+      "ActivePatch" : {
+        "type" : "object",
+        "description" : "Partial change of the active flag (RF-01).",
+        "properties" : {
+          "active" : {
+            "type" : "boolean",
+            "description" : "new state"
+          }
+        },
+        "required" : [ "active" ]
+      },
       "CollectionModelEntityModelRelationDescription" : {
         "type" : "object",
         "properties" : {
@@ -222,6 +447,184 @@
         "type" : "object",
         "additionalProperties" : {
           "$ref" : "#/components/schemas/Link"
+        }
+      },
+      "MemberModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a member.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Active flag."
+          },
+          "code" : {
+            "type" : "string",
+            "description" : "Short code."
+          },
+          "color" : {
+            "type" : "string",
+            "description" : "Colour."
+          },
+          "email" : {
+            "type" : "string",
+            "description" : "E-mail."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Kind.",
+            "enum" : [ "MAIN", "THIRD_PARTY" ]
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name."
+          },
+          "pixKey" : {
+            "type" : "string",
+            "description" : "PIX key."
+          },
+          "preferredLanguage" : {
+            "type" : "string",
+            "description" : "Statement language."
+          },
+          "whatsappPhone" : {
+            "type" : "string",
+            "description" : "WhatsApp phone."
+          }
+        }
+      },
+      "MemberRequest" : {
+        "type" : "object",
+        "description" : "Data to create or replace a member (RF-01, RF-80).",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "description" : "short code: 1 to 4 upper-case letters or digits",
+            "minLength" : 1,
+            "pattern" : "[A-Z0-9]{1,4}"
+          },
+          "color" : {
+            "type" : "string",
+            "description" : "colour as <code>#RRGGBB</code>",
+            "minLength" : 1,
+            "pattern" : "#[0-9a-fA-F]{6}"
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "description" : "e-mail, optional",
+            "maxLength" : 254,
+            "minLength" : 0
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "MAIN or THIRD_PARTY",
+            "enum" : [ "MAIN", "THIRD_PARTY" ]
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "name",
+            "maxLength" : 60,
+            "minLength" : 0
+          },
+          "pixKey" : {
+            "type" : "string",
+            "description" : "PIX key, optional",
+            "maxLength" : 77,
+            "minLength" : 0
+          },
+          "preferredLanguage" : {
+            "type" : "string",
+            "description" : "<code>pt-BR</code> or <code>en-US</code>",
+            "minLength" : 1,
+            "pattern" : "pt-BR|en-US"
+          },
+          "whatsappPhone" : {
+            "type" : "string",
+            "description" : "phone with country code such as <code>+5551999990000</code>, optional",
+            "pattern" : "\\+[1-9][0-9]{7,14}"
+          }
+        },
+        "required" : [ "code", "color", "kind", "name", "preferredLanguage" ]
+      },
+      "PageMetadata" : {
+        "type" : "object",
+        "properties" : {
+          "number" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalElements" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "totalPages" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }
+      },
+      "Pageable" : {
+        "type" : "object",
+        "properties" : {
+          "page" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 0
+          },
+          "size" : {
+            "type" : "integer",
+            "format" : "int32",
+            "minimum" : 1
+          },
+          "sort" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "PagedModelMemberModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "members" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/MemberModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
+      "PagedResourcesAssemblerMember" : {
+        "type" : "object",
+        "properties" : {
+          "forceFirstAndLastRels" : {
+            "type" : "boolean",
+            "writeOnly" : true
+          }
         }
       },
       "RepresentationModelObject" : {
