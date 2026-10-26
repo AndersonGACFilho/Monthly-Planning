@@ -116,6 +116,7 @@
                     <environmentVariables>
                         <!-- Tests write their data/ folder under target/, never into the source tree -->
                         <APP_HOME>${project.build.directory}/test-app-home</APP_HOME>
+                        <APP_SESSION_TOKEN>test-session-token</APP_SESSION_TOKEN>
                     </environmentVariables>
                     <includes>
                         <include>**/*Test.java</include>
