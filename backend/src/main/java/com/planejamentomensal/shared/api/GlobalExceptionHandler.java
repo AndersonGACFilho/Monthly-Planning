@@ -3,6 +3,7 @@ package com.planejamentomensal.shared.api;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.DomainException;
 import com.planejamentomensal.shared.domain.NotFoundException;
+import com.planejamentomensal.shared.domain.StaleVersionException;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -12,6 +13,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -90,6 +92,47 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = e.updateAndGetBody(messages, locale);
         problem.setProperty("errors", errors);
         return handleExceptionInternal(e, problem, headers, status, request);
+    }
+
+    /**
+     * Maps an edit of an outdated version to 412 (API-04).
+     *
+     * @param e      exception
+     * @param locale locale resolved from {@code Accept-Language}
+     * @return problem with status 412
+     */
+    @ExceptionHandler(StaleVersionException.class)
+    public ProblemDetail handleStaleVersion(StaleVersionException e, Locale locale) {
+        return problem(HttpStatus.PRECONDITION_FAILED, e, locale);
+    }
+
+    /**
+     * Maps a concurrent write detected by JPA to 412 (API-04).
+     *
+     * @param e      exception
+     * @param locale locale resolved from {@code Accept-Language}
+     * @return problem with status 412
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleOptimisticLock(ObjectOptimisticLockingFailureException e, Locale locale) {
+        return problem(HttpStatus.PRECONDITION_FAILED, new StaleVersionException(-1, -1), locale);
+    }
+
+    /**
+     * Maps an invalid argument (such as a malformed billing period) to 400.
+     *
+     * @param e      exception
+     * @param locale locale resolved from {@code Accept-Language}
+     * @return problem with status 400
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ProblemDetail handleIllegalArgument(IllegalArgumentException e, Locale locale) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problem.setType(URI.create(PROBLEM_TYPE_BASE + "invalid-argument"));
+        problem.setTitle(messages.getMessage("error.invalid-argument.title", null, "Invalid argument", locale));
+        problem.setDetail(e.getMessage());
+        problem.setProperty("code", "invalid-argument");
+        return problem;
     }
 
     private ProblemDetail problem(HttpStatus status, DomainException e, Locale locale) {

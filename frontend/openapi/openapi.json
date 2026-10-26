@@ -12,6 +12,9 @@
     "sessionToken" : [ ]
   } ],
   "tags" : [ {
+    "description" : "User settings (IMP-10): thresholds, auto-validation, spreadsheet and e-mail options, language.",
+    "name" : "settings-controller"
+  }, {
     "description" : "API entry point: the only URL the interface knows (API-07).",
     "name" : "root-controller"
   }, {
@@ -87,6 +90,58 @@
         "summary" : "Describes one custom relation.",
         "tags" : [ "profile-controller" ]
       }
+    },
+    "/api/settings" : {
+      "get" : {
+        "description" : "Returns every setting with its current value.",
+        "operationId" : "settings",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelMapStringString"
+                }
+              }
+            },
+            "description" : "settings keyed by name"
+          }
+        },
+        "summary" : "Returns every setting with its current value.",
+        "tags" : [ "settings-controller" ]
+      },
+      "patch" : {
+        "description" : "Changes some settings; keys left out keep their value.",
+        "operationId" : "change",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "type" : "object",
+                "additionalProperties" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "description" : "map from key to new value",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelMapStringString"
+                }
+              }
+            },
+            "description" : "every setting after the change"
+          }
+        },
+        "summary" : "Changes some settings; keys left out keep their value.",
+        "tags" : [ "settings-controller" ]
+      }
     }
   },
   "components" : {
@@ -105,6 +160,14 @@
               }
             }
           },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "EntityModelMapStringString" : {
+        "type" : "object",
+        "properties" : {
           "_links" : {
             "$ref" : "#/components/schemas/Links"
           }
