@@ -13,7 +13,9 @@ import java.util.Objects;
  */
 public abstract class DomainException extends RuntimeException {
 
+    /** Stable error code in kebab-case. */
     private final String code;
+    /** Values inserted in the localized message, not serialized. */
     private final transient List<Object> arguments;
 
     /**

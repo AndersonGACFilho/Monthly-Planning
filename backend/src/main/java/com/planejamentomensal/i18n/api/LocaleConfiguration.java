@@ -23,6 +23,13 @@ public class LocaleConfiguration {
     public static final Locale EN_US = Locale.forLanguageTag("en-US");
 
     /**
+     * Creates the configuration.
+     */
+    public LocaleConfiguration() {
+        // configuration holder
+    }
+
+    /**
      * Creates the locale resolver used by MVC, {@code ProblemDetail} and Bean Validation messages.
      *
      * @return resolver that accepts pt-BR and en-US and falls back to pt-BR

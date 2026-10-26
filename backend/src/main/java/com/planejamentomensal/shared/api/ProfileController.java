@@ -32,6 +32,13 @@ public class ProfileController {
     }
 
     /**
+     * Creates the controller.
+     */
+    public ProfileController() {
+        // stateless: relations come from {@link Relations}
+    }
+
+    /**
      * Lists every custom relation.
      *
      * @return all relations, each with a {@code self} link
