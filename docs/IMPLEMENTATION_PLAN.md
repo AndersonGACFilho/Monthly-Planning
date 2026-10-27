@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 19/22 (total 289/297)
+Progress: M0 54/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 19/22 (total 290/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -50,7 +50,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] RNF-10 — No login: app opens straight on the overview; single user sees all members · shell/frontend · accept: RNF-10 · app.spec.ts · after: POR-08 · done (fb66d73)
 - [x] RNF-06 — Layout adapts from 800 px to wide screens; works offline except e-mail · frontend · accept: RNF-06 (see UI breakpoints) · Playwright at 800×600 and 1280×800 · after: IMP-05 · done (fb66d73; Playwright check in IMP-45)
 - [x] UI-08 — Light/dark theme following the system · frontend · accept: UI-08 · ThemeProvider.test.tsx · after: IMP-05 · done (fb66d73)
-- [ ] UI-10 — Remember window size and position, stored in `data/` (not the OS config dir) · shell · accept: UI-10, POR-03 · PortableStartIT · after: POR-08 · (in progress: implemented in e60a687; needs a manual close → reopen check on a desktop)
+- [x] UI-10 — Remember window size and position, stored in `data/` (not the OS config dir) · shell · accept: UI-10, POR-03 · PortableStartIT · after: POR-08 · done (50dd918; real desktop check, Wayland + 200% scale)
 - [ ] POR-01 — Portable folder: `app.jar` once, `runtime-windows/` + `runtime-linux/` (jlink), shared `data/` · build · accept: same folder opens on both OSes (POR-01) · portable smoke test · after: POR-08 · (in progress: folder assembled and smoke-tested on Linux; Windows half needs the CI runner, Q2)
 - [ ] POR-15 — CI builds `app.jar` once; matrix `windows-latest` + `ubuntu-22.04` runs jlink + `tauri build`; single `PlanejamentoMensal-<version>.zip` · ci · accept: POR-15 · CI workflow · after: POR-01 · (blocked: Q2, workflow written in e60a687 but no remote to run it)
 - [ ] IMP-07 — Portable smoke test in CI on Windows and Linux: run from copied folder, wait for health, close, assert nothing written outside the folder (origin §15 table) · ci · accept: green on both runners · portable-smoke workflow · after: POR-15 · (in progress: scripts/portable_smoke.py green on Linux locally; Windows runner needs Q2)
@@ -336,7 +336,6 @@ Final review (IMP-46, 2026-10-27). Q1 and Q2 were answered by the user; Q3–Q17
 - Q2 (blocks POR-15, TST-07, IMP-47, IMP-50 and the Windows half of POR-01, IMP-07, IMP-42): local git only. The CI workflow (tests, Javadoc, coverage, Playwright with WebKit, Windows and Linux packages, exFAT noexec run, single zip) is written but has never run; it needs a GitHub remote.
 - Q14: the §12 diagram did not survive the export; nothing found missing from the text so far.
 - Q18 (RN-16 vs RN-19 example): the 8-character prefix minimum is kept as written, so `nuuvem *N` pairs show up as Divergent for the user to decide. Lower the minimum, or accept card + date ±1 + amount + installment when the prefix is short?
-- UI-10: remembering window size and position is implemented but needs one manual close → reopen check on a desktop.
 - Q9 and Q10 were adopted as proposed; please confirm: the SMTP password key lives in `data/secret.key` (obfuscation, said on the settings screen), and the bundled spreadsheet model is derived from the masked model fixture without any of its data.
 
 Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11, Q12, Q13, Q15, Q16, Q17.
@@ -413,3 +412,4 @@ Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11
 - 2026-10-27 — M5 done: incomes, fixed and variable expenses API (6c35a4d), overview and card totals (aa99832), screens (ecef157). Checked by hand against the dev backend with the masked fixtures: November totals match the XLSX file total plus one projected installment (Q6), mark-paid and card → entries navigation work. Playwright specs named in M5 items run in M7.
 - 2026-10-27 — M6 done: statements, templates and delivery (c5b614f, d8a28dc), monthly spreadsheet (034cac3). Checked by hand: statement PDF from the masked bills (embedded fonts, pending highlight), deliveries and template screens in the browser, spreadsheet rendered through LibreOffice (model look kept, totals recalculated, pending rows yellow); found and fixed a title clipped by a value in the next cell.
 - 2026-10-27 — M7: backups before migrations and on demand, data export, storage failure handling, import timing, IT for every controller (bc79b07); shortcuts, settings, shared component tests (3199f81); Playwright E2E in pt-BR/en-US at 800×600 and 1280×800 with axe checks, statement snapshots (2e65218); AppImage, start-linux.sh, user README, exFAT checks (47ae76a). Measured: 300-line import 3.6 s; Linux zip 257 MB. Left: everything that needs the GitHub remote (Q2) or a Windows machine, and the UI-10 manual check.
+- 2026-10-27 — UI-10 checked on this desktop (Wayland, 200% scale) by starting the release shell with prepared `data/window-state.json` files: found and fixed two bugs (state never saved on Wayland because the position is unknown; sizes doubled on scaled displays) in 50dd918. Sizes now round-trip in logical pixels; on Wayland the compositor places the window, so only the size is restored.
