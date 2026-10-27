@@ -31,6 +31,16 @@ class DeliveryChannelContractTest {
         }
 
         @Override
+        public Path workbookModel() {
+            return dir.resolve("model.xlsx");
+        }
+
+        @Override
+        public void replaceWorkbookModel(byte[] content) {
+            // not used
+        }
+
+        @Override
         public Path saveExport(BillingPeriod period, String baseName, String extension, byte[] content) {
             return dir.resolve(baseName + "." + extension);
         }

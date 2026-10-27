@@ -12,6 +12,9 @@
     "sessionToken" : [ ]
   } ],
   "tags" : [ {
+    "description" : "Monthly spreadsheet of a billing period and its model (XLS-01, XLS-09, XLS-14, XLS-17).",
+    "name" : "workbook-controller"
+  }, {
     "description" : "Variable expenses entered by hand (RF-34, RF-35).",
     "name" : "variable-expense-controller"
   }, {
@@ -3140,6 +3143,92 @@
         "tags" : [ "monthly-summary-controller" ]
       }
     },
+    "/api/summaries/{billingPeriod}/workbook" : {
+      "get" : {
+        "description" : "Downloads the monthly spreadsheet (XLS-01, XLS-17).",
+        "operationId" : "monthlyWorkbook",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "formula mode, optional (XLS-09)",
+          "in" : "query",
+          "name" : "mode",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "EXCEL_365", "COMPATIBLE" ]
+          }
+        }, {
+          "description" : "<code>pt-BR</code> or <code>en-US</code>, optional (XLS-15)",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "the XLSX file"
+          }
+        },
+        "summary" : "Downloads the monthly spreadsheet (XLS-01, XLS-17).",
+        "tags" : [ "workbook-controller" ]
+      }
+    },
+    "/api/summaries/{billingPeriod}/workbook-options" : {
+      "get" : {
+        "description" : "Returns the default formula mode and the pending entries, for the export dialog (XLS-07, XLS-10).",
+        "operationId" : "workbookOptions",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "pending entries, as known by the caller from the summary",
+          "in" : "query",
+          "name" : "pendingCount",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "default" : 0
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WorkbookOptionsModel"
+                }
+              }
+            },
+            "description" : "options with the download link"
+          }
+        },
+        "summary" : "Returns the default formula mode and the pending entries, for the export dialog (XLS-07, XLS-10).",
+        "tags" : [ "workbook-controller" ]
+      }
+    },
     "/api/templates" : {
       "get" : {
         "description" : "Lists the templates; the default one is created on first use.",
@@ -3611,6 +3700,66 @@
         },
         "summary" : "Replaces the data of an expense.",
         "tags" : [ "variable-expense-controller" ]
+      }
+    },
+    "/api/workbook-model" : {
+      "delete" : {
+        "description" : "Goes back to the bundled spreadsheet model.",
+        "operationId" : "resetWorkbookModel",
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Goes back to the bundled spreadsheet model.",
+        "tags" : [ "workbook-controller" ]
+      },
+      "get" : {
+        "description" : "Downloads the spreadsheet model in use (XLS-14).",
+        "operationId" : "workbookModel",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "the model"
+          }
+        },
+        "summary" : "Downloads the spreadsheet model in use (XLS-14).",
+        "tags" : [ "workbook-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces the spreadsheet model after checking its named sheets and tables; 409\n <code>workbook-model-invalid</code> lists what is missing (XLS-14).",
+        "operationId" : "replaceWorkbookModel",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "new model"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Replaces the spreadsheet model after checking its named sheets and tables; 409\n <code>workbook-model-invalid</code> lists what is missing (XLS-14).",
+        "tags" : [ "workbook-controller" ]
       }
     }
   },
@@ -6328,6 +6477,25 @@
           }
         },
         "required" : [ "amount", "description", "expenseDate", "memberId", "paymentMethod" ]
+      },
+      "WorkbookOptionsModel" : {
+        "type" : "object",
+        "description" : "What the spreadsheet export dialog shows before downloading (XLS-07, XLS-10).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "defaultMode" : {
+            "type" : "string",
+            "description" : "Formula mode used when none is chosen.",
+            "enum" : [ "EXCEL_365", "COMPATIBLE" ]
+          },
+          "pendingCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Entries pending review that will be highlighted (XLS-07)."
+          }
+        }
       }
     },
     "securitySchemes" : {

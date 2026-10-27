@@ -495,5 +495,31 @@
     "password": "Password",
     "passwordSet": "Password saved. Type another one to change it.",
     "passwordHint": "The password is encrypted, but the key is in the app data/ folder: whoever has the folder can recover it. Prefer an app password (e.g. Gmail)."
+  },
+  "workbook": {
+    "export": "Export spreadsheet",
+    "title": "Monthly spreadsheet",
+    "mode": "Formula mode",
+    "modes": {
+      "EXCEL_365": "Excel 365 (pivot table)",
+      "COMPATIBLE": "Compatible (LibreOffice and older Excel)"
+    },
+    "defaultMode": "Default on this computer: {{mode}}",
+    "language": "Spreadsheet language",
+    "pending_one": "{{count}} entry pending review is highlighted in yellow.",
+    "pending_other": "{{count}} entries pending review are highlighted in yellow.",
+    "download": "Download",
+    "settings": "Monthly spreadsheet",
+    "memberSheets": "Sheets per member",
+    "monthsBefore": "Months before",
+    "monthsAfter": "Months after",
+    "modeSystem": "Follow the system",
+    "suffix": "File name suffix",
+    "cardOrder": "Card order",
+    "model": "Model file",
+    "modelHint": "Change the look by sending another .xlsx with the same sheets and tables (Receita, Despesas, CARTÕES, Categorias).",
+    "downloadModel": "Download current model",
+    "uploadModel": "Upload new model",
+    "resetModel": "Back to the default model"
   }
 }

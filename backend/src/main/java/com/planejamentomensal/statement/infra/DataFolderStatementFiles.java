@@ -60,6 +60,40 @@ public class DataFolderStatementFiles implements StatementFiles {
     }
 
     @Override
+    public Path workbookModel() {
+        Path file = paths.templates().resolve("monthly-workbook-model.xlsx");
+        try {
+            if (Files.notExists(file)) {
+                Files.createDirectories(file.getParent());
+                try (InputStream in = getClass().getResourceAsStream("/workbook/monthly-workbook-model.xlsx")) {
+                    if (in == null) {
+                        throw new IllegalStateException("Missing bundled spreadsheet model");
+                    }
+                    Files.copy(in, file);
+                }
+            }
+            return file;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Override
+    public void replaceWorkbookModel(byte[] content) {
+        Path file = paths.templates().resolve("monthly-workbook-model.xlsx");
+        try {
+            if (content == null) {
+                Files.deleteIfExists(file);
+            } else {
+                Files.createDirectories(file.getParent());
+                Files.write(file, content);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    @Override
     public Path saveExport(BillingPeriod period, String baseName, String extension, byte[] content) {
         Path dir = paths.exports().resolve(period.toString());
         try {

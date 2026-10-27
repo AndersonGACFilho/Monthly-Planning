@@ -21,10 +21,11 @@ import com.planejamentomensal.shared.domain.PaymentMethod;
  * @param amount        amount of the period
  * @param done          received or paid
  * @param linkedEntryId card entry holding a card-paid expense, or {@code null}
+ * @param day           expected or due day of the rule
  * @since 1.0
  */
 public record OccurrenceView(long id, long ruleId, boolean income, String description, long memberId, Long categoryId,
-        PaymentMethod paymentMethod, BillingPeriod billingPeriod, Money amount, boolean done, Long linkedEntryId) {
+        PaymentMethod paymentMethod, BillingPeriod billingPeriod, Money amount, boolean done, Long linkedEntryId, int day) {
 
     /**
      * Builds the view of an occurrence.
@@ -36,6 +37,6 @@ public record OccurrenceView(long id, long ruleId, boolean income, String descri
         return new OccurrenceView(o.id(), o.rule().id(), o.rule().kind() == RuleKind.INCOME,
                 o.rule().description(), o.rule().memberId(), o.rule().categoryId(), o.rule().paymentMethod(),
                 o.billingPeriod(), o.amount(), o.status() == OccurrenceStatus.DONE,
-                o.linkedEntryId());
+                o.linkedEntryId(), o.rule().day());
     }
 }

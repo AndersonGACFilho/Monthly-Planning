@@ -495,5 +495,31 @@
     "password": "Senha",
     "passwordSet": "Senha salva. Digite outra para trocar.",
     "passwordHint": "A senha fica cifrada, mas a chave está na pasta data/ do app: quem tiver a pasta pode recuperá-la. Prefira uma senha de app (ex.: Gmail)."
+  },
+  "workbook": {
+    "export": "Exportar planilha",
+    "title": "Planilha do mês",
+    "mode": "Modo de fórmulas",
+    "modes": {
+      "EXCEL_365": "Excel 365 (tabela dinâmica)",
+      "COMPATIBLE": "Compatível (LibreOffice e Excel antigo)"
+    },
+    "defaultMode": "Padrão deste computador: {{mode}}",
+    "language": "Idioma da planilha",
+    "pending_one": "{{count}} lançamento pendente de validação sai destacado em amarelo.",
+    "pending_other": "{{count}} lançamentos pendentes de validação saem destacados em amarelo.",
+    "download": "Baixar",
+    "settings": "Planilha mensal",
+    "memberSheets": "Abas por cota",
+    "monthsBefore": "Meses antes",
+    "monthsAfter": "Meses depois",
+    "modeSystem": "Seguir o sistema",
+    "suffix": "Sufixo do nome do arquivo",
+    "cardOrder": "Ordem dos cartões",
+    "model": "Arquivo-modelo",
+    "modelHint": "Troque o visual enviando outro .xlsx com as mesmas abas e tabelas (Receita, Despesas, CARTÕES, Categorias).",
+    "downloadModel": "Baixar modelo atual",
+    "uploadModel": "Enviar novo modelo",
+    "resetModel": "Voltar ao modelo padrão"
   }
 }

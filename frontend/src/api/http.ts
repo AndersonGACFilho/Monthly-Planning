@@ -74,7 +74,8 @@ export async function apiFetchFile(url: string): Promise<{ blob: Blob; fileName:
     throw new ProblemError(text ? (JSON.parse(text) as Problem) : { status: response.status });
   }
   const disposition = response.headers.get('Content-Disposition') ?? '';
-  const fileName = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? null;
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  const fileName = encoded ? decodeURIComponent(encoded) : (/filename="?([^";]+)"?/.exec(disposition)?.[1] ?? null);
   return { blob: await response.blob(), fileName };
 }
 

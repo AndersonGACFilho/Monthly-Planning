@@ -18,6 +18,21 @@ public interface StatementFiles {
     Path fonts();
 
     /**
+     * Returns the spreadsheet model in {@code data/templates/}, copying the bundled one on first use; the user may
+     * replace it (XLS-13, XLS-14).
+     *
+     * @return model file
+     */
+    Path workbookModel();
+
+    /**
+     * Replaces the spreadsheet model, or goes back to the bundled one when {@code content} is {@code null} (XLS-14).
+     *
+     * @param content new model, already validated, or {@code null}
+     */
+    void replaceWorkbookModel(byte[] content);
+
+    /**
      * Saves an exported file under {@code data/exports/<billing-period>/} (RF-89, POR-04).
      *
      * @param period   billing period

@@ -61,6 +61,7 @@ public class MonthlySummaryController {
         model.add(linkTo(methodOn(MonthlySummaryController.class).summaryByCategory(billingPeriod, member))
                 .withRel(Relations.BY_CATEGORY).expand());
         model.add(Link.of("/api/card-bills?billingPeriod=" + period, "card-bills"));
+        model.add(Link.of("/api/summaries/" + period + "/workbook", Relations.EXPORT_XLSX));
         return model;
     }
 
