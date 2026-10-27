@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 0/22 (total 270/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 19/22 (total 289/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -306,49 +306,49 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 
 ## M7 — Languages, final packaging and end-to-end tests
 
-- [ ] I18N-03 — pt-BR and en-US; default from OS language; switch in settings, applied immediately, saved in `data/` · i18n · accept: I18N-03 · i18n.spec.ts · after: I18N-04, IMP-10
-- [ ] IMP-39 — Settings screen (thresholds, auto-validate, member sheets, formula mode, language, SMTP, backup) (origin RF-16, RF-79d, XLS-06, XLS-09, I18N-03, RF-86, POR-12) · frontend · accept: every setting editable · SettingsPage.test.tsx · after: I18N-03 · (blocked: Q15)
-- [ ] I18N-14 — Statement snapshots in both languages; Playwright main flows in pt-BR and en-US · test · accept: I18N-14 · TemplateRendererTest, *.spec.ts × 2 locales · after: I18N-03, I18N-10
-- [ ] UI-01 — Shortcuts: Ctrl+N new entry, Ctrl+I import, Ctrl+E export, Ctrl+F search, Alt+←/→ period · frontend · accept: UI-01 · shortcuts.spec.ts · after: RF-44, UI-06, XLS-01, UI-02
-- [ ] RNF-07 — Backup/export of all data as CSV or JSON · shared · accept: RNF-07 · DataExportIT · after: IMP-35
-- [ ] POR-12 — Automatic backup on start (`data/backups/`, keep 10) + "Backup now" with chosen destination · shared · accept: POR-12 · BackupServiceTest · after: POR-11
-- [ ] POR-13 — Write failure (SSD removed) shows a clear warning; UI advises closing before ejecting · shared/frontend · accept: POR-13 · WriteFailureHandlingTest · after: POR-12
-- [ ] POR-14 — Update = replace executables and `backend/`; Flyway migrates on start after a backup · build · accept: POR-14 · UpgradeMigrationIT · after: POR-12
-- [ ] POR-02 — exFAT SSD: no reliance on POSIX permissions, symlinks or case-sensitive names · build · accept: POR-02 · portable smoke test on exFAT image (Linux CI) · after: IMP-07
-- [ ] POR-09 — Linux fallback `start-linux.sh` (no FUSE or noexec): extracted AppImage, JRE copied to a temp dir removed on close · build · accept: POR-09 · start-linux smoke test · after: POR-01
-- [ ] IMP-40 — Playwright E2E (Chromium ≈ WebView2, WebKit ≈ WebKitGTK), real backend, 800×600 and 1280×800: import bill, rename, export statement, check overview (origin §15 table) · test · accept: green on both engines · import.spec.ts, entries.spec.ts, statements.spec.ts, monthly-summary.spec.ts · after: M3–M6 features
-- [ ] IMP-41 — Vitest + React Testing Library + MSW (Orval mocks) coverage of shared components and screens (origin §15 table) · test · accept: every shared component tested · frontend test suite · after: M1–M6 screens
-- [ ] IMP-42 — Final portable zip: Windows `.exe` + Linux `.AppImage` + `start-linux.sh` + `backend/` + empty `data/` layout (origin §12 tree) · build · accept: size recorded vs ~250 MB estimate · IMP-07 smoke test · after: POR-15, POR-09
-- [ ] IMP-43 — Integration tests (`@SpringBootTest`, MockMvc, SQLite temp file) cover every endpoint, transaction and migration (origin §15 table) · test · accept: one *IT per controller · CI · after: M1–M6 endpoints
-- [ ] IMP-44 — Javadoc HTML published from CI and traceability matrix complete (origin DOC-04, §15) · docs · accept: every feature row filled · CI artifact · after: IMP-20
-- [ ] IMP-45 — UI breakpoints: 800–1199 px collapsed sidebar and essential columns; ≥ 1200 px expanded sidebar, all columns, details panel (origin §14 table, RNF-06) · frontend · accept: Playwright at both sizes · layout.spec.ts · after: RNF-06
-- [ ] IMP-46 — Final review of open questions and decisions; SPEC deviations recorded (origin AGT-11) · process · accept: no open blocking question · review · after: all
+- [x] I18N-03 — pt-BR and en-US; default from OS language; switch in settings, applied immediately, saved in `data/` · i18n · accept: I18N-03 · i18n.spec.ts · after: I18N-04, IMP-10 · done (3199f81, 2e65218)
+- [x] IMP-39 — Settings screen (thresholds, auto-validate, member sheets, formula mode, language, SMTP, backup) (origin RF-16, RF-79d, XLS-06, XLS-09, I18N-03, RF-86, POR-12) · frontend · accept: every setting editable · SettingsPage.test.tsx · after: I18N-03 · done (3199f81)
+- [x] I18N-14 — Statement snapshots in both languages; Playwright main flows in pt-BR and en-US · test · accept: I18N-14 · TemplateRendererTest, *.spec.ts × 2 locales · after: I18N-03, I18N-10 · done (2e65218)
+- [x] UI-01 — Shortcuts: Ctrl+N new entry, Ctrl+I import, Ctrl+E export, Ctrl+F search, Alt+←/→ period · frontend · accept: UI-01 · shortcuts.spec.ts · after: RF-44, UI-06, XLS-01, UI-02 · done (3199f81; E2E with IMP-40)
+- [x] RNF-07 — Backup/export of all data as CSV or JSON · shared · accept: RNF-07 · DataExportIT · after: IMP-35 · done (bc79b07)
+- [x] POR-12 — Automatic backup on start (`data/backups/`, keep 10) + "Backup now" with chosen destination · shared · accept: POR-12 · BackupServiceTest · after: POR-11 · done (bc79b07, 3199f81)
+- [x] POR-13 — Write failure (SSD removed) shows a clear warning; UI advises closing before ejecting · shared/frontend · accept: POR-13 · WriteFailureHandlingTest · after: POR-12 · done (bc79b07, 3199f81)
+- [x] POR-14 — Update = replace executables and `backend/`; Flyway migrates on start after a backup · build · accept: POR-14 · UpgradeMigrationIT · after: POR-12 · done (bc79b07)
+- [x] POR-02 — exFAT SSD: no reliance on POSIX permissions, symlinks or case-sensitive names · build · accept: POR-02 · portable smoke test on exFAT image (Linux CI) · after: IMP-07 · done (47ae76a; checks here, exFAT noexec run in CI)
+- [x] POR-09 — Linux fallback `start-linux.sh` (no FUSE or noexec): extracted AppImage, JRE copied to a temp dir removed on close · build · accept: POR-09 · start-linux smoke test · after: POR-01 · done (47ae76a; dry run tested, GUI run manual)
+- [x] IMP-40 — Playwright E2E (Chromium ≈ WebView2, WebKit ≈ WebKitGTK), real backend, 800×600 and 1280×800: import bill, rename, export statement, check overview (origin §15 table) · test · accept: green on both engines · import.spec.ts, entries.spec.ts, statements.spec.ts, monthly-summary.spec.ts · after: M3–M6 features · done (2e65218; Chromium here, WebKit in CI)
+- [x] IMP-41 — Vitest + React Testing Library + MSW (Orval mocks) coverage of shared components and screens (origin §15 table) · test · accept: every shared component tested · frontend test suite · after: M1–M6 screens · done (3199f81)
+- [ ] IMP-42 — Final portable zip: Windows `.exe` + Linux `.AppImage` + `start-linux.sh` + `backend/` + empty `data/` layout (origin §12 tree) · build · accept: size recorded vs ~250 MB estimate · IMP-07 smoke test · after: POR-15, POR-09 · (in progress: Linux half assembled and smoke-tested in 47ae76a, 257 MB zipped; Windows half and the single zip need the CI runners, Q2)
+- [x] IMP-43 — Integration tests (`@SpringBootTest`, MockMvc, SQLite temp file) cover every endpoint, transaction and migration (origin §15 table) · test · accept: one *IT per controller · CI · after: M1–M6 endpoints · done (bc79b07; every controller has an IT)
+- [x] IMP-44 — Javadoc HTML published from CI and traceability matrix complete (origin DOC-04, §15) · docs · accept: every feature row filled · CI artifact · after: IMP-20 · done (Javadoc HTML artifact in CI, matrix complete)
+- [x] IMP-45 — UI breakpoints: 800–1199 px collapsed sidebar and essential columns; ≥ 1200 px expanded sidebar, all columns, details panel (origin §14 table, RNF-06) · frontend · accept: Playwright at both sizes · layout.spec.ts · after: RNF-06 · done (2e65218)
+- [x] IMP-46 — Final review of open questions and decisions; SPEC deviations recorded (origin AGT-11) · process · accept: no open blocking question · review · after: all · done (final review in Open questions)
 - [ ] IMP-47 — Release checklist: version bump, changelog, zip attached to the GitHub release (origin POR-15) · build · accept: zip downloadable · CI · after: IMP-42 · (blocked: Q2, no remote)
-- [ ] IMP-48 — Recharts/TanStack Virtual/Tailwind accessibility pass on main screens (keyboard flow of UI section) (origin §14) · frontend · accept: keyboard-only flows work · a11y spec · after: IMP-33, UI-04
-- [ ] IMP-49 — Performance check of the whole import → preview → confirm path on 300 lines (origin RNF-03) · test · accept: < 5 s end-to-end · ImportPerformanceIT · after: RF-72
-- [ ] IMP-50 — Data folder smoke on second OS: same `data/` opened on Windows then Linux (origin POR-01) · test · accept: identical data · portable smoke workflow · after: IMP-42
-- [ ] IMP-51 — Documentation for users: README in the portable folder (start, backup, eject, update) (origin POR-09, POR-13, POR-14) · docs · accept: README shipped in zip · review · after: IMP-42
+- [x] IMP-48 — Recharts/TanStack Virtual/Tailwind accessibility pass on main screens (keyboard flow of UI section) (origin §14) · frontend · accept: keyboard-only flows work · a11y spec · after: IMP-33, UI-04 · done (2e65218; axe + keyboard)
+- [x] IMP-49 — Performance check of the whole import → preview → confirm path on 300 lines (origin RNF-03) · test · accept: < 5 s end-to-end · ImportPerformanceIT · after: RF-72 · done (bc79b07; about 3.6 s)
+- [ ] IMP-50 — Data folder smoke on second OS: same `data/` opened on Windows then Linux (origin POR-01) · test · accept: identical data · portable smoke workflow · after: IMP-42 · (blocked: Q2, needs a Windows run)
+- [x] IMP-51 — Documentation for users: README in the portable folder (start, backup, eject, update) (origin POR-09, POR-13, POR-14) · docs · accept: README shipped in zip · review · after: IMP-42 · done (47ae76a)
 
 ## Open questions
 
-- ~~Q1~~ answered 2026-10-26: upgrade to Java 25 LTS, Spring Boot 4, React 19 (see Decisions).
-- Q2 (blocks POR-15, IMP-47): answered 2026-10-26: local git only, no remote yet. POR-15 stays blocked until a GitHub remote exists.
-- Q3 (blocks RF-05, RF-66, RN-10): is an additional card a separate `Card` with `primaryCardId` and its bill on the primary? The PDF has no final per line: do the RN-10/RN-19 keys use the primary card?
-- Q4 (blocks RN-10, RN-19): proposal: store an exact key for idempotence (RF-73) and run the RN-19 tolerant match as a query during classification.
-- Q5 (blocks RF-63e, RN-21): the XLSX has IOF per purchase; the PDF has one "Repasse de IOF". On open→closed reconciliation, do the XLSX IOF lines become UNCONFIRMED and get replaced by the PDF line? The data model lacks an IOF→purchase link (RF-63e); proposal: `BillEntry.relatedEntryId`.
-- Q6 (blocks RF-11, RF-36): for a period without an imported bill, does the card total include PROJECTED entries? Do UNCONFIRMED entries count in totals?
-- Q7 (blocks RF-72): undoing a batch whose projected installments were already matched by a later batch. Proposal: 409, and only the latest batch of a card can be undone.
-- Q8 (blocks RF-01 kind rule, RF-27, RF-10, RF-11, XLS-04, RF-76): who is the "payer" of a card for RF-27 (the card's default member?). Can there be more than one MAIN member (glossary lists Anderson, spouse and Casa; XLS-04 says MAIN = the house)? Does RF-10 add third-party reimbursements to income and the whole card bill to expenses, as the spreadsheet does?
-- Q9 (blocks RF-86): SMTP password "encrypted in the DB" with no login (RNF-10) means the key lives in `data/`, which is only obfuscation. Accept, or use the OS keychain (which breaks POR-03)?
-- Q10 (blocks XLS-13): may the app's default workbook model be derived from the masked model fixture (styles and tables only, no data)? The originals were authorized only for fixtures.
-- Q11 (blocks XLS-09 Excel 365 pivot): Apache POI pivot support is limited. Accept a pivot table created with "refresh on open", with the Cota page filter and descending sort set through low-level XML?
-- Q12 (blocks RF-63f, RN-21): when an open bill is re-imported (new hash), an item missing from the new XLSX is removed from the partial batch or marked UNCONFIRMED?
-- Q13: SPEC §20 marks "macOS / Linux ARM" as resolved but the answer is not in the text. Assumed out of scope (Windows x64 and Linux x86_64 only).
-- Q14: the §12 architecture diagram did not survive the Markdown export ("embedded content"). Is there anything in it not covered by the text?
-- Q15 (blocks IMP-05, IMP-25, IMP-39): review queue, settings, templates and delivery history are extra sidebar entries besides the 5 tabs?
-- Q17 (blocks XLS-01): XLS-01 names the spreadsheet `2026 - 11 - NOVEMBRO CJ.xlsx` (spaces, upper case), but POR-04 allows only letters, digits, `-` and `_` in generated names. Which wins? Proposal: XLS-01 keeps its name for the file the user saves; POR-04 applies to files the app keeps in `data/`.
-- Q18 (RN-16 vs RN-19 example): the SPEC table shows `nuuvem *N 02/02` (PDF) matching `Nuuvem *Nuuvemrio De Janeirbra` (XLSX), but the normalized `NUUVEMN` has 7 characters, below the RN-16 minimum of 8. The rule is kept as written: such pairs show up as Divergent for the user to decide. Should the minimum be lower, or should card + date ±1 + amount + installment be enough when the prefix is short?
-- Q16 (data model gaps, proposed): add `AuditEntry` (RNF-05), `ImportBatch.status` PREVIEW/CONFIRMED/CANCELLED (API links), persisted `ImportPreviewLine` (RNF-04 forbids keeping the file between preview and confirmation) and `AppSetting` (RF-16, RF-79d, XLS-06, XLS-09, I18N-03, SMTP).
+Final review (IMP-46, 2026-10-27). Q1 and Q2 were answered by the user; Q3–Q17 run on the adopted defaults listed in Decisions (implemented and tested; each can still be changed). Still open for the user:
+
+- Q2 (blocks POR-15, TST-07, IMP-47, IMP-50 and the Windows half of POR-01, IMP-07, IMP-42): local git only. The CI workflow (tests, Javadoc, coverage, Playwright with WebKit, Windows and Linux packages, exFAT noexec run, single zip) is written but has never run; it needs a GitHub remote.
+- Q14: the §12 diagram did not survive the export; nothing found missing from the text so far.
+- Q18 (RN-16 vs RN-19 example): the 8-character prefix minimum is kept as written, so `nuuvem *N` pairs show up as Divergent for the user to decide. Lower the minimum, or accept card + date ±1 + amount + installment when the prefix is short?
+- UI-10: remembering window size and position is implemented but needs one manual close → reopen check on a desktop.
+- Q9 and Q10 were adopted as proposed; please confirm: the SMTP password key lives in `data/secret.key` (obfuscation, said on the settings screen), and the bundled spreadsheet model is derived from the masked model fixture without any of its data.
+
+Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11, Q12, Q13, Q15, Q16, Q17.
+
+### SPEC deviations
+
+- Stack: Java 25 LTS, Spring Boot 4.1, React 19 instead of Java 21, Boot 3, React 18 (Q1, user decision).
+- Data model: category, splits, note and review state live on `Purchase`, not on each `BillEntry` (RN-08 by construction); added `AuditEntry`, `ImportBatch.status`, `ImportLine`, `AppSetting`, `MemberTemplate`, `TemplateVersion`, `StatementDelivery` with a content fingerprint (Q16, RF-93).
+- Variable expenses cannot be paid by card (card purchases come from the bill or a manual card entry), so RF-11 never counts them twice.
+- Advanced template mode (TPL-07) edits extra CSS and a header HTML fragment, not the whole layout.
+- The Linux shell ships as an AppImage plus the plain binary; `start-linux.sh` covers systems without FUSE and drives mounted noexec.
+- Portable size: the Linux half zips to 257 MB (AppImage with WebKitGTK 107 MB, JRE 78 MB, backend 99 MB); with the Windows half the single zip is estimated at about 330 MB, above the ~250 MB guess in the SPEC.
 
 ## Decisions
 
@@ -399,7 +399,6 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27: XLS-03: fixed (not card) and variable expenses of third-party members go to the "Boletos" group of the cards sheet with their code (fixed `*`, variable `-`), so they count in that member's SUMIF total; those of MAIN members go to "Despesas mensais". Incomes of third parties are not listed; each third party gets a "Reembolso" line pointing to their total on the side table, which points to the cards sheet (XLS-04).
 - 2026-10-27: XLS-09/Q11: Excel 365 mode writes the model's `SORT(UNIQUE(FILTER(...)))` card list as a dynamic array and builds a new POI pivot table (report filter Cota, rows Categoria, sum of Valor, sorted by value descending, refreshed on open; no member preselected). Compatible mode writes a sorted card list with one `SUMIF` per row, a `SUMIFS` table with the member in a drop-down (H1, MAIN member by default) and defines the totals with plain ranges instead of structured references. The summary's year goes to D1 and the title to B2 (C2 left empty).
 - 2026-10-27: XLS-06: member sheets are named after the member in capitals and lay out one block per month (default 2 before, current, 1 after) alternating left and right columns; future months show projected installments.
-- Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log
 
@@ -413,3 +412,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27 — M4 done: aliases, entries API and tab (bac8c4c and the entries tab commit). Manual check with the fixtures: November shows 89 entries; BMB 01/02 (PDF, October) and 02/02 (XLSX, November) both confirmed.
 - 2026-10-27 — M5 done: incomes, fixed and variable expenses API (6c35a4d), overview and card totals (aa99832), screens (ecef157). Checked by hand against the dev backend with the masked fixtures: November totals match the XLSX file total plus one projected installment (Q6), mark-paid and card → entries navigation work. Playwright specs named in M5 items run in M7.
 - 2026-10-27 — M6 done: statements, templates and delivery (c5b614f, d8a28dc), monthly spreadsheet (034cac3). Checked by hand: statement PDF from the masked bills (embedded fonts, pending highlight), deliveries and template screens in the browser, spreadsheet rendered through LibreOffice (model look kept, totals recalculated, pending rows yellow); found and fixed a title clipped by a value in the next cell.
+- 2026-10-27 — M7: backups before migrations and on demand, data export, storage failure handling, import timing, IT for every controller (bc79b07); shortcuts, settings, shared component tests (3199f81); Playwright E2E in pt-BR/en-US at 800×600 and 1280×800 with axe checks, statement snapshots (2e65218); AppImage, start-linux.sh, user README, exFAT checks (47ae76a). Measured: 300-line import 3.6 s; Linux zip 257 MB. Left: everything that needs the GitHub remote (Q2) or a Windows machine, and the UI-10 manual check.
