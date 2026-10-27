@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 1/52 · M7 0/22 (total 219/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 34/52 · M7 0/22 (total 252/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -252,39 +252,39 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 ## M6 — Member statement, templates, delivery and monthly spreadsheet
 
 - [x] RF-80 — Member e-mail, WhatsApp phone with country code, optional PIX key, preferred language · member · accept: RF-80 · MemberControllerIT · after: RF-01 · done (b8733f5, 9418ac1)
-- [ ] RF-81 — Choose period and one or more members; one statement per member · statement · accept: RF-81 · MemberStatementBuilderTest · after: RF-80, RF-25
-- [ ] RF-82 — Statement content: header, summary, entries by card with split %, fixed/variable expenses, committed installments, total, PIX data, free note · statement · accept: RF-82 · MemberStatementBuilderTest · after: RF-81, RF-17
-- [ ] RF-83 — Options: show/hide categories, alias vs original, include future installments · statement · accept: RF-83 · MemberStatementBuilderTest · after: RF-82
-- [ ] TPL-01 — One Thymeleaf template renders e-mail body, PDF (OpenHTMLtoPDF) and PNG (PDF page via PDFBox) · statement · accept: TPL-01 · TemplateRendererTest · after: RF-82
-- [ ] I18N-10 — Fixed labels from `MessageSource` with the member's `Locale`; numbers/dates per I18N-05 · statement · accept: I18N-10 · TemplateRendererTest (pt-BR, en-US snapshots) · after: TPL-01, I18N-06
-- [ ] POR-05 — Template fonts embedded in `data/templates/` for identical PDFs on both OSes · statement · accept: POR-05 · PdfGeneratorTest · after: TPL-01
-- [ ] RF-84 — Formats: PDF (default), PNG, XLSX/CSV · statement · accept: RF-84 · PdfGeneratorTest, ImageGeneratorTest, StatementXlsxTest · after: TPL-01
-- [ ] RF-85 — Statement preview before sending or downloading · statement/frontend · accept: RF-85 · StatementControllerIT · after: RF-84
-- [ ] TPL-02 — No-code customization: logo, colors, font from a list, header/footer, default message, blocks and order · statement · accept: TPL-02 · TemplateSettingsTest · after: TPL-01
-- [ ] TPL-03 — Editor with live preview (real or sample data) and language selector · frontend · accept: TPL-03 · TemplateEditor.test.tsx · after: TPL-02
-- [ ] TPL-04 — Several templates, one default; per-member template · statement · accept: TPL-04 · TemplateServiceTest · after: TPL-02
-- [ ] TPL-05 — Text messages with English variables (`{{member.name}}`, `{{billingPeriod}}`, `{{total}}`, `{{dueDate}}`, `{{pixKey}}`) per language · statement · accept: TPL-05 · MessageTemplateTest · after: TPL-04
-- [ ] TPL-06 — Every change creates a `TemplateVersion`; deliveries record version and language · statement · accept: TPL-06 · TemplateServiceTest · after: TPL-04
-- [ ] TPL-07 — Optional advanced HTML/CSS mode with sanitization and whitelisted variables · statement · accept: TPL-07 · TemplateSanitizerTest · after: TPL-06
-- [ ] I18N-11 — Customizable texts per language; fallback to the other with a preview warning · statement · accept: I18N-11 · TemplateRendererTest · after: TPL-05
-- [ ] IMP-36 — Template resource links: `preview`, `versions`, `make-default` if not default (origin §12 resource table) · api · accept: links per state · TemplateControllerIT · after: TPL-06
-- [ ] SOL-03 — `DeliveryChannel.deliver()` returns `DeliveryResult` SENT / AWAITING_USER / FAILED; user can mark as sent · statement · accept: SOL-03 · DeliveryChannelContractTest · after: SOL-02
-- [ ] RF-86 — E-mail via SMTP from settings, subject/body from template, PDF attached · statement · accept: RF-86 · EmailChannelIT (GreenMail) · after: SOL-03, TPL-05 · (blocked: Q9 for password storage)
-- [ ] RF-87 — WhatsApp: open `wa.me/<phone>` with summary; file saved and copied to clipboard · statement · accept: RF-87 · WhatsAppLinkChannelTest · after: SOL-03
-- [ ] POR-07 — WhatsApp Desktop on Windows if installed, else browser; WhatsApp Web on Linux · shell · accept: POR-07 · manual check + WhatsAppLinkChannelTest · after: RF-87
-- [ ] RF-88 — Clipboard channel copies the statement PNG · statement/shell · accept: RF-88 · ClipboardChannelTest · after: SOL-03
-- [ ] RF-89 — Folder channel saves under `data/exports/<billing-period>/` or chosen place and opens it · statement · accept: RF-89, POR-04 · FolderChannelTest · after: SOL-03
-- [ ] RF-90 — Print: open PDF in the system viewer · shell · accept: RF-90 · statements.spec.ts · after: RF-84
-- [ ] I18N-08 — Statement, PDF, PNG, e-mail and WhatsApp text in the member's preferred language regardless of UI language · statement · accept: I18N-08 · SendStatementUseCaseTest · after: I18N-10, RF-80
-- [ ] I18N-09 — Override language for a single delivery · statement · accept: I18N-09 · SendStatementUseCaseTest · after: I18N-08
-- [ ] RF-91 — Batch send for selected members with per-member status · statement · accept: RF-91 · SendStatementUseCaseTest · after: RF-86, RF-87
-- [ ] RF-92 — Delivery history (member, period, channel, date, status, template version); resend · statement · accept: RF-92 · StatementDeliveryControllerIT · after: RF-91, TPL-06
-- [ ] I18N-12 — History stores the language used with the template version · statement · accept: I18N-12 · StatementDeliveryControllerIT · after: RF-92
-- [ ] RF-93 — History marks statement outdated when the period changes after sending · statement · accept: RF-93 · StatementStalenessTest · after: RF-92
-- [ ] RF-94 — WhatsApp Business API out of v1 (documented, no implementation) · docs · accept: RF-94 noted in docs · — · after: RF-87
-- [ ] RF-79b — Exporting a member statement with pending items warns and lists them; validate first or send anyway · statement · accept: RF-79b · SendStatementUseCaseTest · after: RF-91, RF-74
-- [ ] IMP-37 — `SendStatementUseCase` orchestration (build → render → generate → send → record) and statement resource links `pdf`, `png`, `xlsx`, `send-email`, `send-whatsapp` (only with phone) (origin §16, §12) · statement · accept: links per state · SendStatementUseCaseTest, StatementControllerIT · after: RF-91
-- [ ] IMP-38 — Flyway migrations for template, template_version, statement_delivery, smtp settings (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-35
+- [x] RF-81 — Choose period and one or more members; one statement per member · statement · accept: RF-81 · MemberStatementBuilderTest · after: RF-80, RF-25 · done (c5b614f)
+- [x] RF-82 — Statement content: header, summary, entries by card with split %, fixed/variable expenses, committed installments, total, PIX data, free note · statement · accept: RF-82 · MemberStatementBuilderTest · after: RF-81, RF-17 · done (c5b614f)
+- [x] RF-83 — Options: show/hide categories, alias vs original, include future installments · statement · accept: RF-83 · MemberStatementBuilderTest · after: RF-82 · done (c5b614f, d8a28dc)
+- [x] TPL-01 — One Thymeleaf template renders e-mail body, PDF (OpenHTMLtoPDF) and PNG (PDF page via PDFBox) · statement · accept: TPL-01 · TemplateRendererTest · after: RF-82 · done (c5b614f)
+- [x] I18N-10 — Fixed labels from `MessageSource` with the member's `Locale`; numbers/dates per I18N-05 · statement · accept: I18N-10 · TemplateRendererTest (pt-BR, en-US snapshots) · after: TPL-01, I18N-06 · done (c5b614f)
+- [x] POR-05 — Template fonts embedded in `data/templates/` for identical PDFs on both OSes · statement · accept: POR-05 · PdfGeneratorTest · after: TPL-01 · done (c5b614f)
+- [x] RF-84 — Formats: PDF (default), PNG, XLSX/CSV · statement · accept: RF-84 · PdfGeneratorTest, ImageGeneratorTest, StatementXlsxTest · after: TPL-01 · done (c5b614f, d8a28dc)
+- [x] RF-85 — Statement preview before sending or downloading · statement/frontend · accept: RF-85 · StatementControllerIT · after: RF-84 · done (c5b614f, d8a28dc)
+- [x] TPL-02 — No-code customization: logo, colors, font from a list, header/footer, default message, blocks and order · statement · accept: TPL-02 · TemplateSettingsTest · after: TPL-01 · done (c5b614f, d8a28dc)
+- [x] TPL-03 — Editor with live preview (real or sample data) and language selector · frontend · accept: TPL-03 · TemplateEditor.test.tsx · after: TPL-02 · done (c5b614f, d8a28dc)
+- [x] TPL-04 — Several templates, one default; per-member template · statement · accept: TPL-04 · TemplateServiceTest · after: TPL-02 · done (c5b614f, d8a28dc)
+- [x] TPL-05 — Text messages with English variables (`{{member.name}}`, `{{billingPeriod}}`, `{{total}}`, `{{dueDate}}`, `{{pixKey}}`) per language · statement · accept: TPL-05 · MessageTemplateTest · after: TPL-04 · done (c5b614f)
+- [x] TPL-06 — Every change creates a `TemplateVersion`; deliveries record version and language · statement · accept: TPL-06 · TemplateServiceTest · after: TPL-04 · done (c5b614f)
+- [x] TPL-07 — Optional advanced HTML/CSS mode with sanitization and whitelisted variables · statement · accept: TPL-07 · TemplateSanitizerTest · after: TPL-06 · done (c5b614f)
+- [x] I18N-11 — Customizable texts per language; fallback to the other with a preview warning · statement · accept: I18N-11 · TemplateRendererTest · after: TPL-05 · done (c5b614f, d8a28dc)
+- [x] IMP-36 — Template resource links: `preview`, `versions`, `make-default` if not default (origin §12 resource table) · api · accept: links per state · TemplateControllerIT · after: TPL-06 · done (c5b614f)
+- [x] SOL-03 — `DeliveryChannel.deliver()` returns `DeliveryResult` SENT / AWAITING_USER / FAILED; user can mark as sent · statement · accept: SOL-03 · DeliveryChannelContractTest · after: SOL-02 · done (c5b614f)
+- [x] RF-86 — E-mail via SMTP from settings, subject/body from template, PDF attached · statement · accept: RF-86 · EmailChannelIT (GreenMail) · after: SOL-03, TPL-05 · done (c5b614f, d8a28dc; Q9 adopted)
+- [x] RF-87 — WhatsApp: open `wa.me/<phone>` with summary; file saved and copied to clipboard · statement · accept: RF-87 · WhatsAppLinkChannelTest · after: SOL-03 · done (c5b614f, d8a28dc)
+- [x] POR-07 — WhatsApp Desktop on Windows if installed, else browser; WhatsApp Web on Linux · shell · accept: POR-07 · manual check + WhatsAppLinkChannelTest · after: RF-87 · done (d8a28dc; desktop check with UI-10)
+- [x] RF-88 — Clipboard channel copies the statement PNG · statement/shell · accept: RF-88 · ClipboardChannelTest · after: SOL-03 · done (c5b614f, d8a28dc)
+- [x] RF-89 — Folder channel saves under `data/exports/<billing-period>/` or chosen place and opens it · statement · accept: RF-89, POR-04 · FolderChannelTest · after: SOL-03 · done (c5b614f, d8a28dc)
+- [x] RF-90 — Print: open PDF in the system viewer · shell · accept: RF-90 · statements.spec.ts · after: RF-84 · done (d8a28dc)
+- [x] I18N-08 — Statement, PDF, PNG, e-mail and WhatsApp text in the member's preferred language regardless of UI language · statement · accept: I18N-08 · SendStatementUseCaseTest · after: I18N-10, RF-80 · done (c5b614f)
+- [x] I18N-09 — Override language for a single delivery · statement · accept: I18N-09 · SendStatementUseCaseTest · after: I18N-08 · done (c5b614f, d8a28dc)
+- [x] RF-91 — Batch send for selected members with per-member status · statement · accept: RF-91 · SendStatementUseCaseTest · after: RF-86, RF-87 · done (c5b614f, d8a28dc)
+- [x] RF-92 — Delivery history (member, period, channel, date, status, template version); resend · statement · accept: RF-92 · StatementDeliveryControllerIT · after: RF-91, TPL-06 · done (c5b614f, d8a28dc)
+- [x] I18N-12 — History stores the language used with the template version · statement · accept: I18N-12 · StatementDeliveryControllerIT · after: RF-92 · done (c5b614f)
+- [x] RF-93 — History marks statement outdated when the period changes after sending · statement · accept: RF-93 · StatementStalenessTest · after: RF-92 · done (c5b614f)
+- [x] RF-94 — WhatsApp Business API out of v1 (documented, no implementation) · docs · accept: RF-94 noted in docs · — · after: RF-87 · done (documented in Decisions)
+- [x] RF-79b — Exporting a member statement with pending items warns and lists them; validate first or send anyway · statement · accept: RF-79b · SendStatementUseCaseTest · after: RF-91, RF-74 · done (c5b614f, d8a28dc)
+- [x] IMP-37 — `SendStatementUseCase` orchestration (build → render → generate → send → record) and statement resource links `pdf`, `png`, `xlsx`, `send-email`, `send-whatsapp` (only with phone) (origin §16, §12) · statement · accept: links per state · SendStatementUseCaseTest, StatementControllerIT · after: RF-91 · done (c5b614f)
+- [x] IMP-38 — Flyway migrations for template, template_version, statement_delivery, smtp settings (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-35 · done (c5b614f; V9 + app_setting)
 - [ ] XLS-13 — Spreadsheet look from a model `.xlsx` in `data/templates/`; app copies it and fills data with Apache POI · statement · accept: XLS-13 · WorkbookTemplateTest · after: IMP-21 · (blocked: Q10)
 - [ ] XLS-14 — User can replace the model if named sheets/tables are kept; validated with a list of what is missing · statement · accept: XLS-14 · WorkbookTemplateTest · after: XLS-13
 - [ ] XLS-16 — `MonthlyWorkbookExporter`, `WorkbookTemplate`, one `SheetWriter` per sheet, `FormulaDialect` (`Excel365Dialect`, `CompatibleDialect`) · statement · accept: XLS-16 · MonthlyWorkbookExporterTest · after: XLS-13
@@ -388,6 +388,13 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27: RF-33 link = same normalized description (alias, original or RN-16 store prefix) and amount at most 10% apart, among non-UNCONFIRMED entries of the same period; a linked expense is DONE on the entry date. Several candidates (RN-30) are listed at `/api/occurrences/pending-links` and shown in the review queue screen.
 - 2026-10-27: `PaymentMethod` lives in `shared.domain` (used by recurrence and expense). Variable expenses (RF-34) refuse `CARD`: card purchases come from the bill (manual card entries use RF-44), so RF-11 never counts them twice. Their billing period is the month of the date unless given.
 - 2026-10-27: Overview (SOL-01): `PeriodData` turns incomes, fixed (not card), variable and card entry shares into `ExpenseLine`s with member and payer; small calculators build categories, members, committed installments and settlements. Card bills are addressed as `/api/cards/{id}/bills/{period}`; without a stored bill the closing and due dates are forecast from the card cycle (closing = last closing day before the due date). Review-pending entries (RF-79a) count in totals and are reported separately; UNCONFIRMED ones are left out (Q6).
+- 2026-10-27: Statements (RF-82): card lines are the member share of CONFIRMED and PROJECTED entries (Q6), with the split % when the entry is shared; future installments list every later period with a projected installment of the member. The PIX key shown is the card payer's (default member) for a third party, else the member's own. The NOTE block shows the free note of the export or, without one, the template's default message; the footer closes every statement.
+- 2026-10-27: TPL-07 advanced mode = extra CSS plus an HTML header that replaces the standard one; jsoup keeps structure/formatting tags only (no scripts, links, images or event handlers), CSS with imports, external `url()`, expressions or tag breaks is dropped, and only the TPL-05 variables are replaced.
+- 2026-10-27: Delivery channels (SOL-03): e-mail is SENT/FAILED; WhatsApp saves the PNG and returns a `wa.me` link the interface opens with the opener plugin (WhatsApp Desktop takes over the link on Windows when installed, WhatsApp Web otherwise, POR-07) after copying the image; clipboard copies the PNG; folder saves the PDF. Print (RF-90) saves through the folder channel and opens the PDF in the system viewer. The user marks WhatsApp/clipboard deliveries as sent.
+- 2026-10-27: RF-93 outdated = the fingerprint (SHA-256 of lines and totals, without the issue date) of the statement rebuilt with the same options differs from the one stored at delivery.
+- 2026-10-27: RF-94: sending through the WhatsApp Business API is out of v1 (needs a Meta Business account and costs per message); only the `wa.me` link exists.
+- 2026-10-27: Statement fonts are Noto Sans, Noto Serif and Liberation Sans (SIL OFL 1.1, licences bundled), copied to `data/templates/fonts/` on first use (POR-05). OpenHTMLtoPDF fork `io.github.openhtmltopdf` 1.1.97 runs on PDFBox 3.0.8.
+- 2026-10-27: File downloads (statement PDF/PNG/XLSX/CSV/HTML, workbook) are left out of the generated Orval client (input transformer) and fetched through their HAL links; CORS exposes `Content-Disposition` for the file name.
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log
