@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 32/33 · M2 1/27 · M3 0/47 · M4 0/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 88/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 0/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 162/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -76,7 +76,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] TST-05 — Shared test builders (`CardBuilder`, `BillEntryBuilder`, `MemberBuilder`, `PurchaseBuilder`) · test · accept: TST-05 · used by all domain tests · after: RNF-01, IMP-09 · done (b8733f5; more builders per module as they come)
 - [x] SOL-04 — Small ports per use case in `application` (`BillEntryReader`, `BillEntryWriter`, …) · backend · accept: each use case depends only on the ports it uses (SOL-04) · LayerDependencyTest · after: SOL-05 · done (b8733f5)
 - [x] IMP-10 — `AppSetting` key/value store in DB plus a settings resource (Q16; origin RF-16, RF-79d, XLS-06, XLS-09, I18N-03) · shared · accept: typed get/set with defaults · AppSettingServiceTest, SettingsControllerIT · after: IMP-03 · done (cbd523d)
-- [ ] RNF-05 — Audit: JPA `@EntityListeners` writes `AuditEntry` (before, after, timestamp) on change of a confirmed entry · shared · accept: RNF-05 · AuditListenerIT · after: IMP-03 · (proposed entity: Q16)
+- [x] RNF-05 — Audit: JPA `@EntityListeners` writes `AuditEntry` (before, after, timestamp) on change of a confirmed entry · shared · accept: RNF-05 · AuditListenerIT · after: IMP-03 · (proposed entity: Q16) · done (d00a988)
 - [x] API-08 — Every resource has `self` + related links (`card`, `category`, `purchase`, `bill`) · api · accept: API-08 · contract tests · after: API-07 · done (b8733f5)
 - [x] API-11 — One `RepresentationModelAssembler` per resource; controllers only call use case + assembler · api · accept: API-11 · ArchUnit rule · after: API-08 · done (b8733f5)
 - [x] API-09 — State-dependent action links decided only in the backend · api · accept: API-09 · per-state link tests (API-13) · after: API-11 · done (b8733f5)
@@ -108,82 +108,82 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 ## M2 — Itaú parsers with masked fixtures
 
 - [x] IMP-21 — Masked fixtures in `backend/src/test/resources/fixtures/itau` (PDF closed 2026-10, XLSX open 2026-11, spreadsheet model) (origin AGT-02, §8 note, RF-67) · test · accept: no real name/CPF/address/branch/account; structure identical · scripted PII scan + text/coordinate diff · after: — · done 2026-10-26 (see fixtures README; not committed yet)
-- [ ] RNF-08 — `BillParser` interface returning `List<RawBillLine>` + bill header (period, due, closing, totals); one class per format · imports · accept: RNF-08 · BillParserContractTest · after: IMP-02
-- [ ] SOL-02 — Strategy registry: Spring injects `Map<BillFormat, BillParser>` (and later `Map<Channel, DeliveryChannel>`) · imports · accept: a new format is a new `@Component` (SOL-02) · ParserRegistryTest · after: RNF-08
-- [ ] RF-61 — Accept Itaú PDF and XLSX; detect by extension; validate structure before processing · imports · accept: wrong structure → 400 with reason (RF-61) · BillFormatDetectorTest · after: SOL-02
-- [ ] RN-15 — `DescriptionNormalizer`: remove accents, upper case, letters and digits only · entry · accept: "Posto Agronomiaporto Alegrebra" → `POSTOAGRONOMIAPORTOALEGREBRA` (RN-15) · DescriptionNormalizerTest · after: IMP-02
-- [ ] RF-65 — Extract installment, remove it from description, normalize · entry · accept: RF-65 · DescriptionNormalizerTest · after: RN-15
-- [ ] RF-63 — `ItauXlsxParser`: first sheet; period from "Fatura Aberta - <mês>/<ano>", due below "Vencimento"; header by "Data" followed by "Lançamento" · imports · accept: RF-63 on fixture · ItauXlsxParserTest · after: RF-61
-- [ ] RF-63a — Columns read by header name; unnamed columns ignored · imports · accept: RF-63a · ItauXlsxParserTest · after: RF-63
-- [ ] RF-63b — Read until first empty row; ignore Subtotal, "Importante saber", legal text; total computed, never read · imports · accept: RF-63b · ItauXlsxParserTest · after: RF-63a
-- [ ] RF-63c — "Parcela N de M" → `N/M`; empty → single · imports · accept: RF-63c · ItauXlsxParserTest · after: RF-63a
-- [ ] RF-63d — Negative "Pagamento…" lines are bill payments, not entries; other negatives are credits · imports · accept: RF-63d · ItauXlsxParserTest · after: RF-63a
-- [ ] RF-63e — "Iof Internacional - <desc>" becomes an IOF entry linked to the purchase with same description and date · imports · accept: RF-63e · ItauXlsxParserTest · after: RF-63a · (blocked: Q5 for the link field)
-- [ ] RF-64 — `ItauPdfParser` page 1: card final, due, issue, next closing forecast, "Total desta fatura" · imports · accept: RF-64 on fixture (due 09/10/2026, total 6.514,13) · ItauPdfParserTest · after: RF-61
-- [ ] RF-64a — Two-column pages extracted per area with `PDFTextStripperByArea` · imports · accept: no column mixing (RF-64a) · ItauPdfParserTest · after: RF-64
-- [ ] RF-64b — Two-line entries; Itaú category kept as category suggestion · imports · accept: RF-64b · ItauPdfParserTest · after: RF-64a
-- [ ] RF-64c — Read compras e saques (per holder), internacionais, produtos e serviços; ignore payments, charges, limits, boleto, legal, "continua..." · imports · accept: RF-64c · ItauPdfParserTest · after: RF-64b
-- [ ] RF-64d — International: BRL value from first line, USD + rate as note, "Repasse de IOF" as bill IOF entry · imports · accept: RF-64d · ItauPdfParserTest · after: RF-64c · (related: Q5)
-- [ ] RF-64e — PIX installment `Principal (R$ x) + Juros (R$ y)` stored in entry note · imports · accept: RF-64e · ItauPdfParserTest · after: RF-64c
-- [ ] RF-64f — Year inference for dd/mm (installment and single purchase rules) · imports · accept: `14/10 … 12/12` on Oct/2026 bill → 14/10/2025 (RF-64f) · PurchaseYearResolverTest · after: RF-64b
-- [ ] RF-64g — "Compras parceladas - próximas faturas" parsed as projection check data, no entries · imports · accept: RF-64g · ItauPdfParserTest · after: RF-64c
-- [ ] RF-64h — Section sums must equal "Total dos lançamentos atuais"; mismatch flagged as blocking · imports · accept: RF-64h · ItauPdfParserTest · after: RF-64c
-- [ ] RF-66 — Map holder (PDF section title / XLSX Nome) to default member, final to registered card; unknown final flagged for the review queue · imports · accept: RF-66 · HolderCardMapperTest · after: RF-63a, RF-64c, RF-05 · (blocked: Q3)
-- [ ] RF-67 — Refunds/credits negative; CPF, address, branch, account, barcode never read or stored · imports · accept: RF-67 · ItauPdfParserTest, ItauXlsxParserTest (assert no PII in output) · after: RF-63d, RF-64c
-- [ ] RNF-04 — Imported file not kept, only hash and batch summary; never full card numbers · imports · accept: RNF-04 · ImportStorageIT · after: RF-61
-- [ ] RNF-03 — Bill up to 300 lines imported in < 5 s · imports · accept: RNF-03 · ImportPerformanceTest · after: RF-63b, RF-64h
-- [ ] IMP-22 — Flyway migrations for card_bill, purchase, bill_entry, entry_split, import_batch, import_preview_line (origin AGT-02, Q16) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-19
-- [ ] IMP-23 — Parser tests cover each layout variation found later (new fixture per variation, masked the same way) (origin §15 Parser row) · test · accept: fixture README updated · parser tests · after: RF-63, RF-64 · ongoing
+- [x] RNF-08 — `BillParser` interface returning `List<RawBillLine>` + bill header (period, due, closing, totals); one class per format · imports · accept: RNF-08 · BillParserContractTest · after: IMP-02 · done (dc53a3f)
+- [x] SOL-02 — Strategy registry: Spring injects `Map<BillFormat, BillParser>` (and later `Map<Channel, DeliveryChannel>`) · imports · accept: a new format is a new `@Component` (SOL-02) · ParserRegistryTest · after: RNF-08 · done (dc53a3f)
+- [x] RF-61 — Accept Itaú PDF and XLSX; detect by extension; validate structure before processing · imports · accept: wrong structure → 400 with reason (RF-61) · BillFormatDetectorTest · after: SOL-02 · done (dc53a3f)
+- [x] RN-15 — `DescriptionNormalizer`: remove accents, upper case, letters and digits only · entry · accept: "Posto Agronomiaporto Alegrebra" → `POSTOAGRONOMIAPORTOALEGREBRA` (RN-15) · DescriptionNormalizerTest · after: IMP-02 · done (dc53a3f)
+- [x] RF-65 — Extract installment, remove it from description, normalize · entry · accept: RF-65 · DescriptionNormalizerTest · after: RN-15 · done (dc53a3f)
+- [x] RF-63 — `ItauXlsxParser`: first sheet; period from "Fatura Aberta - <mês>/<ano>", due below "Vencimento"; header by "Data" followed by "Lançamento" · imports · accept: RF-63 on fixture · ItauXlsxParserTest · after: RF-61 · done (dc53a3f)
+- [x] RF-63a — Columns read by header name; unnamed columns ignored · imports · accept: RF-63a · ItauXlsxParserTest · after: RF-63 · done (dc53a3f)
+- [x] RF-63b — Read until first empty row; ignore Subtotal, "Importante saber", legal text; total computed, never read · imports · accept: RF-63b · ItauXlsxParserTest · after: RF-63a · done (dc53a3f)
+- [x] RF-63c — "Parcela N de M" → `N/M`; empty → single · imports · accept: RF-63c · ItauXlsxParserTest · after: RF-63a · done (dc53a3f)
+- [x] RF-63d — Negative "Pagamento…" lines are bill payments, not entries; other negatives are credits · imports · accept: RF-63d · ItauXlsxParserTest · after: RF-63a · done (dc53a3f)
+- [x] RF-63e — "Iof Internacional - <desc>" becomes an IOF entry linked to the purchase with same description and date · imports · accept: RF-63e · ItauXlsxParserTest · after: RF-63a · done (dc53a3f, d00a988)
+- [x] RF-64 — `ItauPdfParser` page 1: card final, due, issue, next closing forecast, "Total desta fatura" · imports · accept: RF-64 on fixture (due 09/10/2026, total 6.514,13) · ItauPdfParserTest · after: RF-61 · done (dc53a3f)
+- [x] RF-64a — Two-column pages extracted per area with `PDFTextStripperByArea` · imports · accept: no column mixing (RF-64a) · ItauPdfParserTest · after: RF-64 · done (dc53a3f)
+- [x] RF-64b — Two-line entries; Itaú category kept as category suggestion · imports · accept: RF-64b · ItauPdfParserTest · after: RF-64a · done (dc53a3f, 5aa24ce)
+- [x] RF-64c — Read compras e saques (per holder), internacionais, produtos e serviços; ignore payments, charges, limits, boleto, legal, "continua..." · imports · accept: RF-64c · ItauPdfParserTest · after: RF-64b · done (dc53a3f)
+- [x] RF-64d — International: BRL value from first line, USD + rate as note, "Repasse de IOF" as bill IOF entry · imports · accept: RF-64d · ItauPdfParserTest · after: RF-64c · (related: Q5) · done (dc53a3f)
+- [x] RF-64e — PIX installment `Principal (R$ x) + Juros (R$ y)` stored in entry note · imports · accept: RF-64e · ItauPdfParserTest · after: RF-64c · done (dc53a3f)
+- [x] RF-64f — Year inference for dd/mm (installment and single purchase rules) · imports · accept: `14/10 … 12/12` on Oct/2026 bill → 14/10/2025 (RF-64f) · PurchaseYearResolverTest · after: RF-64b · done (dc53a3f)
+- [x] RF-64g — "Compras parceladas - próximas faturas" parsed as projection check data, no entries · imports · accept: RF-64g · ItauPdfParserTest · after: RF-64c · done (dc53a3f)
+- [x] RF-64h — Section sums must equal "Total dos lançamentos atuais"; mismatch flagged as blocking · imports · accept: RF-64h · ItauPdfParserTest · after: RF-64c · done (dc53a3f)
+- [x] RF-66 — Map holder (PDF section title / XLSX Nome) to default member, final to registered card; unknown final flagged for the review queue · imports · accept: RF-66 · HolderCardMapperTest · after: RF-63a, RF-64c, RF-05 · done (d00a988)
+- [x] RF-67 — Refunds/credits negative; CPF, address, branch, account, barcode never read or stored · imports · accept: RF-67 · ItauPdfParserTest, ItauXlsxParserTest (assert no PII in output) · after: RF-63d, RF-64c · done (dc53a3f)
+- [x] RNF-04 — Imported file not kept, only hash and batch summary; never full card numbers · imports · accept: RNF-04 · ImportStorageIT · after: RF-61 · done (d00a988)
+- [x] RNF-03 — Bill up to 300 lines imported in < 5 s · imports · accept: RNF-03 · ImportPerformanceTest · after: RF-63b, RF-64h · done (dc53a3f)
+- [x] IMP-22 — Flyway migrations for card_bill, purchase, bill_entry, entry_split, import_batch, import_preview_line (origin AGT-02, Q16) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-19 · done (d00a988)
+- [x] IMP-23 — Parser tests cover each layout variation found later (new fixture per variation, masked the same way) (origin §15 Parser row) · test · accept: fixture README updated · parser tests · after: RF-63, RF-64 · done (dc53a3f; new layouts add fixtures)
 
 ## M3 — Deduplication, installments, refunds and review queue
 
-- [ ] RN-01 — Purchase up to closing day → bill closing that month; after → next bill · entry · accept: closing-day, year-end, February cases (RN-01) · BillingPeriodPolicyTest · after: IMP-09, RF-04
-- [ ] RN-02 — Billing period = due month/year · entry · accept: example 05/10/2026 → 11/2026 (RN-02) · BillingPeriodPolicyTest · after: RN-01
-- [ ] RN-03 — On import, selected period wins; RN-01 used for manual purchases and projections · entry · accept: RN-03 · BillingPeriodPolicyTest · after: RN-02
-- [ ] RN-22 — Use `CardBill.closingDate` from files ("Previsão próx. Fechamento"), fall back to card typical day · entry · accept: RN-22 · BillingPeriodPolicyTest · after: RN-01, RF-64
-- [ ] RN-16 — Same store when one normalized description is a prefix of the other, ≥ 8 chars · entry · accept: `BMBEQUATO` ⊂ `BMBEQUATORIALPORTOALEGREBRA` (RN-16) · StoreMatcherTest · after: RN-15
-- [ ] RN-17 — Purchase date tolerance ±1 day between formats · entry · accept: RN-17 · PurchaseMatcherTest · after: RN-16
-- [ ] RN-18 — Installment amount tolerance ±R$ 0,02; last installment absorbs rounding · entry · accept: RN-18 · PurchaseMatcherTest · after: RNF-01
-- [ ] RN-10 — Installment key: card + purchase date + normalized description + total + installment number · entry · accept: RN-10 · EntryKeyFactoryTest · after: RN-15 · (blocked: Q3, Q4)
-- [ ] RN-11 — Purchase key = installment key without installment number · entry · accept: RN-11 · EntryKeyFactoryTest · after: RN-10
-- [ ] RN-12 — Identical same-day lines distinguished by occurrence sequence in the file; preview flags them · entry · accept: RN-12 · EntryKeyFactoryTest · after: RN-10
-- [ ] RN-25 — Two equal lines on the same day are distinct purchases (fixture: two R$ 12,00 on 03/09) · entry · accept: RN-25 · EntryKeyFactoryTest (fixture-based) · after: RN-12
-- [ ] RN-19 — Purchase matching: card + date ±1 + installment count + amount ±0,02 + prefix description; replaces exact description of RN-10 · entry · accept: the three SPEC example pairs match (RN-19) · PurchaseMatcherTest (PDF fixture × XLSX fixture) · after: RN-16, RN-17, RN-18, RN-11 · (blocked: Q4)
-- [ ] RN-04 — Registering `n/N` creates `n+1…N` as PROJECTED, one per month, same amount · entry · accept: RN-04 · InstallmentProjectorTest · after: RN-01
-- [ ] RN-05 — First imported `03/10` does not create 01–02; recorded as "before the system" · entry · accept: RN-05 · InstallmentProjectorTest · after: RN-04
-- [ ] RN-06 — Next bill's `n+1/N` reconciles the projected one → CONFIRMED; adjusts value/date; cents accepted · entry · accept: RN-06 · InstallmentProjectorTest, ConfirmImportIT · after: RN-04, RN-19
-- [ ] RN-07 — Projected installment missing from imported bill → UNCONFIRMED for review · entry · accept: RN-07 · InstallmentProjectorTest · after: RN-06
-- [ ] RN-08 — Alias, category and member of one installment apply to all installments of the purchase · entry · accept: RN-08 · InstallmentProjectorTest · after: RN-04
-- [ ] RN-09 — Subscriptions `*` projected over the displayed horizon (e.g. 12 months), renewed monthly, until absent from a closed bill or removed · entry · accept: RN-09 · InstallmentProjectorTest · after: RN-04
-- [ ] RN-13 — `ImportClassifier`: CONFIRMED key → DUPLICATE; PROJECTED → MATCHED; same card/description/installment with diff → DIVERGENT; else NEW · imports · accept: RN-13 order · ImportClassifierTest · after: RN-19, RN-04
-- [ ] RN-14 — Manually edited entries (alias, category, member) never overwritten by reimport; only value/date with warning · imports · accept: RN-14 · ImportClassifierTest, ConfirmImportIT · after: RN-13
-- [ ] RN-20 — Projected installments checked against PDF "próximas faturas"; bank value wins · imports · accept: RN-20 · InstallmentProjectorTest (PDF fixture) · after: RF-64g, RN-04
-- [ ] RF-63f — Open bill creates a **partial** batch; reimporting the open bill updates it · imports · accept: RF-63f · ConfirmImportIT · after: RF-72 · (blocked: Q12)
-- [ ] RN-21 — Open (XLSX) then closed (PDF): matching partial entries → CONFIRMED; missing → next bill if after closing, else UNCONFIRMED · imports · accept: RN-21 with both fixtures · OpenToClosedReconciliationIT · after: RF-63f, RN-19, RN-22 · (blocked: Q5, Q12)
-- [ ] RF-60 — Import inputs: card, month, year (target period), prefilled with current period · imports · accept: RF-60 · ImportControllerIT · after: RF-61
-- [ ] RF-62 — Warn and ask for confirmation when the file's due date or card differs from the selection · imports · accept: RF-62 · PreviewImportUseCaseTest · after: RF-60
-- [ ] RF-68 — `PreviewImportUseCase`: each line with status New / Duplicate / Matched / Divergent, nothing written · imports · accept: RF-68 · PreviewImportUseCaseTest · after: RN-13
-- [ ] RF-69 — Defaults: New and Matched imported, Duplicate ignored, Divergent requires a decision · imports · accept: RF-69 · PreviewImportUseCaseTest · after: RF-68
-- [ ] RF-71 — Compare imported total with file total and show difference; RF-64h mismatch blocks confirmation · imports · accept: RF-71 · PreviewImportUseCaseTest · after: RF-68, RF-64h
-- [ ] RF-72 — `ConfirmImportUseCase` records batch (file, date, card, period, counts) and projects installments; `UndoImportBatchUseCase` reverts the whole batch · imports · accept: RF-72 · ConfirmImportIT, UndoImportBatchUseCaseTest · after: RF-69 · (blocked: Q7)
-- [ ] RF-73 — Idempotence by file hash and per-line key · imports · accept: reimport creates nothing (RF-73) · ConfirmImportIT · after: RF-72
-- [ ] IMP-24 — Import HATEOAS links: `confirm`/`cancel` in preview, `undo` if confirmed and not undone; `ImportBatch.status` (origin §12 resource table, Q16) · api · accept: links per state · ImportControllerIT · after: RF-72
-- [ ] RF-26 — `SplitPolicy` + `EntrySplit`: 100% to one member by default, optional split by percentage or amount without losing cents · entry · accept: RF-26 · SplitPolicyTest · after: RNF-01, RF-01
-- [ ] RN-26 — Negative line matching an earlier purchase (same store, value ≤) becomes a refund linked to it; original marked refunded; inherits member and category · entry · accept: RN-26 · RefundMatcherTest · after: RN-16
-- [ ] RN-27 — Partial refund marks original as partially refunded, shows remaining balance · entry · accept: RN-27 · RefundMatcherTest · after: RN-26
-- [ ] RN-28 — Negative without matching purchase is a standalone credit; undecided → review queue · entry · accept: RN-28 · RefundMatcherTest · after: RN-26, RF-74
-- [ ] RN-29 — Refunded installment purchase cancels remaining projected installments · entry · accept: RN-29 · InstallmentProjectorTest · after: RN-26, RN-04
-- [ ] RF-74 — NEW purchases enter with `reviewStatus = PENDING_REVIEW`; MATCHED of reviewed purchases inherit and stay out of the queue · entry · accept: RF-74 · ConfirmImportIT · after: RF-72
-- [ ] RF-76 — Editable per item: member or split, category, note (alias part in M4); validate needs member (or 100% split) and category when member is MAIN · entry · accept: RF-76 · ValidateEntriesUseCaseTest · after: RF-74, RF-26 · (related: Q8)
-- [ ] RF-77 — Batch actions: apply member/category/alias to selected; "validate selected" · entry · accept: RF-77 · ValidateEntriesUseCaseTest · after: RF-76
-- [ ] RF-78 — Keyboard flow: Enter validates and moves on, Tab through fields, Esc skips · frontend · accept: RF-78 · review-queue.spec.ts · after: IMP-25
-- [ ] RF-79 — Filters by card, period, batch; pending counter in the sidebar on every tab · entry/frontend · accept: RF-79 · ReviewQueueControllerIT, review-queue.spec.ts · after: RF-74
-- [ ] RF-79a — Pending entries count in totals; overview shows their count and sum; screens highlight them · summary · accept: RF-79a · MonthlySummaryServiceTest · after: RF-74 (UI part with RF-10)
-- [ ] RF-79c — Manual entry born REVIEWED; editing a reviewed item keeps it reviewed; undoing a batch removes its pending items · entry · accept: RF-79c · ValidateEntriesUseCaseTest, UndoImportBatchUseCaseTest · after: RF-72, RF-74
-- [ ] IMP-25 — Review queue screen + `/api/review-queue` with `validate-selected` and per-item `validate` links; `ReviewStatus` enum; `ValidateEntriesUseCase` (origin §8 code note, §12 resource table) · entry/frontend · accept: links per state · ValidateEntriesUseCaseTest, ReviewQueueControllerIT · after: RF-76 · (blocked: Q15)
-- [ ] RN-23 — Suggest `*` when same store, no installment, appears in 2 consecutive periods with similar value; user confirms · entry · accept: RN-23 · SubscriptionSuggesterTest · after: RN-16, IMP-25
-- [ ] UI-06 — Import tab: drag & drop or native dialog; preview expands only Divergent lines · frontend · accept: UI-06 · ImportPage.test.tsx, import.spec.ts · after: RF-68, POR-06
-- [ ] IMP-26 — Audit wiring for confirmed `BillEntry` changes (origin RNF-05) · entry · accept: before/after recorded · AuditListenerIT · after: RNF-05, RF-72
+- [x] RN-01 — Purchase up to closing day → bill closing that month; after → next bill · entry · accept: closing-day, year-end, February cases (RN-01) · BillingPeriodPolicyTest · after: IMP-09, RF-04 · done (d00a988)
+- [x] RN-02 — Billing period = due month/year · entry · accept: example 05/10/2026 → 11/2026 (RN-02) · BillingPeriodPolicyTest · after: RN-01 · done (d00a988)
+- [x] RN-03 — On import, selected period wins; RN-01 used for manual purchases and projections · entry · accept: RN-03 · BillingPeriodPolicyTest · after: RN-02 · done (d00a988)
+- [x] RN-22 — Use `CardBill.closingDate` from files ("Previsão próx. Fechamento"), fall back to card typical day · entry · accept: RN-22 · BillingPeriodPolicyTest · after: RN-01, RF-64 · done (d00a988)
+- [x] RN-16 — Same store when one normalized description is a prefix of the other, ≥ 8 chars · entry · accept: `BMBEQUATO` ⊂ `BMBEQUATORIALPORTOALEGREBRA` (RN-16) · StoreMatcherTest · after: RN-15 · done (dc53a3f; see Q18)
+- [x] RN-17 — Purchase date tolerance ±1 day between formats · entry · accept: RN-17 · PurchaseMatcherTest · after: RN-16 · done (d00a988)
+- [x] RN-18 — Installment amount tolerance ±R$ 0,02; last installment absorbs rounding · entry · accept: RN-18 · PurchaseMatcherTest · after: RNF-01 · done (d00a988)
+- [x] RN-10 — Installment key: card + purchase date + normalized description + total + installment number · entry · accept: RN-10 · EntryKeyFactoryTest · after: RN-15 · done (d00a988; default Q3, Q4)
+- [x] RN-11 — Purchase key = installment key without installment number · entry · accept: RN-11 · EntryKeyFactoryTest · after: RN-10 · done (d00a988)
+- [x] RN-12 — Identical same-day lines distinguished by occurrence sequence in the file; preview flags them · entry · accept: RN-12 · EntryKeyFactoryTest · after: RN-10 · done (d00a988)
+- [x] RN-25 — Two equal lines on the same day are distinct purchases (fixture: two R$ 12,00 on 03/09) · entry · accept: RN-25 · EntryKeyFactoryTest (fixture-based) · after: RN-12 · done (d00a988)
+- [x] RN-19 — Purchase matching: card + date ±1 + installment count + amount ±0,02 + prefix description; replaces exact description of RN-10 · entry · accept: the three SPEC example pairs match (RN-19) · PurchaseMatcherTest (PDF fixture × XLSX fixture) · after: RN-16, RN-17, RN-18, RN-11 · done (d00a988)
+- [x] RN-04 — Registering `n/N` creates `n+1…N` as PROJECTED, one per month, same amount · entry · accept: RN-04 · InstallmentProjectorTest · after: RN-01 · done (d00a988)
+- [x] RN-05 — First imported `03/10` does not create 01–02; recorded as "before the system" · entry · accept: RN-05 · InstallmentProjectorTest · after: RN-04 · done (d00a988)
+- [x] RN-06 — Next bill's `n+1/N` reconciles the projected one → CONFIRMED; adjusts value/date; cents accepted · entry · accept: RN-06 · InstallmentProjectorTest, ConfirmImportIT · after: RN-04, RN-19 · done (d00a988)
+- [x] RN-07 — Projected installment missing from imported bill → UNCONFIRMED for review · entry · accept: RN-07 · InstallmentProjectorTest · after: RN-06 · done (d00a988)
+- [x] RN-08 — Alias, category and member of one installment apply to all installments of the purchase · entry · accept: RN-08 · InstallmentProjectorTest · after: RN-04 · done (d00a988)
+- [x] RN-09 — Subscriptions `*` projected over the displayed horizon (e.g. 12 months), renewed monthly, until absent from a closed bill or removed · entry · accept: RN-09 · InstallmentProjectorTest · after: RN-04 · done (d00a988)
+- [x] RN-13 — `ImportClassifier`: CONFIRMED key → DUPLICATE; PROJECTED → MATCHED; same card/description/installment with diff → DIVERGENT; else NEW · imports · accept: RN-13 order · ImportClassifierTest · after: RN-19, RN-04 · done (d00a988)
+- [x] RN-14 — Manually edited entries (alias, category, member) never overwritten by reimport; only value/date with warning · imports · accept: RN-14 · ImportClassifierTest, ConfirmImportIT · after: RN-13 · done (d00a988)
+- [x] RN-20 — Projected installments checked against PDF "próximas faturas"; bank value wins · imports · accept: RN-20 · InstallmentProjectorTest (PDF fixture) · after: RF-64g, RN-04 · done (d00a988)
+- [x] RF-63f — Open bill creates a **partial** batch; reimporting the open bill updates it · imports · accept: RF-63f · ConfirmImportIT · after: RF-72 · done (d00a988; default Q12)
+- [x] RN-21 — Open (XLSX) then closed (PDF): matching partial entries → CONFIRMED; missing → next bill if after closing, else UNCONFIRMED · imports · accept: RN-21 with both fixtures · OpenToClosedReconciliationIT · after: RF-63f, RN-19, RN-22 · done (d00a988, 5aa24ce)
+- [x] RF-60 — Import inputs: card, month, year (target period), prefilled with current period · imports · accept: RF-60 · ImportControllerIT · after: RF-61 · done (d00a988, 5aa24ce)
+- [x] RF-62 — Warn and ask for confirmation when the file's due date or card differs from the selection · imports · accept: RF-62 · PreviewImportUseCaseTest · after: RF-60 · done (d00a988, 5aa24ce)
+- [x] RF-68 — `PreviewImportUseCase`: each line with status New / Duplicate / Matched / Divergent, nothing written · imports · accept: RF-68 · PreviewImportUseCaseTest · after: RN-13 · done (d00a988)
+- [x] RF-69 — Defaults: New and Matched imported, Duplicate ignored, Divergent requires a decision · imports · accept: RF-69 · PreviewImportUseCaseTest · after: RF-68 · done (d00a988)
+- [x] RF-71 — Compare imported total with file total and show difference; RF-64h mismatch blocks confirmation · imports · accept: RF-71 · PreviewImportUseCaseTest · after: RF-68, RF-64h · done (d00a988, 5aa24ce)
+- [x] RF-72 — `ConfirmImportUseCase` records batch (file, date, card, period, counts) and projects installments; `UndoImportBatchUseCase` reverts the whole batch · imports · accept: RF-72 · ConfirmImportIT, UndoImportBatchUseCaseTest · after: RF-69 · done (d00a988; default Q7)
+- [x] RF-73 — Idempotence by file hash and per-line key · imports · accept: reimport creates nothing (RF-73) · ConfirmImportIT · after: RF-72 · done (d00a988)
+- [x] IMP-24 — Import HATEOAS links: `confirm`/`cancel` in preview, `undo` if confirmed and not undone; `ImportBatch.status` (origin §12 resource table, Q16) · api · accept: links per state · ImportControllerIT · after: RF-72 · done (d00a988)
+- [x] RF-26 — `SplitPolicy` + `EntrySplit`: 100% to one member by default, optional split by percentage or amount without losing cents · entry · accept: RF-26 · SplitPolicyTest · after: RNF-01, RF-01 · done (d00a988)
+- [x] RN-26 — Negative line matching an earlier purchase (same store, value ≤) becomes a refund linked to it; original marked refunded; inherits member and category · entry · accept: RN-26 · RefundMatcherTest · after: RN-16 · done (d00a988)
+- [x] RN-27 — Partial refund marks original as partially refunded, shows remaining balance · entry · accept: RN-27 · RefundMatcherTest · after: RN-26 · done (d00a988)
+- [x] RN-28 — Negative without matching purchase is a standalone credit; undecided → review queue · entry · accept: RN-28 · RefundMatcherTest · after: RN-26, RF-74 · done (d00a988)
+- [x] RN-29 — Refunded installment purchase cancels remaining projected installments · entry · accept: RN-29 · InstallmentProjectorTest · after: RN-26, RN-04 · done (d00a988)
+- [x] RF-74 — NEW purchases enter with `reviewStatus = PENDING_REVIEW`; MATCHED of reviewed purchases inherit and stay out of the queue · entry · accept: RF-74 · ConfirmImportIT · after: RF-72 · done (d00a988)
+- [x] RF-76 — Editable per item: member or split, category, note (alias part in M4); validate needs member (or 100% split) and category when member is MAIN · entry · accept: RF-76 · ValidateEntriesUseCaseTest · after: RF-74, RF-26 · (related: Q8) · done (d00a988, 5aa24ce)
+- [x] RF-77 — Batch actions: apply member/category/alias to selected; "validate selected" · entry · accept: RF-77 · ValidateEntriesUseCaseTest · after: RF-76 · done (d00a988, 5aa24ce)
+- [x] RF-78 — Keyboard flow: Enter validates and moves on, Tab through fields, Esc skips · frontend · accept: RF-78 · review-queue.spec.ts · after: IMP-25 · done (5aa24ce)
+- [x] RF-79 — Filters by card, period, batch; pending counter in the sidebar on every tab · entry/frontend · accept: RF-79 · ReviewQueueControllerIT, review-queue.spec.ts · after: RF-74 · done (d00a988, 5aa24ce)
+- [x] RF-79a — Pending entries count in totals; overview shows their count and sum; screens highlight them · summary · accept: RF-79a · MonthlySummaryServiceTest · after: RF-74 (UI part with RF-10) · done (d00a988; overview block in IMP-33)
+- [x] RF-79c — Manual entry born REVIEWED; editing a reviewed item keeps it reviewed; undoing a batch removes its pending items · entry · accept: RF-79c · ValidateEntriesUseCaseTest, UndoImportBatchUseCaseTest · after: RF-72, RF-74 · done (d00a988)
+- [x] IMP-25 — Review queue screen + `/api/review-queue` with `validate-selected` and per-item `validate` links; `ReviewStatus` enum; `ValidateEntriesUseCase` (origin §8 code note, §12 resource table) · entry/frontend · accept: links per state · ValidateEntriesUseCaseTest, ReviewQueueControllerIT · after: RF-76 · done (d00a988, 5aa24ce)
+- [x] RN-23 — Suggest `*` when same store, no installment, appears in 2 consecutive periods with similar value; user confirms · entry · accept: RN-23 · SubscriptionSuggesterTest · after: RN-16, IMP-25 · done (d00a988)
+- [x] UI-06 — Import tab: drag & drop or native dialog; preview expands only Divergent lines · frontend · accept: UI-06 · ImportPage.test.tsx, import.spec.ts · after: RF-68, POR-06 · done (5aa24ce)
+- [x] IMP-26 — Audit wiring for confirmed `BillEntry` changes (origin RNF-05) · entry · accept: before/after recorded · AuditListenerIT · after: RNF-05, RF-72 · done (d00a988)
 
 ## M4 — Card entries and aliases
 
@@ -379,6 +379,11 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
   - Q11: pivot table built with Apache POI's `XSSFPivotTable`, refreshed on open.
   - Q12: entries missing from a re-imported open bill become UNCONFIRMED (nothing is deleted).
   - Q13: Windows x64 and Linux x86_64 only. Q15: extra sidebar entries as built. Q16: entities/fields added as proposed. Q17: XLS-01 file name for files the user saves; POR-04 names for files kept in `data/`.
+- 2026-10-27: Category, member split, note and review state live on `Purchase`, not on each `BillEntry` (SPEC §10 suggests per entry): RN-08 then holds by construction. Entries keep status, amount, date and bill. Every change made by an import is logged in `batch_change`, which makes RF-72 undo exact.
+- 2026-10-27: RN-23 "valor parecido" = at most 10% apart. Subscription charges match a projected charge by store, card and billing period (RN-09), the amount is adjusted.
+- 2026-10-27: A purchase dated after a closing date read from a file goes to the next bill even if the card's typical closing day is later (RN-22).
+- 2026-10-27: LocalDate/Instant stored as ISO text through JPA converters (the SQLite driver default did not read back); round-trip tests run without a shared transaction.
+- 2026-10-27: Jackson 3 fails on missing primitives by default; turned off so missing booleans in requests mean false.
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log
@@ -389,3 +394,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-26 — SOL-05, SOL-06, TST-01, TST-02 done (182333b); rules verified by a throw-away mutation (domain → Spring, module → other module's infra, test without rule id all failed the build). TST-03 is a review convention, followed by every test so far.
 - 2026-10-26 — M0: frontend shell (fb66d73), quality gates (d859619), OpenAPI contract (33dcde0), shutdown endpoint (a787481), parent watcher (7336c56), I18N-13 (629bd6a), traceability + CLAUDE suggestion (db6919e), Tauri shell + CI + portable scripts (e60a687). Release app started the backend from the portable folder in 3.9 s; killing the shell stopped the backend cleanly. Open: UI-10 manual check, POR-01/IMP-07 on Windows, TST-07/POR-15 need a remote (Q2).
 - 2026-10-27 — M1 done except RNF-05 (audit wiring moves with IMP-26 to M3). Value objects (f273598), settings + ETag (cbd523d), members (b8733f5), cards (60bd14f), categories (db9c0c3), unique operation names (7ceb224), BEGIN IMMEDIATE fix for SQLITE_BUSY found in a manual UI run (0a2a880), registry screens and shared components (9418ac1). Decision: Hibernate schema validation off; Flyway owns the schema.
+- 2026-10-27 — M2 done (dc53a3f): Itaú PDF and XLSX parsers verified against the masked fixtures (79 + 16 future lines, totals match; 88 XLSX lines). M3 done (d00a988, 5aa24ce): preview/confirm/undo, projections, refunds, reconciliation, review queue, audit; found and fixed date persistence with a round-trip test after a manual run; added Q18 (RN-16 8-character minimum vs the nuuvem example).
