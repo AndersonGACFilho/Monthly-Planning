@@ -10,14 +10,13 @@ import {
 } from '../../api/generated/endpoints/review-queue-controller/review-queue-controller';
 import type { CardModel, ReviewItemModel } from '../../api/generated/model';
 import { reportError } from '../../app/queryClient';
-import { CategoryPicker } from '../../shared/components/CategoryPicker';
 import { Field } from '../../shared/components/Field';
-import { MemberPicker } from '../../shared/components/MemberPicker';
 import { MoneyText } from '../../shared/components/MoneyText';
 import { embedded, linkOf } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { fromCents, toCents } from '../../shared/format';
 import { PendingLinks } from './PendingLinks';
+import { CategoryPickerWithAdd, MemberPickerWithAdd } from '../registry/QuickAddPickers';
 import { ReviewRow } from './ReviewRow';
 
 /**
@@ -37,6 +36,7 @@ export function ReviewQueuePage() {
   const { data } = useReviewQueue({ card, billingPeriod, batch });
   const { data: cardPage } = useCards({ size: 200 });
   const items = embedded<ReviewItemModel>(data, 'items');
+  const cardNames = new Map(embedded<CardModel>(cardPage, 'cards').map((c) => [c.id ?? 0, c.nickname ?? '']));
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [batchMember, setBatchMember] = useState<number | null>(null);
   const [batchCategory, setBatchCategory] = useState<number | null>(null);
@@ -105,10 +105,10 @@ export function ReviewQueuePage() {
         <div className="panel flex flex-wrap items-end gap-3" role="group" aria-label={t('review.batchActions')}>
           <span className="text-sm">{t('review.selectedCount', { count: selected.size })}</span>
           <Field label={t('review.member')} htmlFor="batch-member">
-            <MemberPicker id="batch-member" allowEmpty value={batchMember} onChange={setBatchMember} />
+            <MemberPickerWithAdd id="batch-member" allowEmpty value={batchMember} onChange={setBatchMember} />
           </Field>
           <Field label={t('review.category')} htmlFor="batch-category">
-            <CategoryPicker id="batch-category" allowEmpty value={batchCategory} onChange={setBatchCategory} />
+            <CategoryPickerWithAdd id="batch-category" allowEmpty value={batchCategory} onChange={setBatchCategory} />
           </Field>
           <button type="button" className="button" onClick={() => void applyToSelected(false)}>
             {t('review.applyToSelected')}
@@ -156,6 +156,7 @@ export function ReviewQueuePage() {
                   rows.current[index] = el;
                 }}
                 item={item}
+                cardName={cardNames.get(item.cardId ?? 0)}
                 selected={selected.has(item.purchaseId!)}
                 onSelect={(isSelected) => {
                   const next = new Set(selected);

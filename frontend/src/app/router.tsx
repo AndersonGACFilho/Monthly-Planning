@@ -4,6 +4,7 @@ import { ExpensesPage } from '../features/expenses/ExpensesPage';
 import { ImportPage } from '../features/import/ImportPage';
 import { IncomesPage } from '../features/members/IncomesPage';
 import { OverviewPage } from '../features/overview/OverviewPage';
+import { RegistryPage } from '../features/registry/RegistryPage';
 import { ReviewQueuePage } from '../features/review/ReviewQueuePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { StatementsPage } from '../features/statements/StatementsPage';
@@ -23,6 +24,7 @@ const PAGES: Record<string, ReactElement> = {
   '/review-queue': <ReviewQueuePage />,
   '/deliveries': <StatementsPage />,
   '/templates': <TemplatesPage />,
+  '/registry': <RegistryPage />,
   '/settings': <SettingsPage />,
 };
 

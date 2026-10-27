@@ -96,4 +96,24 @@ describe('ReviewQueuePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Validar selecionados' }));
     await waitFor(() => expect(body).toMatchObject({ purchaseIds: [1, 2], validate: true, changes: { categoryId: 5 } }));
   });
+
+  it('RF-46, RF-75: the description can be renamed (alias) from the review queue, with the card name', async () => {
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.get(`${base}/api/cards`, () => HttpResponse.json({ _embedded: { cards: [{ id: 7, nickname: 'Itaú Azul' }] } })),
+      http.get(`${base}/api/review-queue`, () =>
+        HttpResponse.json({ _embedded: { items: [item(1, 'PADARIA DO ZE', { cardLastDigits: '4102', displayDescription: 'PADARIA DO ZE' })] } }),
+      ),
+      http.put(`${base}/api/bill-entries/10/alias`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({});
+      }),
+    );
+    renderWithProviders(<ReviewQueuePage />);
+    expect(await screen.findByText(/Itaú Azul •••• 4102/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'PADARIA DO ZE' }));
+    fireEvent.change(screen.getByLabelText(i18n.t('entries.alias')), { target: { value: 'Padaria do Zé' } });
+    fireEvent.click(screen.getByRole('button', { name: i18n.t('action.save') }));
+    await waitFor(() => expect(body).toEqual({ displayName: 'Padaria do Zé', scope: 'ALL' }));
+  });
 });

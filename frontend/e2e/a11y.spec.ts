@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { texts } from './support';
 
-for (const path of ['/', '/incomes', '/expenses', '/entries', '/import', '/review-queue', '/deliveries', '/templates', '/settings']) {
+for (const path of ['/', '/incomes', '/expenses', '/entries', '/import', '/review-queue', '/deliveries', '/templates', '/registry', '/settings']) {
   test(`IMP-48: ${path} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState('networkidle');
@@ -17,8 +17,8 @@ test('IMP-48, UI-05: the review queue works from the keyboard alone', async ({ p
   await page.goto('/review-queue');
   const first = page.locator('main tbody tr').first();
   await expect(first).toBeVisible();
-  await first.getByLabel(t('review.category')).focus();
-  await expect(first.getByLabel(t('review.category'))).toBeFocused();
+  await first.getByLabel(t('review.category'), { exact: true }).focus();
+  await expect(first.getByLabel(t('review.category'), { exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.locator(':focus')).toBeVisible();
 });

@@ -3,11 +3,11 @@ import { useMonthlySummary } from '../../api/generated/endpoints/monthly-summary
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
 import { MemberTotalsTable } from '../overview/MemberTotalsTable';
 import { OccurrencesSection } from '../recurrence/OccurrencesSection';
-import { MembersSection } from './MembersSection';
+import { Link } from 'react-router';
 
 /**
  * Tab 2, incomes and members (SPEC section 5): incomes of the period (RF-21 to RF-24), total expense by
- * member (RF-25) and the members registry (RF-20).
+ * member (RF-25) and a link to the members registry (RF-20).
  *
  * @returns the page
  */
@@ -25,7 +25,9 @@ export function IncomesPage() {
         </h2>
         <MemberTotalsTable rows={summary?.members ?? []} caption={t('overview.totalsByMember')} />
       </section>
-      <MembersSection />
+      <Link className="button self-start" to="/registry">
+        {t('registry.manageMembers')}
+      </Link>
     </div>
   );
 }

@@ -72,6 +72,8 @@ export function DescriptionCell({ entry, onChanged }: CellProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => {
+            // The keys stay here: the review queue row validates on Enter and skips on Escape (RF-78)
+            if (e.key === 'Enter' || e.key === 'Escape') e.stopPropagation();
             if (e.key === 'Enter') void save();
             if (e.key === 'Escape') setEditing(false);
           }}

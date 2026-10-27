@@ -13,7 +13,8 @@
     "reviewQueue": "Review queue",
     "templates": "Templates",
     "deliveries": "Deliveries",
-    "settings": "Settings"
+    "settings": "Settings",
+    "registry": "Registries"
   },
   "page": {
     "comingSoon": "This screen is not built yet."
@@ -536,5 +537,9 @@
   "shortcuts": {
     "title": "Shortcuts",
     "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period"
+  },
+  "registry": {
+    "hint": "Members, cards and categories used across the app. To rename a card, edit its nickname.",
+    "manageMembers": "Manage members"
   }
 }

@@ -1,13 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { CardsSection } from '../cards/CardsSection';
-import { CategoriesSection } from '../categories/CategoriesSection';
 import { BackupSettings } from './BackupSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { SmtpSettings } from './SmtpSettings';
 import { WorkbookSettings } from './WorkbookSettings';
 
 /**
- * Settings screen: general options, e-mail, spreadsheet, backups, cards and categories (Q15, IMP-39).
+ * Settings screen: general options, e-mail, spreadsheet and backups; registries live in their own screen
+ * (Q15, IMP-39).
  *
  * @returns the page
  */
@@ -20,8 +19,6 @@ export function SettingsPage() {
       <SmtpSettings />
       <WorkbookSettings />
       <BackupSettings />
-      <CardsSection />
-      <CategoriesSection />
     </div>
   );
 }

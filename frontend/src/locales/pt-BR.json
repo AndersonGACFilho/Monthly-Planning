@@ -13,7 +13,8 @@
     "reviewQueue": "Fila de validação",
     "templates": "Templates",
     "deliveries": "Envios",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "registry": "Cadastros"
   },
   "page": {
     "comingSoon": "Esta tela ainda será construída."
@@ -536,5 +537,9 @@
   "shortcuts": {
     "title": "Atalhos",
     "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência"
+  },
+  "registry": {
+    "hint": "Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.",
+    "manageMembers": "Gerenciar contas (cotas)"
   }
 }

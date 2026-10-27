@@ -12,6 +12,7 @@ export default {
     templates: ['Templates', 'Templates'],
     deliveries: ['Envios', 'Deliveries'],
     settings: ['Ajustes', 'Settings'],
+    registry: ['Cadastros', 'Registries'],
   },
   page: { comingSoon: ['Esta tela ainda será construída.', 'This screen is not built yet.'] },
   error: {
@@ -522,6 +523,10 @@ export default {
   shortcuts: {
     title: ['Atalhos', 'Shortcuts'],
     list: ['Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência', 'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period'],
+  },
+  registry: {
+    hint: ['Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.', 'Members, cards and categories used across the app. To rename a card, edit its nickname.'],
+    manageMembers: ['Gerenciar contas (cotas)', 'Manage members'],
   },
 };
 

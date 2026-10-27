@@ -1,5 +1,6 @@
 import {
   ArrowDownUp,
+  BookUser,
   CheckSquare,
   CreditCard,
   FileUp,
@@ -35,5 +36,6 @@ export const EXTRA_SCREENS: readonly NavItem[] = [
   { path: '/review-queue', labelKey: 'nav.reviewQueue', icon: CheckSquare },
   { path: '/templates', labelKey: 'nav.templates', icon: Palette },
   { path: '/deliveries', labelKey: 'nav.deliveries', icon: Send },
+  { path: '/registry', labelKey: 'nav.registry', icon: BookUser },
   { path: '/settings', labelKey: 'nav.settings', icon: Settings },
 ];

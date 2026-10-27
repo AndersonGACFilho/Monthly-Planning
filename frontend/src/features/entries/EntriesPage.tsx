@@ -58,6 +58,7 @@ export function EntriesPage() {
   const [sort, setSort] = useState('entryDate,asc');
   const { data } = useBillEntries({ billingPeriod: linkedPeriod ?? period, ...filter, size: 2000, sort: [sort] });
   const { data: cardPage } = useCards({ size: 200 });
+  const cardNames = new Map(embedded<CardModel>(cardPage, 'cards').map((c) => [c.id ?? 0, c.nickname ?? '']));
   const entries = embedded<BillEntryModel>(data, 'billEntries');
   const ids = useMemo(() => entries.map((e) => e.id!), [entries]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -213,7 +214,10 @@ export function EntriesPage() {
                       <DescriptionCell entry={entry} onChanged={refresh} />
                     </td>
                     <td className="px-2">{entry.installment}</td>
-                    <td className="hidden px-2 wide:table-cell">{entry.cardLastDigits}</td>
+                    <td className="hidden px-2 wide:table-cell">
+                      {cardNames.get(entry.cardId ?? 0)}
+                      {entry.cardLastDigits && <span className="ml-1 text-xs text-(--color-text-muted)">•••• {entry.cardLastDigits}</span>}
+                    </td>
                     <td className="px-2">
                       <MemberCell entry={entry} onChanged={refresh} />
                     </td>

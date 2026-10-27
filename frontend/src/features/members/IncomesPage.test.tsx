@@ -98,6 +98,6 @@ describe('IncomesPage', () => {
   it('RF-20: the members registry is reachable from the incomes tab', async () => {
     server.use(http.get(`${base}/api/occurrences`, () => HttpResponse.json({})));
     renderWithProviders(<IncomesPage />);
-    expect(await screen.findByRole('heading', { name: i18n.t('member.title') })).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Gerenciar contas (cotas)' })).toHaveAttribute('href', '/registry');
   });
 });

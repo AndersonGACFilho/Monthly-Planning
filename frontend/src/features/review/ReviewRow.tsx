@@ -1,13 +1,15 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { forwardRef, useState, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { validateItem } from '../../api/generated/endpoints/review-queue-controller/review-queue-controller';
-import type { ReviewItemModel } from '../../api/generated/model';
+import type { BillEntryModel, ReviewItemModel } from '../../api/generated/model';
 import { ifMatch } from '../../api/requestOptions';
 import { reportError } from '../../app/queryClient';
-import { CategoryPicker } from '../../shared/components/CategoryPicker';
 import { MoneyText } from '../../shared/components/MoneyText';
 import { SplitEditor, type SplitShare } from '../../shared/components/SplitEditor';
 import { formatDate } from '../../shared/format';
+import { DescriptionCell } from '../entries/EntryCells';
+import { CategoryPickerWithAdd, MemberPickerWithAdd } from '../registry/QuickAddPickers';
 
 /** Props of {@link ReviewRow}. */
 export interface ReviewRowProps {
@@ -21,17 +23,30 @@ export interface ReviewRowProps {
   onNext: () => void;
   /** Called after the item was validated. */
   onValidated: () => void;
+  /** Card nickname shown with the final. */
+  cardName?: string;
 }
 
 /**
- * One pending item: member split, category, note and subscription suggestion, validated with Enter
- * (RF-75, RF-76, RF-78, RN-23).
+ * One pending item: description with inline rename (alias), member split, category, note and subscription
+ * suggestion, validated with Enter; members and categories can be registered on the spot (RF-46, RF-75, RF-76,
+ * RF-78, RN-23).
  */
 export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(function ReviewRow(
-  { item, selected, onSelect, onNext, onValidated },
+  { item, selected, onSelect, onNext, onValidated, cardName },
   ref,
 ) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  // The entry as the description cell of the entries tab sees it, so renaming works the same here (RF-46)
+  const entry: BillEntryModel = {
+    id: item.entryId,
+    displayDescription: item.displayDescription ?? item.originalDescription,
+    originalDescription: item.originalDescription,
+    _links: item.aliasId != null || (item.displayDescription && item.displayDescription !== item.originalDescription)
+      ? { 'restore-original': { href: `/api/bill-entries/${item.entryId}/alias` } }
+      : {},
+  } as BillEntryModel;
   const [splits, setSplits] = useState<SplitShare[]>(
     (item.splits ?? []).map((s) => ({ memberId: s.memberId ?? null, percentage: Number(s.percentage ?? 100) })),
   );
@@ -76,9 +91,13 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
       </td>
       <td className="px-2 py-2 whitespace-nowrap">{formatDate(item.purchaseDate)}</td>
       <td className="px-2 py-2">
-        <span className="font-medium">{item.originalDescription}</span>
+        <span className="font-medium">
+          <DescriptionCell entry={entry} onChanged={() => void queryClient.invalidateQueries()} />
+        </span>
         <span className="block text-xs text-(--color-text-muted)">
-          {[item.bankCategory, item.cardLastDigits && `•••• ${item.cardLastDigits}`, item.billingPeriod].filter(Boolean).join(' · ')}
+          {[item.bankCategory, [cardName, item.cardLastDigits && `•••• ${item.cardLastDigits}`].filter(Boolean).join(' '), item.billingPeriod]
+            .filter(Boolean)
+            .join(' · ')}
         </span>
         {item.unknownFinal && <span className="block text-xs text-amber-600">{t('import.unknownFinal')}</span>}
         {item.refundOfPurchaseId && <span className="block text-xs text-emerald-600">{t('review.refund')}</span>}
@@ -94,10 +113,10 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
         <MoneyText value={item.amount} />
       </td>
       <td className="px-2 py-2">
-        <SplitEditor idPrefix={`review-${item.purchaseId}`} value={splits} onChange={setSplits} />
+        <SplitEditor idPrefix={`review-${item.purchaseId}`} value={splits} onChange={setSplits} memberPicker={MemberPickerWithAdd} />
       </td>
       <td className="px-2 py-2">
-        <CategoryPicker aria-label={t('review.category')} allowEmpty value={categoryId} onChange={setCategoryId} />
+        <CategoryPickerWithAdd aria-label={t('review.category')} allowEmpty value={categoryId} onChange={setCategoryId} />
       </td>
       <td className="hidden px-2 py-2 wide:table-cell">
         <input className="input w-full" aria-label={t('review.note')} value={note} onChange={(e) => setNote(e.target.value)} />

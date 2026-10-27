@@ -23,13 +23,14 @@ describe('SettingsPage', () => {
     );
   });
 
-  it('IMP-39: language, alerts, e-mail, spreadsheet, backups, cards and categories are all on one screen', async () => {
+  it('IMP-39: language, alerts, e-mail, spreadsheet and backups are on one screen; registries moved out', async () => {
     renderWithProviders(<SettingsPage />);
-    for (const title of ['Geral', 'E-mail (SMTP)', 'Planilha mensal', 'Cópias de segurança e dados', 'Cartões', 'Categorias']) {
+    for (const title of ['Geral', 'E-mail (SMTP)', 'Planilha mensal', 'Cópias de segurança e dados']) {
       expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
     }
     expect(screen.getByLabelText('Idioma')).toBeInTheDocument();
     expect(screen.getByText(/feche o app/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Categorias' })).not.toBeInTheDocument();
   });
 
   it('POR-12, RNF-07: back up now writes to data/backups; all data can be exported', async () => {

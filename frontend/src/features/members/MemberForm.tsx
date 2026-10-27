@@ -17,8 +17,8 @@ const emptyToUndefined = (value: string) => (value === '' ? undefined : value);
 export interface MemberEditorProps {
   /** Member being edited, or `undefined` to create one. */
   member?: MemberModel;
-  /** Called after saving or cancelling. */
-  onDone: () => void;
+  /** Called after saving (with the saved member) or cancelling (without). */
+  onDone: (saved?: MemberModel) => void;
 }
 
 /**
@@ -53,10 +53,9 @@ export function MemberEditor({ member, onDone }: MemberEditorProps) {
       whatsappPhone: values.whatsappPhone || undefined,
       pixKey: values.pixKey || undefined,
     };
-    if (member?.id !== undefined) await replaceMember(member.id, data, ifMatch(member.version));
-    else await createMember(data);
+    const result = member?.id !== undefined ? await replaceMember(member.id, data, ifMatch(member.version)) : await createMember(data);
     await saved();
-    onDone();
+    onDone(result);
   });
 
   return (
@@ -98,7 +97,7 @@ export function MemberEditor({ member, onDone }: MemberEditorProps) {
         </select>
       </Field>
       <div className="col-span-full flex justify-end gap-2">
-        <button type="button" className="button" onClick={onDone}>
+        <button type="button" className="button" onClick={() => onDone()}>
           {t('action.cancel')}
         </button>
         <button type="submit" className="button button-primary" disabled={formState.isSubmitting}>

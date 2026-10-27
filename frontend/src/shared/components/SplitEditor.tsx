@@ -1,6 +1,7 @@
+import type { ComponentType } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { MemberPicker } from './MemberPicker';
+import { MemberPicker, type MemberPickerProps } from './MemberPicker';
 
 /** Share of a member by percentage (RF-26). */
 export interface SplitShare {
@@ -16,6 +17,8 @@ export interface SplitEditorProps {
   onChange: (value: SplitShare[]) => void;
   /** Prefix for input ids. */
   idPrefix: string;
+  /** Member picker to use, such as one that can also register a member; {@link MemberPicker} by default. */
+  memberPicker?: ComponentType<MemberPickerProps>;
 }
 
 /**
@@ -25,7 +28,7 @@ export interface SplitEditorProps {
  * @param props - {@link SplitEditorProps}
  * @returns the editor
  */
-export function SplitEditor({ value, onChange, idPrefix }: SplitEditorProps) {
+export function SplitEditor({ value, onChange, idPrefix, memberPicker: Picker = MemberPicker }: SplitEditorProps) {
   const { t } = useTranslation();
   const total = value.reduce((sum, s) => sum + (Number.isFinite(s.percentage) ? s.percentage : 0), 0);
   const update = (index: number, patch: Partial<SplitShare>) =>
@@ -35,7 +38,7 @@ export function SplitEditor({ value, onChange, idPrefix }: SplitEditorProps) {
     <div className="flex flex-col gap-1">
       {value.map((share, index) => (
         <div key={index} className="flex items-center gap-1">
-          <MemberPicker
+          <Picker
             id={`${idPrefix}-member-${index}`}
             aria-label={t('review.member')}
             value={share.memberId}

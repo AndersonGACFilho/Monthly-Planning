@@ -50,6 +50,7 @@ describe('App shell', () => {
       'Review queue',
       'Templates',
       'Deliveries',
+      'Registries',
       'Settings',
     ]);
   });

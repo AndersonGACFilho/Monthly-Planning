@@ -69,8 +69,8 @@ export function MemberTotalsTable({ rows, caption }: { rows: MemberRow[]; captio
                 <td className="text-right">
                   <MoneyText value={row.expense} />
                 </td>
-                <td className={`text-right ${(row.balance ?? 0) < 0 ? 'text-red-600' : ''}`}>
-                  <MoneyText value={row.balance} />
+                <td className="text-right">
+                  <MoneyText value={row.balance} kind="balance" />
                 </td>
                 <td className="text-right">{formatPercent(row.percentSpent)}</td>
               </tr>

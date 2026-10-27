@@ -74,7 +74,7 @@ export function OverviewPage() {
         />
         <SummaryCard
           title={t('overview.balance')}
-          value={<MoneyText value={summary?.balance} className={(summary?.balance ?? 0) < 0 ? 'text-red-600' : ''} />}
+          value={<MoneyText value={summary?.balance} kind="balance" />}
         />
         <SummaryCard
           title={t('overview.percentSpent')}
