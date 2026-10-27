@@ -71,6 +71,15 @@ public enum Relations implements LinkRelation {
     PNG("png", "Member statement as PNG (RF-84)."),
     /** Statement as XLSX. */
     XLSX("xlsx", "Member statement as XLSX (RF-84)."),
+
+    /** Statement as CSV. */
+    CSV("csv", "Member statement as CSV (RF-84)."),
+
+    /** Send a delivery again. */
+    RESEND("resend", "Send a past statement delivery again with the same options (RF-92)."),
+
+    /** Confirm a delivery the user finished. */
+    MARK_SENT("mark-sent", "Mark a WhatsApp or clipboard delivery as sent (SOL-03)."),
     /** Send a statement. */
     SEND("send", "Send a member statement (RF-91)."),
     /** Send a statement by e-mail. */

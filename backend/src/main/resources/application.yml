@@ -57,3 +57,8 @@ management:
   endpoint:
     shutdown:
       access: unrestricted
+
+logging:
+  level:
+    # The PDF renderer logs every font load at INFO
+    com.openhtmltopdf: WARN

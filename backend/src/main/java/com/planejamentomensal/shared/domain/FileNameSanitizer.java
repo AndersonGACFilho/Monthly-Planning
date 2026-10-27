@@ -1,4 +1,4 @@
-package com.planejamentomensal.shared.infra.storage;
+package com.planejamentomensal.shared.domain;
 
 import java.text.Normalizer;
 import java.util.Locale;

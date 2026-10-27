@@ -15,6 +15,12 @@
     "description" : "Variable expenses entered by hand (RF-34, RF-35).",
     "name" : "variable-expense-controller"
   }, {
+    "description" : "Statement templates: settings without code, versions, the default one, per-member choice and live preview\n (TPL-02 to TPL-07, IMP-36).",
+    "name" : "template-controller"
+  }, {
+    "description" : "Write-only SMTP password: it is stored encrypted and never returned (RF-86, Q9).",
+    "name" : "smtp-password-controller"
+  }, {
     "description" : "Parameterized incomes (RF-21, RF-23) and fixed expenses (RF-30); both kinds share this resource.",
     "name" : "recurrence-rule-controller"
   }, {
@@ -32,6 +38,9 @@
   }, {
     "description" : "Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries\n (RF-40 to RF-51).",
     "name" : "bill-entry-controller"
+  }, {
+    "description" : "Sends statements in batch and keeps the delivery history with resend and manual confirmation (RF-86 to RF-93,\n SOL-03).",
+    "name" : "statement-delivery-controller"
   }, {
     "description" : "Review queue: imported purchases waiting for the user to check member, split, category and alias\n (RF-74 to RF-79a).",
     "name" : "review-queue-controller"
@@ -53,6 +62,9 @@
   }, {
     "description" : "Overview of a billing period: indicators, categories, members, cards and what is committed ahead\n (RF-10 to RF-17, IMP-32).",
     "name" : "monthly-summary-controller"
+  }, {
+    "description" : "Member statements of a billing period: preview and downloads as HTML, PDF, PNG, XLSX and CSV (RF-81 to RF-85,\n I18N-09).",
+    "name" : "statement-controller"
   }, {
     "description" : "Purchases (the fact behind the installments) with the link to their installments (SPEC section 12).",
     "name" : "purchase-controller"
@@ -2304,6 +2316,719 @@
         "tags" : [ "settings-controller" ]
       }
     },
+    "/api/settings/smtp-password" : {
+      "get" : {
+        "description" : "Tells whether a password is stored.",
+        "operationId" : "smtpPassword",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "boolean"
+                  }
+                }
+              }
+            },
+            "description" : "<code>{&quot;configured&quot;: true|false</code>}"
+          }
+        },
+        "summary" : "Tells whether a password is stored.",
+        "tags" : [ "smtp-password-controller" ]
+      },
+      "put" : {
+        "description" : "Stores or removes the password.",
+        "operationId" : "changeSmtpPassword",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SmtpPasswordRequest"
+              }
+            }
+          },
+          "description" : "password; blank removes it",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "boolean"
+                  }
+                }
+              }
+            },
+            "description" : "<code>{&quot;configured&quot;: true|false</code>}"
+          }
+        },
+        "summary" : "Stores or removes the password.",
+        "tags" : [ "smtp-password-controller" ]
+      }
+    },
+    "/api/statement-deliveries" : {
+      "get" : {
+        "description" : "Lists the delivery history, newest first, with the outdated flag (RF-92, RF-93).",
+        "operationId" : "statementDeliveries",
+        "parameters" : [ {
+          "description" : "period, optional",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelDeliveryModel"
+                }
+              }
+            },
+            "description" : "history"
+          }
+        },
+        "summary" : "Lists the delivery history, newest first, with the outdated flag (RF-92, RF-93).",
+        "tags" : [ "statement-delivery-controller" ]
+      },
+      "post" : {
+        "description" : "Sends the statements of the selected members through one channel; 409 <code>statement-has-pending</code> when\n entries are pending review and <code>sendAnyway</code> is false (RF-79b, RF-91).",
+        "operationId" : "sendStatements",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/SendStatementsRequest"
+              }
+            }
+          },
+          "description" : "batch",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/DeliveryOutcomeModel"
+                  }
+                }
+              }
+            },
+            "description" : "one outcome per member"
+          }
+        },
+        "summary" : "Sends the statements of the selected members through one channel; 409 <code>statement-has-pending</code> when\n entries are pending review and <code>sendAnyway</code> is false (RF-79b, RF-91).",
+        "tags" : [ "statement-delivery-controller" ]
+      }
+    },
+    "/api/statement-deliveries/{id}/resend" : {
+      "post" : {
+        "description" : "Sends a past delivery again (RF-92).",
+        "operationId" : "resendStatement",
+        "parameters" : [ {
+          "description" : "delivery",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeliveryOutcomeModel"
+                }
+              }
+            },
+            "description" : "the new outcome"
+          }
+        },
+        "summary" : "Sends a past delivery again (RF-92).",
+        "tags" : [ "statement-delivery-controller" ]
+      }
+    },
+    "/api/statement-deliveries/{id}/sent" : {
+      "post" : {
+        "description" : "Marks a WhatsApp or clipboard delivery as sent (SOL-03).",
+        "operationId" : "markDeliverySent",
+        "parameters" : [ {
+          "description" : "delivery",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DeliveryModel"
+                }
+              }
+            },
+            "description" : "the delivery"
+          }
+        },
+        "summary" : "Marks a WhatsApp or clipboard delivery as sent (SOL-03).",
+        "tags" : [ "statement-delivery-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}" : {
+      "get" : {
+        "description" : "Returns the statement of a member with links to its formats and to the channels the member can receive.",
+        "operationId" : "memberStatement",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories (RF-83)",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use the displayed description (RF-83)",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments (RF-83)",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language of this export, optional (I18N-09)",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional (TPL-04)",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "free note, optional (RF-82)",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StatementModel"
+                }
+              }
+            },
+            "description" : "the statement"
+          }
+        },
+        "summary" : "Returns the statement of a member with links to its formats and to the channels the member can receive.",
+        "tags" : [ "statement-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}/csv" : {
+      "get" : {
+        "description" : "Downloads the statement as CSV (RF-84).",
+        "operationId" : "statementCsv",
+        "parameters" : [ {
+          "description" : "period",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use aliases",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language, optional",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "text/csv" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "CSV"
+          }
+        },
+        "summary" : "Downloads the statement as CSV (RF-84).",
+        "tags" : [ "statement-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}/html" : {
+      "get" : {
+        "description" : "Returns the statement HTML for the preview (RF-85).",
+        "operationId" : "statementHtml",
+        "parameters" : [ {
+          "description" : "period",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use aliases",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language, optional",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "free note, optional",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "text/html" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "HTML"
+          }
+        },
+        "summary" : "Returns the statement HTML for the preview (RF-85).",
+        "tags" : [ "statement-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}/pdf" : {
+      "get" : {
+        "description" : "Downloads the statement as PDF (RF-84).",
+        "operationId" : "statementPdf",
+        "parameters" : [ {
+          "description" : "period",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use aliases",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language, optional",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "free note, optional",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/pdf" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "PDF"
+          }
+        },
+        "summary" : "Downloads the statement as PDF (RF-84).",
+        "tags" : [ "statement-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}/png" : {
+      "get" : {
+        "description" : "Downloads the statement as PNG (RF-84).",
+        "operationId" : "statementPng",
+        "parameters" : [ {
+          "description" : "period",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use aliases",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language, optional",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "free note, optional",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "image/png" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "PNG"
+          }
+        },
+        "summary" : "Downloads the statement as PNG (RF-84).",
+        "tags" : [ "statement-controller" ]
+      }
+    },
+    "/api/statements/{billingPeriod}/members/{memberId}/xlsx" : {
+      "get" : {
+        "description" : "Downloads the statement as XLSX (RF-84).",
+        "operationId" : "statementXlsx",
+        "parameters" : [ {
+          "description" : "period",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "show categories",
+          "in" : "query",
+          "name" : "showCategories",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "use aliases",
+          "in" : "query",
+          "name" : "useAlias",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "include future installments",
+          "in" : "query",
+          "name" : "includeFuture",
+          "required" : false,
+          "schema" : {
+            "type" : "boolean",
+            "default" : true
+          }
+        }, {
+          "description" : "language, optional",
+          "in" : "query",
+          "name" : "language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "template, optional",
+          "in" : "query",
+          "name" : "template",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "XLSX"
+          }
+        },
+        "summary" : "Downloads the statement as XLSX (RF-84).",
+        "tags" : [ "statement-controller" ]
+      }
+    },
     "/api/summaries/{billingPeriod}" : {
       "get" : {
         "description" : "Returns the overview of a period, optionally for one member (RF-15).",
@@ -2413,6 +3138,305 @@
         },
         "summary" : "Returns the totals by member of a period (RF-13, RF-25).",
         "tags" : [ "monthly-summary-controller" ]
+      }
+    },
+    "/api/templates" : {
+      "get" : {
+        "description" : "Lists the templates; the default one is created on first use.",
+        "operationId" : "templates",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelTemplateModel"
+                }
+              }
+            },
+            "description" : "templates by name"
+          }
+        },
+        "summary" : "Lists the templates; the default one is created on first use.",
+        "tags" : [ "template-controller" ]
+      },
+      "post" : {
+        "description" : "Creates a template.",
+        "operationId" : "createTemplate",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TemplateRequest"
+              }
+            }
+          },
+          "description" : "name and settings",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TemplateModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates a template.",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/assignments" : {
+      "get" : {
+        "description" : "Returns the template chosen for each member (TPL-04).",
+        "operationId" : "templateAssignments",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "integer",
+                    "format" : "int64"
+                  }
+                }
+              }
+            },
+            "description" : "template id by member id"
+          }
+        },
+        "summary" : "Returns the template chosen for each member (TPL-04).",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/assignments/{memberId}" : {
+      "put" : {
+        "description" : "Chooses the template of a member, or clears the choice.",
+        "operationId" : "assignTemplate",
+        "parameters" : [ {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TemplateAssignmentRequest"
+              }
+            }
+          },
+          "description" : "template, or <code>null</code> for the default",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Chooses the template of a member, or clears the choice.",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/preview" : {
+      "post" : {
+        "description" : "Renders unsaved settings with real or sample data (TPL-03).",
+        "operationId" : "previewTemplate",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TemplatePreviewRequest"
+              }
+            }
+          },
+          "description" : "settings, period, member and language",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TemplatePreviewModel"
+                }
+              }
+            },
+            "description" : "the rendering"
+          }
+        },
+        "summary" : "Renders unsaved settings with real or sample data (TPL-03).",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/{id}" : {
+      "delete" : {
+        "description" : "Deletes a template that is not the default.",
+        "operationId" : "removeTemplate",
+        "parameters" : [ {
+          "description" : "template",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes a template that is not the default.",
+        "tags" : [ "template-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one template with its version as <code>ETag</code>.",
+        "operationId" : "template",
+        "parameters" : [ {
+          "description" : "template",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TemplateModel"
+                }
+              }
+            },
+            "description" : "the template"
+          }
+        },
+        "summary" : "Returns one template with its version as <code>ETag</code>.",
+        "tags" : [ "template-controller" ]
+      },
+      "put" : {
+        "description" : "Changes a template; changed settings make a new version (TPL-06).",
+        "operationId" : "replaceTemplate",
+        "parameters" : [ {
+          "description" : "template",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TemplateRequest"
+              }
+            }
+          },
+          "description" : "name and settings",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TemplateModel"
+                }
+              }
+            },
+            "description" : "the template"
+          }
+        },
+        "summary" : "Changes a template; changed settings make a new version (TPL-06).",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/{id}/default" : {
+      "post" : {
+        "description" : "Makes a template the default (TPL-04).",
+        "operationId" : "makeTemplateDefault",
+        "parameters" : [ {
+          "description" : "template",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TemplateModel"
+                }
+              }
+            },
+            "description" : "the template"
+          }
+        },
+        "summary" : "Makes a template the default (TPL-04).",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/{id}/versions" : {
+      "get" : {
+        "description" : "Lists the versions of a template, newest first (TPL-06).",
+        "operationId" : "templateVersions",
+        "parameters" : [ {
+          "description" : "template",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TemplateVersionModel"
+                  }
+                }
+              }
+            },
+            "description" : "versions"
+          }
+        },
+        "summary" : "Lists the versions of a template, newest first (TPL-06).",
+        "tags" : [ "template-controller" ]
       }
     },
     "/api/variable-expenses" : {
@@ -3095,6 +4119,25 @@
           }
         }
       },
+      "CollectionModelDeliveryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "deliveries" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/DeliveryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "CollectionModelEntityModelAliasView" : {
         "type" : "object",
         "properties" : {
@@ -3190,6 +4233,25 @@
           }
         }
       },
+      "CollectionModelTemplateModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "templates" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/TemplateModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "CommittedRow" : {
         "type" : "object",
         "description" : "Committed amount of a future period (RF-17).",
@@ -3260,6 +4322,98 @@
           }
         },
         "required" : [ "validFrom" ]
+      },
+      "DeliveryModel" : {
+        "type" : "object",
+        "description" : "One row of the delivery history (RF-92, RF-93, I18N-12).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "channel" : {
+            "type" : "string",
+            "description" : "Channel.",
+            "enum" : [ "EMAIL", "WHATSAPP", "CLIPBOARD", "FOLDER" ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Time."
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Error message, link or file."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "Language used."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "outdated" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when the statement changed after this delivery (RF-93)."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Status.",
+            "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
+          },
+          "templateId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Template."
+          },
+          "templateVersion" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Template version."
+          }
+        }
+      },
+      "DeliveryOutcomeModel" : {
+        "type" : "object",
+        "description" : "Result of one member in a batch delivery (RF-91).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "action" : {
+            "type" : "string",
+            "description" : "Link the interface opens to finish (WhatsApp)."
+          },
+          "deliveryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "History record."
+          },
+          "detail" : {
+            "type" : "string",
+            "description" : "Error message or saved file."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Result.",
+            "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
+          }
+        }
       },
       "EntityModelAliasView" : {
         "type" : "object",
@@ -3615,6 +4769,45 @@
           }
         },
         "required" : [ "language" ]
+      },
+      "Line" : {
+        "type" : "object",
+        "description" : "One card entry.",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "member share"
+          },
+          "card" : {
+            "type" : "string",
+            "description" : "card nickname"
+          },
+          "category" : {
+            "type" : "string",
+            "description" : "category, or <code>null</code>"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "date"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description"
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "installment label"
+          },
+          "pending" : {
+            "type" : "boolean",
+            "description" : "pending review"
+          },
+          "percent" : {
+            "type" : "number",
+            "description" : "share percentage, or <code>null</code>"
+          }
+        }
       },
       "LineEditRequest" : {
         "type" : "object",
@@ -4568,6 +5761,64 @@
           }
         }
       },
+      "SendStatementsRequest" : {
+        "type" : "object",
+        "description" : "Batch delivery of statements (RF-91).",
+        "properties" : {
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period, <code>yyyy-MM</code>",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          },
+          "channel" : {
+            "type" : "string",
+            "description" : "channel",
+            "enum" : [ "EMAIL", "WHATSAPP", "CLIPBOARD", "FOLDER" ]
+          },
+          "includeFuture" : {
+            "type" : "boolean",
+            "description" : "include future installments"
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "language for all, optional (I18N-09)",
+            "pattern" : "^(pt-BR|en-US)$"
+          },
+          "memberIds" : {
+            "type" : "array",
+            "description" : "members",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "free note, optional",
+            "maxLength" : 1000,
+            "minLength" : 0
+          },
+          "sendAnyway" : {
+            "type" : "boolean",
+            "description" : "send even with entries pending review (RF-79b)"
+          },
+          "showCategories" : {
+            "type" : "boolean",
+            "description" : "show categories"
+          },
+          "templateId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "template, optional"
+          },
+          "useAlias" : {
+            "type" : "boolean",
+            "description" : "use aliases"
+          }
+        },
+        "required" : [ "billingPeriod", "channel", "memberIds" ]
+      },
       "SettlementRow" : {
         "type" : "object",
         "description" : "One debt between members (RF-27).",
@@ -4630,6 +5881,109 @@
         },
         "required" : [ "memberId" ]
       },
+      "SmtpPasswordRequest" : {
+        "type" : "object",
+        "description" : "SMTP password; blank removes it (RF-86).",
+        "properties" : {
+          "password" : {
+            "type" : "string",
+            "description" : "password",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        }
+      },
+      "StatementModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a member statement, for the preview before sending or downloading (RF-82, RF-85).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "cardTotal" : {
+            "type" : "number",
+            "description" : "Card total."
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Earliest due date."
+          },
+          "fixedTotal" : {
+            "type" : "number",
+            "description" : "Fixed expenses total."
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "Language of the statement."
+          },
+          "languageFallback" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when the template had no texts in this language (I18N-11)."
+          },
+          "lines" : {
+            "type" : "array",
+            "description" : "Card entries.",
+            "items" : {
+              "$ref" : "#/components/schemas/Line"
+            }
+          },
+          "memberCode" : {
+            "type" : "string",
+            "description" : "Member code."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "memberName" : {
+            "type" : "string",
+            "description" : "Member name."
+          },
+          "pendingItems" : {
+            "type" : "array",
+            "description" : "Entries still pending review (RF-79b).",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "pixKey" : {
+            "type" : "string",
+            "description" : "PIX key shown."
+          },
+          "subject" : {
+            "type" : "string",
+            "description" : "E-mail subject."
+          },
+          "templateId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Template used."
+          },
+          "templateVersion" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Template version used."
+          },
+          "total" : {
+            "type" : "number",
+            "description" : "Total due."
+          },
+          "variableTotal" : {
+            "type" : "number",
+            "description" : "Variable expenses total."
+          },
+          "whatsappText" : {
+            "type" : "string",
+            "description" : "WhatsApp message."
+          }
+        }
+      },
       "StatusRequest" : {
         "type" : "object",
         "description" : "Received or paid flag of a period (RF-24, RF-32).",
@@ -4642,6 +5996,223 @@
           "done" : {
             "type" : "boolean",
             "description" : "<code>true</code> for received or paid, <code>false</code> for expected or pending"
+          }
+        }
+      },
+      "TemplateAssignmentRequest" : {
+        "type" : "object",
+        "description" : "Template of a member (TPL-04).",
+        "properties" : {
+          "templateId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "template, or <code>null</code> to use the default"
+          }
+        }
+      },
+      "TemplateModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a template (TPL-04, IMP-36).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "currentVersion" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Current version number."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "isDefault" : {
+            "type" : "boolean",
+            "description" : "Default flag."
+          },
+          "name" : {
+            "type" : "string",
+            "description" : "Name."
+          },
+          "settings" : {
+            "$ref" : "#/components/schemas/TemplateSettings",
+            "description" : "Settings."
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "Time of the last change."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version for <code>If-Match</code> (API-04)."
+          }
+        }
+      },
+      "TemplatePreviewModel" : {
+        "type" : "object",
+        "description" : "Rendered preview of a template (TPL-03, I18N-11).",
+        "properties" : {
+          "emailText" : {
+            "type" : "string",
+            "description" : "e-mail text"
+          },
+          "fallback" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when the texts of the other language were used"
+          },
+          "html" : {
+            "type" : "string",
+            "description" : "statement HTML"
+          },
+          "subject" : {
+            "type" : "string",
+            "description" : "e-mail subject"
+          },
+          "whatsappText" : {
+            "type" : "string",
+            "description" : "WhatsApp message"
+          }
+        }
+      },
+      "TemplatePreviewRequest" : {
+        "type" : "object",
+        "description" : "Live preview of unsaved template settings (TPL-03).",
+        "properties" : {
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period, <code>yyyy-MM</code>",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          },
+          "language" : {
+            "type" : "string",
+            "description" : "language of the preview",
+            "pattern" : "^(pt-BR|en-US)$"
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member with real data, or <code>null</code> for sample data"
+          },
+          "settings" : {
+            "$ref" : "#/components/schemas/TemplateSettings",
+            "description" : "settings being edited"
+          }
+        },
+        "required" : [ "billingPeriod", "language", "settings" ]
+      },
+      "TemplateRequest" : {
+        "type" : "object",
+        "description" : "Name and settings of a template (TPL-02).",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "description" : "name",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "settings" : {
+            "$ref" : "#/components/schemas/TemplateSettings",
+            "description" : "settings"
+          }
+        },
+        "required" : [ "name", "settings" ]
+      },
+      "TemplateSettings" : {
+        "type" : "object",
+        "description" : "Look and texts of a statement template, without code (TPL-02, TPL-05, TPL-07, I18N-11).",
+        "properties" : {
+          "advancedCss" : {
+            "type" : "string",
+            "description" : "extra CSS of the advanced mode, or <code>null</code> (TPL-07)"
+          },
+          "advancedHtml" : {
+            "type" : "string",
+            "description" : "HTML of the advanced mode that replaces the header, or <code>null</code>; it is sanitized and\n                       may hold the variables of {@link MessageVariables MessageVariables} (TPL-07)"
+          },
+          "blocks" : {
+            "type" : "array",
+            "description" : "blocks shown, in order",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          },
+          "font" : {
+            "type" : "string",
+            "description" : "font family",
+            "enum" : [ "NOTO_SANS", "NOTO_SERIF", "LIBERATION_SANS" ]
+          },
+          "logo" : {
+            "type" : "string",
+            "description" : "logo as a <code>data:image/png;base64,...</code> or <code>data:image/jpeg;base64,...</code> URI, or\n                       <code>null</code>"
+          },
+          "primaryColor" : {
+            "type" : "string",
+            "description" : "primary colour, <code>#RRGGBB</code>"
+          },
+          "secondaryColor" : {
+            "type" : "string",
+            "description" : "secondary colour, <code>#RRGGBB</code>"
+          },
+          "texts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/TemplateTexts"
+            },
+            "description" : "texts by language tag (<code>pt-BR</code>, <code>en-US</code>)"
+          }
+        }
+      },
+      "TemplateTexts" : {
+        "type" : "object",
+        "description" : "Customizable texts of a template in one language (TPL-02, TPL-05, I18N-11). Fields may hold the\n variables of {@link MessageVariables MessageVariables}.",
+        "properties" : {
+          "emailBody" : {
+            "type" : "string",
+            "description" : "e-mail body"
+          },
+          "emailSubject" : {
+            "type" : "string",
+            "description" : "e-mail subject"
+          },
+          "empty" : {
+            "type" : "boolean",
+            "description" : "Tells whether no text was written."
+          },
+          "footer" : {
+            "type" : "string",
+            "description" : "footer text"
+          },
+          "header" : {
+            "type" : "string",
+            "description" : "header text"
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "default message shown on the statement"
+          },
+          "whatsapp" : {
+            "type" : "string",
+            "description" : "WhatsApp message"
+          }
+        }
+      },
+      "TemplateVersionModel" : {
+        "type" : "object",
+        "description" : "One frozen version of a template (TPL-06).",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "time"
+          },
+          "number" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "version number"
           }
         }
       },

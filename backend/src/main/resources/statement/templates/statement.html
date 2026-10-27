@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html th:lang="${language}">
+<head>
+  <meta charset="UTF-8" />
+  <title th:text="${labels.title} + ' ' + ${s.memberCode} + ' ' + ${f.period(s.billingPeriod)}">Statement</title>
+  <style th:inline="css">
+    @page { size: A4; margin: 16mm 14mm; }
+    body { font-family: '[(${fontFamily})]', sans-serif; font-size: 10pt; color: #1b1f24; margin: 0; }
+    .head { border-bottom: 3px solid [(${settings.primaryColor})]; padding-bottom: 8px; margin-bottom: 12px; }
+    .head table { width: 100%; border-collapse: collapse; }
+    .logo { max-height: 48px; max-width: 160px; }
+    h1 { font-size: 16pt; color: [(${settings.primaryColor})]; margin: 0; }
+    h2 { font-size: 11pt; color: [(${settings.secondaryColor})]; margin: 14px 0 4px; border-bottom: 1px solid #dde1e6; }
+    .muted { color: #59636e; font-size: 9pt; }
+    .message { margin: 4px 0; white-space: pre-line; }
+    .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 4px 8px; margin: 6px 0; font-size: 9pt; }
+    table.lines { width: 100%; border-collapse: collapse; }
+    table.lines th { text-align: left; font-size: 8.5pt; color: #59636e; border-bottom: 1px solid #dde1e6; padding: 3px 4px; }
+    table.lines td { border-bottom: 1px solid #f0f2f4; padding: 3px 4px; vertical-align: top; }
+    .num { text-align: right; white-space: nowrap; }
+    .pending td { background: #fff7d6; }
+    .subtotal td { font-weight: bold; border-top: 1px solid #dde1e6; }
+    .card-title { font-weight: bold; margin-top: 8px; }
+    .summary { width: 100%; border-collapse: collapse; }
+    .summary td { padding: 4px 6px; }
+    .summary .big { font-size: 15pt; font-weight: bold; color: [(${settings.primaryColor})]; }
+    .foot { margin-top: 18px; border-top: 1px solid #dde1e6; padding-top: 6px; font-size: 8.5pt; color: #59636e; }
+    [(${advancedCss})]
+  </style>
+</head>
+<body>
+  <div class="head">
+    <div th:if="${!#strings.isEmpty(advancedHtml)}" th:utext="${advancedHtml}"></div>
+    <table th:if="${#strings.isEmpty(advancedHtml)}">
+      <tr>
+        <td>
+          <h1 th:text="${#strings.isEmpty(header) ? labels.title : header}">Statement</h1>
+          <div class="muted">
+            <span th:text="${labels.member} + ': ' + ${s.memberCode} + ' — ' + ${s.memberName}">Member</span> ·
+            <span th:text="${labels.period} + ': ' + ${f.period(s.billingPeriod)}">Period</span> ·
+            <span th:text="${labels.issuedOn} + ' ' + ${f.date(s.issuedOn)}">Issued</span>
+          </div>
+        </td>
+        <td style="text-align: right" th:if="${settings.logo != null}"><img class="logo" th:src="${settings.logo}" alt="" /></td>
+      </tr>
+    </table>
+  </div>
+  <div class="warning" th:if="${fallback}" th:text="${labels.fallbackWarning}">fallback</div>
+  <div class="warning" th:if="${!s.pendingItems.isEmpty()}" th:text="${labels.pendingWarning}">pending</div>
+
+  <th:block th:each="block : ${blocks}">
+    <th:block th:switch="${block}">
+
+      <div th:case="'SUMMARY'">
+        <h2 th:text="${labels.summary}">Summary</h2>
+        <table class="summary">
+          <tr>
+            <td th:text="${labels.totalDue}">Total due</td>
+            <td class="num big" th:text="${f.money(s.total)}">0</td>
+          </tr>
+          <tr th:if="${s.dueDate != null}">
+            <td th:text="${labels.dueDate}">Due</td>
+            <td class="num" th:text="${f.date(s.dueDate)}">date</td>
+          </tr>
+          <tr th:if="${s.main or !s.income.isZero()}">
+            <td th:text="${labels.income}">Income</td>
+            <td class="num" th:text="${f.money(s.income)}">0</td>
+          </tr>
+          <tr th:if="${s.main or !s.income.isZero()}">
+            <td th:text="${labels.balance}">Balance</td>
+            <td class="num" th:text="${f.money(s.balance())}">0</td>
+          </tr>
+        </table>
+      </div>
+
+      <div th:case="'CARDS'" th:if="${!s.cards.isEmpty()}">
+        <h2 th:text="${labels.cards}">Cards</h2>
+        <th:block th:each="group : ${s.cards}">
+          <div class="card-title">
+            <span th:text="${group.cardName}">Card</span>
+            <span class="muted" th:if="${group.dueDate != null}" th:text="'· ' + ${labels.dueDate} + ' ' + ${f.date(group.dueDate)}">due</span>
+          </div>
+          <table class="lines">
+            <thead>
+              <tr>
+                <th th:text="${labels.date}">Date</th>
+                <th th:text="${labels.description}">Description</th>
+                <th th:text="${labels.installment}">Inst.</th>
+                <th th:if="${s.options.showCategories}" th:text="${labels.category}">Category</th>
+                <th class="num" th:text="${labels.share}">Share</th>
+                <th class="num" th:text="${labels.amount}">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="line : ${group.lines}" th:classappend="${line.pending} ? 'pending'">
+                <td th:text="${f.date(line.date)}">date</td>
+                <td th:text="${line.description}">description</td>
+                <td th:text="${line.installment}">-</td>
+                <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
+                <td class="num" th:text="${f.percent(line.percent)}"></td>
+                <td class="num" th:text="${f.money(line.amount)}">0</td>
+              </tr>
+              <tr class="subtotal">
+                <td th:colspan="${s.options.showCategories ? 5 : 4}" th:text="${labels.subtotal}">Subtotal</td>
+                <td class="num" th:text="${f.money(group.total)}">0</td>
+              </tr>
+            </tbody>
+          </table>
+        </th:block>
+      </div>
+
+      <div th:case="'FIXED_EXPENSES'" th:if="${!s.fixedExpenses.isEmpty()}">
+        <h2 th:text="${labels.fixedExpenses}">Fixed</h2>
+        <table class="lines">
+          <tbody>
+            <tr th:each="line : ${s.fixedExpenses}">
+              <td th:text="${line.description}">description</td>
+              <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
+              <td class="num" th:text="${f.money(line.amount)}">0</td>
+            </tr>
+            <tr class="subtotal">
+              <td th:colspan="${s.options.showCategories ? 2 : 1}" th:text="${labels.subtotal}">Subtotal</td>
+              <td class="num" th:text="${f.money(s.fixedTotal)}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:case="'VARIABLE_EXPENSES'" th:if="${!s.variableExpenses.isEmpty()}">
+        <h2 th:text="${labels.variableExpenses}">Variable</h2>
+        <table class="lines">
+          <tbody>
+            <tr th:each="line : ${s.variableExpenses}">
+              <td th:text="${f.date(line.date)}">date</td>
+              <td th:text="${line.description}">description</td>
+              <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
+              <td class="num" th:text="${f.money(line.amount)}">0</td>
+            </tr>
+            <tr class="subtotal">
+              <td th:colspan="${s.options.showCategories ? 3 : 2}" th:text="${labels.subtotal}">Subtotal</td>
+              <td class="num" th:text="${f.money(s.variableTotal)}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:case="'COMMITTED'" th:if="${!s.committed.isEmpty()}">
+        <h2 th:text="${labels.committed}">Committed</h2>
+        <table class="lines">
+          <tbody>
+            <tr th:each="c : ${s.committed}">
+              <td th:text="${f.period(c.billingPeriod)}">period</td>
+              <td class="num" th:text="${f.money(c.amount)}">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:case="'PAYMENT'" th:if="${s.pixKey != null}">
+        <h2 th:text="${labels.payment}">Payment</h2>
+        <p><span th:text="${labels.pixKey} + ': '">PIX: </span><strong th:text="${s.pixKey}">key</strong></p>
+      </div>
+
+      <div th:case="'NOTE'" th:if="${!#strings.isEmpty(message)}">
+        <h2 th:text="${labels.note}">Note</h2>
+        <div class="message" th:text="${message}">message</div>
+      </div>
+
+    </th:block>
+  </th:block>
+  <p th:if="${s.cards.isEmpty() and s.fixedExpenses.isEmpty() and s.variableExpenses.isEmpty()}" class="muted" th:text="${labels.empty}">empty</p>
+  <div class="foot" th:if="${!#strings.isEmpty(footer)}" th:text="${footer}">footer</div>
+</body>
+</html>

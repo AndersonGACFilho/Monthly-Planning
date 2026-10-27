@@ -28,7 +28,21 @@
         <therapi.version>0.15.0</therapi.version>
         <pdfbox.version>3.0.8</pdfbox.version>
         <poi.version>5.5.1</poi.version>
+        <openhtmltopdf.version>1.1.97</openhtmltopdf.version>
+        <greenmail.version>2.1.14</greenmail.version>
+        <jsoup.version>1.23.2</jsoup.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Keep every PDFBox part on the same release as pdfbox itself -->
+                <groupId>org.apache.pdfbox</groupId>
+                <artifactId>xmpbox</artifactId>
+                <version>${pdfbox.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -90,6 +104,35 @@
             <version>${poi.version}</version>
         </dependency>
 
+        <dependency>
+            <!-- TPL-01: one HTML template for e-mail body, PDF and PNG -->
+            <groupId>org.thymeleaf</groupId>
+            <artifactId>thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <!-- TPL-01: HTML to PDF on PDFBox 3 -->
+            <groupId>io.github.openhtmltopdf</groupId>
+            <artifactId>openhtmltopdf-pdfbox</artifactId>
+            <version>${openhtmltopdf.version}</version>
+        </dependency>
+        <dependency>
+            <!-- TPL-07: sanitize advanced HTML; HTML5 to W3C DOM for the PDF -->
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
+        </dependency>
+        <dependency>
+            <!-- RF-86: statements by e-mail -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail-junit5</artifactId>
+            <version>${greenmail.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

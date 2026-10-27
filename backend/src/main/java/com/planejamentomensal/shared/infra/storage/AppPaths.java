@@ -1,5 +1,6 @@
 package com.planejamentomensal.shared.infra.storage;
 
+import com.planejamentomensal.shared.application.DataFolders;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -17,7 +18,7 @@ import java.util.Objects;
  * @param home absolute, normalized app folder
  * @since 1.0
  */
-public record AppPaths(Path home) {
+public record AppPaths(Path home) implements DataFolders {
 
     /** Name of the SQLite database file inside {@code data/}. */
     public static final String DATABASE_FILE_NAME = "planejamento-mensal.db";
@@ -37,6 +38,7 @@ public record AppPaths(Path home) {
      *
      * @return {@code <home>/data}
      */
+    @Override
     public Path data() {
         return home.resolve("data");
     }
@@ -55,6 +57,7 @@ public record AppPaths(Path home) {
      *
      * @return {@code <home>/data/templates}
      */
+    @Override
     public Path templates() {
         return data().resolve("templates");
     }
@@ -64,6 +67,7 @@ public record AppPaths(Path home) {
      *
      * @return {@code <home>/data/exports}
      */
+    @Override
     public Path exports() {
         return data().resolve("exports");
     }
