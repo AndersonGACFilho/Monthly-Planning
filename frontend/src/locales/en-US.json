@@ -164,6 +164,45 @@
       "totalsMismatch": "The sum of the lines does not match the bill total."
     }
   },
+  "quickTotal": {
+    "filtered_one": "{{count}} filtered",
+    "filtered_other": "{{count}} filtered",
+    "selected_one": "{{count}} selected",
+    "selected_other": "{{count}} selected"
+  },
+  "entries": {
+    "newEntry": "New entry",
+    "manual": "Manual entry",
+    "type": "Type",
+    "types": {
+      "single": "Single (-)",
+      "installment": "Installments (n/N)",
+      "subscription": "Subscription (*)"
+    },
+    "alias": "Displayed name",
+    "onlyThis": "Only this entry",
+    "restoreOriginal": "Restore original",
+    "splitBetween_one": "split between {{count}}",
+    "splitBetween_other": "split between {{count}}",
+    "details": "Entry details",
+    "original": "Original description",
+    "purchaseDate": "Purchase date",
+    "installments": "Installments",
+    "installmentAmount": "Installment amount",
+    "installmentCount": "Number of installments",
+    "confirmProjected": "Confirm installment",
+    "refund": "Refund",
+    "refundStatus": {
+      "NONE": "—",
+      "PARTIAL": "Partially refunded",
+      "FULL": "Refunded"
+    },
+    "status": {
+      "PROJECTED": "Projected",
+      "CONFIRMED": "Confirmed",
+      "UNCONFIRMED": "Unconfirmed"
+    }
+  },
   "review": {
     "member": "Member",
     "percentage": "Percentage",

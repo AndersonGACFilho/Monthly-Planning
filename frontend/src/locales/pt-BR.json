@@ -164,6 +164,45 @@
       "totalsMismatch": "A soma das linhas não bate com o total da fatura."
     }
   },
+  "quickTotal": {
+    "filtered_one": "{{count}} filtrado",
+    "filtered_other": "{{count}} filtrados",
+    "selected_one": "{{count}} selecionado",
+    "selected_other": "{{count}} selecionados"
+  },
+  "entries": {
+    "newEntry": "Novo lançamento",
+    "manual": "Lançamento manual",
+    "type": "Tipo",
+    "types": {
+      "single": "À vista (-)",
+      "installment": "Parcelado (n/N)",
+      "subscription": "Assinatura (*)"
+    },
+    "alias": "Nome exibido",
+    "onlyThis": "Só este lançamento",
+    "restoreOriginal": "Restaurar original",
+    "splitBetween_one": "dividido entre {{count}}",
+    "splitBetween_other": "dividido entre {{count}}",
+    "details": "Detalhes do lançamento",
+    "original": "Descrição original",
+    "purchaseDate": "Data da compra",
+    "installments": "Parcelas",
+    "installmentAmount": "Valor da parcela",
+    "installmentCount": "Número de parcelas",
+    "confirmProjected": "Confirmar parcela",
+    "refund": "Estorno",
+    "refundStatus": {
+      "NONE": "—",
+      "PARTIAL": "Parcialmente estornada",
+      "FULL": "Estornada"
+    },
+    "status": {
+      "PROJECTED": "Projetada",
+      "CONFIRMED": "Confirmada",
+      "UNCONFIRMED": "Não confirmada"
+    }
+  },
   "review": {
     "member": "Conta",
     "percentage": "Percentual",
