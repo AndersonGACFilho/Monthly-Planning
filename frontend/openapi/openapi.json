@@ -21,6 +21,12 @@
     "description" : "Credit cards with finals, holder, default member and closing/due cycles (RF-02 to RF-05).",
     "name" : "card-controller"
   }, {
+    "description" : "Review queue: imported purchases waiting for the user to check member, split, category and alias\n (RF-74 to RF-79a).",
+    "name" : "review-queue-controller"
+  }, {
+    "description" : "Imports of Itaú bills: preview, line decisions, confirmation, cancellation and undo (RF-60 to RF-73).",
+    "name" : "import-controller"
+  }, {
     "description" : "User settings (IMP-10): thresholds, auto-validation, spreadsheet and e-mail options, language.",
     "name" : "settings-controller"
   }, {
@@ -530,6 +536,290 @@
         "tags" : [ "category-controller" ]
       }
     },
+    "/api/imports" : {
+      "get" : {
+        "description" : "Lists import batches, latest first (RF-72).",
+        "operationId" : "imports",
+        "parameters" : [ {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 20,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "id,DESC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelImportModel"
+                }
+              }
+            },
+            "description" : "one page of batches"
+          }
+        },
+        "summary" : "Lists import batches, latest first (RF-72).",
+        "tags" : [ "import-controller" ]
+      },
+      "post" : {
+        "description" : "Reads a bill and returns the classified preview; nothing is written (RF-60, RF-61, RF-68).",
+        "operationId" : "previewImport",
+        "parameters" : [ {
+          "description" : "card of the bill",
+          "in" : "query",
+          "name" : "cardId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "target billing period, <code>yyyy-MM</code>",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "Itaú bill as PDF or XLSX"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "201 with the preview and its lines"
+          }
+        },
+        "summary" : "Reads a bill and returns the classified preview; nothing is written (RF-60, RF-61, RF-68).",
+        "tags" : [ "import-controller" ]
+      }
+    },
+    "/api/imports/{id}" : {
+      "delete" : {
+        "description" : "Discards a preview.",
+        "operationId" : "cancelImport",
+        "parameters" : [ {
+          "description" : "batch id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "the cancelled batch"
+          }
+        },
+        "summary" : "Discards a preview.",
+        "tags" : [ "import-controller" ]
+      },
+      "get" : {
+        "description" : "Returns a batch with its lines.",
+        "operationId" : "importBatch",
+        "parameters" : [ {
+          "description" : "batch id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "the batch"
+          }
+        },
+        "summary" : "Returns a batch with its lines.",
+        "tags" : [ "import-controller" ]
+      }
+    },
+    "/api/imports/{id}/confirmation" : {
+      "post" : {
+        "description" : "Confirms the preview and writes the batch (RF-72).",
+        "operationId" : "confirmImport",
+        "parameters" : [ {
+          "description" : "batch id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ConfirmationRequest"
+              }
+            }
+          },
+          "description" : "confirmation options"
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "the confirmed batch"
+          }
+        },
+        "summary" : "Confirms the preview and writes the batch (RF-72).",
+        "tags" : [ "import-controller" ]
+      }
+    },
+    "/api/imports/{id}/lines/{lineId}" : {
+      "patch" : {
+        "description" : "Changes the decision, member, category or alias of a preview line (RF-69, RF-70).",
+        "operationId" : "editImportLine",
+        "parameters" : [ {
+          "description" : "batch id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "line id",
+          "in" : "path",
+          "name" : "lineId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LineEditRequest"
+              }
+            }
+          },
+          "description" : "changes",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "the batch with its lines"
+          }
+        },
+        "summary" : "Changes the decision, member, category or alias of a preview line (RF-69, RF-70).",
+        "tags" : [ "import-controller" ]
+      }
+    },
+    "/api/imports/{id}/reversal" : {
+      "post" : {
+        "description" : "Undoes the latest confirmed batch of a card (RF-72).",
+        "operationId" : "undoImport",
+        "parameters" : [ {
+          "description" : "batch id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            },
+            "description" : "the undone batch"
+          }
+        },
+        "summary" : "Undoes the latest confirmed batch of a card (RF-72).",
+        "tags" : [ "import-controller" ]
+      }
+    },
     "/api/members" : {
       "get" : {
         "description" : "Lists members, sorted by code by default.",
@@ -806,6 +1096,162 @@
         "tags" : [ "profile-controller" ]
       }
     },
+    "/api/review-queue" : {
+      "get" : {
+        "description" : "Lists pending items, filtered by card, billing period and import batch (RF-79).",
+        "operationId" : "reviewQueue",
+        "parameters" : [ {
+          "description" : "card id, optional",
+          "in" : "query",
+          "name" : "card",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "period <code>yyyy-MM</code>, optional",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "import batch id, optional",
+          "in" : "query",
+          "name" : "batch",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelReviewItemModel"
+                }
+              }
+            },
+            "description" : "pending items with <code>validate-selected</code> when there are any"
+          }
+        },
+        "summary" : "Lists pending items, filtered by card, billing period and import batch (RF-79).",
+        "tags" : [ "review-queue-controller" ]
+      }
+    },
+    "/api/review-queue/summary" : {
+      "get" : {
+        "description" : "Count and total of pending items, for the sidebar counter (RF-79) and the overview (RF-79a).",
+        "operationId" : "reviewSummary",
+        "parameters" : [ {
+          "description" : "period <code>yyyy-MM</code>, optional",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelSummaryModel"
+                }
+              }
+            },
+            "description" : "count and total"
+          }
+        },
+        "summary" : "Count and total of pending items, for the sidebar counter (RF-79) and the overview (RF-79a).",
+        "tags" : [ "review-queue-controller" ]
+      }
+    },
+    "/api/review-queue/validations" : {
+      "post" : {
+        "description" : "Applies the same changes to the selected items and optionally validates them (RF-77).",
+        "operationId" : "validateSelected",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BatchValidationRequest"
+              }
+            }
+          },
+          "description" : "selection, changes and whether to validate",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelReviewItemModel"
+                }
+              }
+            },
+            "description" : "the updated items"
+          }
+        },
+        "summary" : "Applies the same changes to the selected items and optionally validates them (RF-77).",
+        "tags" : [ "review-queue-controller" ]
+      }
+    },
+    "/api/review-queue/{purchaseId}/validation" : {
+      "post" : {
+        "description" : "Applies changes to one item and validates it (RF-76).",
+        "operationId" : "validateItem",
+        "parameters" : [ {
+          "description" : "purchase",
+          "in" : "path",
+          "name" : "purchaseId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ReviewEditRequest"
+              }
+            }
+          },
+          "description" : "changes",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ReviewItemModel"
+                }
+              }
+            },
+            "description" : "the validated item"
+          }
+        },
+        "summary" : "Applies changes to one item and validates it (RF-76).",
+        "tags" : [ "review-queue-controller" ]
+      }
+    },
     "/api/settings" : {
       "get" : {
         "description" : "Returns every setting with its current value.",
@@ -871,6 +1317,30 @@
           }
         },
         "required" : [ "active" ]
+      },
+      "BatchValidationRequest" : {
+        "type" : "object",
+        "description" : "Same changes for several selected items, optionally validating them (RF-77).",
+        "properties" : {
+          "changes" : {
+            "$ref" : "#/components/schemas/ReviewEditRequest",
+            "description" : "changes to apply"
+          },
+          "purchaseIds" : {
+            "type" : "array",
+            "description" : "selected purchases",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          },
+          "validate" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> to validate the selected items"
+          }
+        },
+        "required" : [ "changes", "purchaseIds" ]
       },
       "CardModel" : {
         "type" : "object",
@@ -1097,6 +1567,35 @@
           }
         }
       },
+      "CollectionModelReviewItemModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "items" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/ReviewItemModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "ConfirmationRequest" : {
+        "type" : "object",
+        "description" : "Confirmation of a preview (RF-72).",
+        "properties" : {
+          "acknowledgeTotals" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when the user reviewed a totals difference (RF-64h)"
+          }
+        }
+      },
       "Cycle" : {
         "type" : "object",
         "description" : "Cycle of a card, valid from a period.",
@@ -1168,6 +1667,227 @@
           }
         }
       },
+      "EntityModelSummaryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "count" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "number of pending purchases"
+          },
+          "total" : {
+            "type" : "number",
+            "description" : "sum of their entries"
+          }
+        }
+      },
+      "ImportLineModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a preview line (RF-68).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "aliasName" : {
+            "type" : "string",
+            "description" : "Alias to apply (RF-70)."
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "Amount."
+          },
+          "bankCategory" : {
+            "type" : "string",
+            "description" : "Itaú category suggestion."
+          },
+          "cardLastDigits" : {
+            "type" : "string",
+            "description" : "Card final."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category."
+          },
+          "decision" : {
+            "type" : "string",
+            "description" : "Decision (RF-69).",
+            "enum" : [ "IMPORT", "IGNORE", "UPDATE_EXISTING", "UNDECIDED" ]
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Description as on the file."
+          },
+          "futureCheck" : {
+            "type" : "boolean",
+            "description" : "Only used to check projections (RF-64g)."
+          },
+          "holderName" : {
+            "type" : "string",
+            "description" : "Holder."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "Installment: <code>n/N</code> or <code>-</code>."
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Kind.",
+            "enum" : [ "PURCHASE", "CREDIT", "IOF", "FEE" ]
+          },
+          "matchedEntryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Existing entry the line refers to."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "Note."
+          },
+          "occurrence" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Identical lines get 2, 3… (RN-12)."
+          },
+          "purchaseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Purchase date."
+          },
+          "sequence" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Position in the file."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Classification (RN-13).",
+            "enum" : [ "NEW", "DUPLICATE", "MATCHED", "DIVERGENT" ]
+          },
+          "unknownFinal" : {
+            "type" : "boolean",
+            "description" : "Final not registered (RF-66)."
+          }
+        }
+      },
+      "ImportModel" : {
+        "type" : "object",
+        "description" : "HAL representation of an import batch and its preview lines (RF-68, RF-71, RF-72).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period chosen."
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Primary card."
+          },
+          "computedTotal" : {
+            "type" : "number",
+            "description" : "Sum of the lines read (RF-71)."
+          },
+          "divergentCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Divergent lines."
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Due date read from the file."
+          },
+          "duplicateCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Duplicate lines."
+          },
+          "entriesTotal" : {
+            "type" : "number",
+            "description" : "\"Total dos lançamentos atuais\"."
+          },
+          "fileName" : {
+            "type" : "string",
+            "description" : "File name."
+          },
+          "fileTotal" : {
+            "type" : "number",
+            "description" : "Total printed on the file."
+          },
+          "format" : {
+            "type" : "string",
+            "description" : "File format.",
+            "enum" : [ "PDF", "XLSX" ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "importedAt" : {
+            "type" : "string",
+            "format" : "date-time",
+            "description" : "When the file was read."
+          },
+          "lines" : {
+            "type" : "array",
+            "description" : "Lines, embedded only on the batch itself.",
+            "items" : {
+              "$ref" : "#/components/schemas/ImportLineModel"
+            }
+          },
+          "matchedCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Matched lines."
+          },
+          "newCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "New lines."
+          },
+          "openBill" : {
+            "type" : "boolean",
+            "description" : "Open (partial) bill."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Status.",
+            "enum" : [ "PREVIEW", "CONFIRMED", "CANCELLED", "UNDONE" ]
+          },
+          "totalDifference" : {
+            "type" : "number",
+            "description" : "Difference between printed and computed totals (RF-71)."
+          },
+          "totalsMatch" : {
+            "type" : "boolean",
+            "description" : "Printed totals match the lines (RF-64h)."
+          },
+          "warnings" : {
+            "type" : "array",
+            "description" : "Warnings to confirm (RF-62, RF-73).",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
       "InitialSetRequest" : {
         "type" : "object",
         "description" : "Language of the initial categories (I18N-07).",
@@ -1180,6 +1900,33 @@
           }
         },
         "required" : [ "language" ]
+      },
+      "LineEditRequest" : {
+        "type" : "object",
+        "description" : "Change of a preview line (RF-69, RF-70); <code>null</code> fields keep their value.",
+        "properties" : {
+          "aliasName" : {
+            "type" : "string",
+            "description" : "alias; blank removes it",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category"
+          },
+          "decision" : {
+            "type" : "string",
+            "description" : "decision",
+            "enum" : [ "IMPORT", "IGNORE", "UPDATE_EXISTING", "UNDECIDED" ]
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          }
+        }
       },
       "Link" : {
         "type" : "object",
@@ -1391,6 +2138,28 @@
           }
         }
       },
+      "PagedModelImportModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "imports" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/ImportModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
       "PagedModelMemberModel" : {
         "type" : "object",
         "properties" : {
@@ -1420,6 +2189,176 @@
             "$ref" : "#/components/schemas/Links"
           }
         }
+      },
+      "ReviewEditRequest" : {
+        "type" : "object",
+        "description" : "Changes for one or more review items (RF-76, RF-77); <code>null</code> fields keep their value.",
+        "properties" : {
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category"
+          },
+          "clearCategory" : {
+            "type" : "boolean",
+            "description" : "remove the category (third-party only purchases)"
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "note; blank removes it",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "splits" : {
+            "type" : "array",
+            "description" : "member shares",
+            "items" : {
+              "$ref" : "#/components/schemas/ShareRequest"
+            }
+          },
+          "subscription" : {
+            "type" : "boolean",
+            "description" : "accept the subscription suggestion (RN-23)"
+          }
+        }
+      },
+      "ReviewItemModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a pending purchase in the review queue (RF-74, RF-75).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "Amount."
+          },
+          "bankCategory" : {
+            "type" : "string",
+            "description" : "Itaú category suggestion."
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Card."
+          },
+          "cardLastDigits" : {
+            "type" : "string",
+            "description" : "Card final."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category."
+          },
+          "entryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Entry on the latest bill."
+          },
+          "importBatchId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Import batch."
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "Installment: <code>n/N</code>, <code>-</code> or <code>*</code>."
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Kind."
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "Note."
+          },
+          "originalDescription" : {
+            "type" : "string",
+            "description" : "Description as on the card."
+          },
+          "purchaseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Purchase date."
+          },
+          "purchaseId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Purchase id."
+          },
+          "refundOfPurchaseId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Refunded purchase."
+          },
+          "splits" : {
+            "type" : "array",
+            "description" : "Member shares.",
+            "items" : {
+              "$ref" : "#/components/schemas/Share"
+            }
+          },
+          "subscriptionSuggested" : {
+            "type" : "boolean",
+            "description" : "Suggest marking as subscription (RN-23)."
+          },
+          "unknownFinal" : {
+            "type" : "boolean",
+            "description" : "Final not registered (RF-66)."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version for <code>If-Match</code>."
+          }
+        }
+      },
+      "Share" : {
+        "type" : "object",
+        "description" : "Share of one member.",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "fixed amount, or <code>null</code>"
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          },
+          "percentage" : {
+            "type" : "number",
+            "description" : "percentage, or <code>null</code>"
+          }
+        }
+      },
+      "ShareRequest" : {
+        "type" : "object",
+        "description" : "Share of one member, by percentage or amount.",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "fixed amount per installment",
+            "minimum" : 0
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          },
+          "percentage" : {
+            "type" : "number",
+            "description" : "percentage from 0 to 100",
+            "maximum" : 100,
+            "minimum" : 0
+          }
+        },
+        "required" : [ "memberId" ]
       }
     },
     "securitySchemes" : {

@@ -17,9 +17,15 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  jackson:
+    deserialization:
+      # Missing booleans in request bodies mean false (Jackson 3 fails by default)
+      fail-on-null-for-primitives: false
   servlet:
     multipart:
       location: ${app.home}/data/tmp
+      max-file-size: 20MB
+      max-request-size: 25MB
 
 app:
   # Folder of the executables; the shell passes it (POR-03). Development falls back to the working dir.

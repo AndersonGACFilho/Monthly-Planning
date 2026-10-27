@@ -1,7 +1,7 @@
 package com.planejamentomensal.shared.api;
 
 import com.planejamentomensal.shared.api.web.SessionTokenFilter;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 
 /**
  * Helpers shared by API tests (TST-05).
@@ -17,10 +17,11 @@ public final class ApiTestSupport {
     /**
      * Adds the session token header to a request.
      *
-     * @param request request builder
+     * @param request request builder, plain or multipart
+     * @param <B>     builder type
      * @return the same builder with the token
      */
-    public static MockHttpServletRequestBuilder authorized(MockHttpServletRequestBuilder request) {
+    public static <B extends AbstractMockHttpServletRequestBuilder<B>> B authorized(B request) {
         return request.header(SessionTokenFilter.HEADER, TOKEN);
     }
 }
