@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 0/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 162/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 186/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -187,30 +187,30 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 
 ## M4 — Card entries and aliases
 
-- [ ] RF-40 — List entries of the period, filters by card, member, category, type (`-`, `n/N`, `*`) and text · entry · accept: RF-40 · BillEntryControllerIT · after: RF-72
-- [ ] API-06 — Filters as query string on list resources (`/api/bill-entries?billingPeriod=…&card=…&category=…`) · api · accept: API-06 · BillEntryControllerIT · after: RF-40
-- [ ] RF-41 — Sort by any column, default entry date · entry · accept: RF-41 · BillEntryControllerIT · after: RF-40
-- [ ] UI-09 — Long lists virtualized (TanStack Virtual) · frontend · accept: 300+ rows smooth · EntriesTable.test.tsx · after: RF-40
-- [ ] RF-42 — Fixed quick total: sum of filtered and of selected rows with count · frontend · accept: RF-42 · QuickTotalBar.test.tsx · after: RF-40
-- [ ] UI-03 — `QuickTotalBar` as fixed footer bar (shared with variable expenses) · frontend · accept: UI-03 · QuickTotalBar.test.tsx · after: RF-42
-- [ ] UI-04 — Entries table with inline editing; Ctrl+click / Shift+click select for quick total · frontend · accept: UI-04 · entries.spec.ts · after: RF-42
-- [ ] RF-46 — Rename creates/updates alias tied to normalized original description; original untouched · alias · accept: RF-46 · RenameEntryUseCaseTest · after: RN-15
-- [ ] RF-47 — Renaming again replaces alias; never alias-of-alias · alias · accept: RF-47 · RenameEntryUseCaseTest · after: RF-46
-- [ ] RF-48 — Default scope: all entries with same original (past and future); "only this one" creates `AliasOverride` · alias · accept: RF-48 · RenameEntryUseCaseTest, BillEntryControllerIT · after: RF-46
-- [ ] RF-50 — "Restore original" removes alias · alias · accept: RF-50 · DisplayDescriptionResolverTest · after: RF-46
-- [ ] IMP-27 — `DisplayDescriptionResolver`: override → alias → original (origin §10, §13) · alias · accept: resolution order · DisplayDescriptionResolverTest · after: RF-48
-- [ ] RF-49 — Alias may carry default category applied on next imports · alias · accept: RF-49 · RenameEntryUseCaseTest · after: RF-46
-- [ ] RF-08 — Category chosen for an original description is suggested for future entries with the same description · alias · accept: RF-08 · CategorySuggestionTest · after: RF-49
-- [ ] RF-51 — Text search matches original description and alias · entry · accept: RF-51 · BillEntryControllerIT · after: RF-40, RF-46
-- [ ] RF-43 — Inline edit of category, member and alias · entry/frontend · accept: RF-43 · BillEntryControllerIT, entries.spec.ts · after: UI-04, RF-48
-- [ ] UI-05 — Rename and change category inline or in the details panel · frontend · accept: UI-05 · entries.spec.ts · after: RF-43
-- [ ] IMP-28 — Bill-entry HATEOAS links: `rename` always, `restore-original` only with alias, `confirm` only if PROJECTED; purchase `installments` link (origin §12 resource table) · api · accept: links per state · BillEntryControllerIT, PurchaseControllerIT · after: RF-48
-- [ ] RN-24 — An alias groups several normalized descriptions (PDF + XLSX variants); queue suggests merging when RN-16 matches · alias · accept: RN-24 · AliasMergeSuggesterTest · after: RN-16, RF-46
-- [ ] RF-70 — Preview applies automatic alias and category, editable before confirming · imports · accept: RF-70 · PreviewImportUseCaseTest · after: RF-49, RF-68
-- [ ] RF-75 — Queue items prefilled with alias + category from existing alias and the card's default member; suggestion does not validate · entry · accept: RF-75 · ReviewQueueSuggestionTest · after: RF-70, IMP-25
-- [ ] RF-79d — Setting (off by default): auto-validate items whose description has an alias with category and member · entry · accept: RF-79d · ValidateEntriesUseCaseTest · after: RF-75, IMP-10
-- [ ] RF-44 — Manual card entry (purchase not imported) with the same installment rules · entry · accept: RF-44 · CreateManualEntryUseCaseTest · after: RN-03, RF-79c
-- [ ] RF-45 — Manual installment purchase generates future installments in following periods · entry · accept: RF-45 · CreateManualEntryUseCaseTest · after: RF-44, RN-04
+- [x] RF-40 — List entries of the period, filters by card, member, category, type (`-`, `n/N`, `*`) and text · entry · accept: RF-40 · BillEntryControllerIT · after: RF-72 · done (bac8c4c, 5ac6566)
+- [x] API-06 — Filters as query string on list resources (`/api/bill-entries?billingPeriod=…&card=…&category=…`) · api · accept: API-06 · BillEntryControllerIT · after: RF-40 · done (bac8c4c)
+- [x] RF-41 — Sort by any column, default entry date · entry · accept: RF-41 · BillEntryControllerIT · after: RF-40 · done (bac8c4c)
+- [x] UI-09 — Long lists virtualized (TanStack Virtual) · frontend · accept: 300+ rows smooth · EntriesTable.test.tsx · after: RF-40 · done (5ac6566; virtualized above 100 rows, long list checked in IMP-40)
+- [x] RF-42 — Fixed quick total: sum of filtered and of selected rows with count · frontend · accept: RF-42 · QuickTotalBar.test.tsx · after: RF-40 · done (5ac6566)
+- [x] UI-03 — `QuickTotalBar` as fixed footer bar (shared with variable expenses) · frontend · accept: UI-03 · QuickTotalBar.test.tsx · after: RF-42 · done (5ac6566)
+- [x] UI-04 — Entries table with inline editing; Ctrl+click / Shift+click select for quick total · frontend · accept: UI-04 · entries.spec.ts · after: RF-42 · done (5ac6566)
+- [x] RF-46 — Rename creates/updates alias tied to normalized original description; original untouched · alias · accept: RF-46 · RenameEntryUseCaseTest · after: RN-15 · done (bac8c4c)
+- [x] RF-47 — Renaming again replaces alias; never alias-of-alias · alias · accept: RF-47 · RenameEntryUseCaseTest · after: RF-46 · done (bac8c4c)
+- [x] RF-48 — Default scope: all entries with same original (past and future); "only this one" creates `AliasOverride` · alias · accept: RF-48 · RenameEntryUseCaseTest, BillEntryControllerIT · after: RF-46 · done (bac8c4c)
+- [x] RF-50 — "Restore original" removes alias · alias · accept: RF-50 · DisplayDescriptionResolverTest · after: RF-46 · done (bac8c4c)
+- [x] IMP-27 — `DisplayDescriptionResolver`: override → alias → original (origin §10, §13) · alias · accept: resolution order · DisplayDescriptionResolverTest · after: RF-48 · done (bac8c4c)
+- [x] RF-49 — Alias may carry default category applied on next imports · alias · accept: RF-49 · RenameEntryUseCaseTest · after: RF-46 · done (bac8c4c)
+- [x] RF-08 — Category chosen for an original description is suggested for future entries with the same description · alias · accept: RF-08 · CategorySuggestionTest · after: RF-49 · done (bac8c4c)
+- [x] RF-51 — Text search matches original description and alias · entry · accept: RF-51 · BillEntryControllerIT · after: RF-40, RF-46 · done (bac8c4c)
+- [x] RF-43 — Inline edit of category, member and alias · entry/frontend · accept: RF-43 · BillEntryControllerIT, entries.spec.ts · after: UI-04, RF-48 · done (bac8c4c)
+- [x] UI-05 — Rename and change category inline or in the details panel · frontend · accept: UI-05 · entries.spec.ts · after: RF-43 · done (5ac6566)
+- [x] IMP-28 — Bill-entry HATEOAS links: `rename` always, `restore-original` only with alias, `confirm` only if PROJECTED; purchase `installments` link (origin §12 resource table) · api · accept: links per state · BillEntryControllerIT, PurchaseControllerIT · after: RF-48 · done (bac8c4c)
+- [x] RN-24 — An alias groups several normalized descriptions (PDF + XLSX variants); queue suggests merging when RN-16 matches · alias · accept: RN-24 · AliasMergeSuggesterTest · after: RN-16, RF-46 · done (bac8c4c)
+- [x] RF-70 — Preview applies automatic alias and category, editable before confirming · imports · accept: RF-70 · PreviewImportUseCaseTest · after: RF-49, RF-68 · done (bac8c4c)
+- [x] RF-75 — Queue items prefilled with alias + category from existing alias and the card's default member; suggestion does not validate · entry · accept: RF-75 · ReviewQueueSuggestionTest · after: RF-70, IMP-25 · done (bac8c4c)
+- [x] RF-79d — Setting (off by default): auto-validate items whose description has an alias with category and member · entry · accept: RF-79d · ValidateEntriesUseCaseTest · after: RF-75, IMP-10 · done (bac8c4c)
+- [x] RF-44 — Manual card entry (purchase not imported) with the same installment rules · entry · accept: RF-44 · CreateManualEntryUseCaseTest · after: RN-03, RF-79c · done (bac8c4c)
+- [x] RF-45 — Manual installment purchase generates future installments in following periods · entry · accept: RF-45 · CreateManualEntryUseCaseTest · after: RF-44, RN-04 · done (bac8c4c)
 
 ## M5 — Incomes, expenses, splits and overview
 
@@ -395,3 +395,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-26 — M0: frontend shell (fb66d73), quality gates (d859619), OpenAPI contract (33dcde0), shutdown endpoint (a787481), parent watcher (7336c56), I18N-13 (629bd6a), traceability + CLAUDE suggestion (db6919e), Tauri shell + CI + portable scripts (e60a687). Release app started the backend from the portable folder in 3.9 s; killing the shell stopped the backend cleanly. Open: UI-10 manual check, POR-01/IMP-07 on Windows, TST-07/POR-15 need a remote (Q2).
 - 2026-10-27 — M1 done except RNF-05 (audit wiring moves with IMP-26 to M3). Value objects (f273598), settings + ETag (cbd523d), members (b8733f5), cards (60bd14f), categories (db9c0c3), unique operation names (7ceb224), BEGIN IMMEDIATE fix for SQLITE_BUSY found in a manual UI run (0a2a880), registry screens and shared components (9418ac1). Decision: Hibernate schema validation off; Flyway owns the schema.
 - 2026-10-27 — M2 done (dc53a3f): Itaú PDF and XLSX parsers verified against the masked fixtures (79 + 16 future lines, totals match; 88 XLSX lines). M3 done (d00a988, 5aa24ce): preview/confirm/undo, projections, refunds, reconciliation, review queue, audit; found and fixed date persistence with a round-trip test after a manual run; added Q18 (RN-16 8-character minimum vs the nuuvem example).
+- 2026-10-27 — M4 done: aliases, entries API and tab (bac8c4c and the entries tab commit). Manual check with the fixtures: November shows 89 entries; BMB 01/02 (PDF, October) and 02/02 (XLSX, November) both confirmed.
