@@ -11,6 +11,8 @@ data/
 *.csv
 !backend/src/test/resources/fixtures/**/*.pdf
 !backend/src/test/resources/fixtures/**/*.xlsx
+# Spreadsheet model bundled with the app: look only, no data (Q10, checked by WorkbookTemplateTest)
+!backend/src/main/resources/workbook/monthly-workbook-model.xlsx
 
 # Build outputs
 backend/target/
