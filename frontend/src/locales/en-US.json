@@ -21,5 +21,97 @@
   "error": {
     "unexpected": "Something went wrong.",
     "network": "Could not reach the local service."
+  },
+  "period": {
+    "label": "Billing period",
+    "previous": "Previous month",
+    "next": "Next month"
+  },
+  "action": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Delete this item? This cannot be undone.",
+    "activate": "Activate",
+    "inactivate": "Inactivate"
+  },
+  "common": {
+    "none": "— none —",
+    "search": "Search",
+    "actions": "Actions",
+    "empty": "Nothing here yet.",
+    "saved": "Saved.",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "type": "Type"
+  },
+  "validation": {
+    "required": "Required.",
+    "invalid": "Invalid value.",
+    "day": "Day from 1 to 31."
+  },
+  "language": {
+    "pt-BR": "Portuguese (Brazil)",
+    "en-US": "English (US)"
+  },
+  "member": {
+    "title": "Members",
+    "new": "New member",
+    "form": "Member data",
+    "code": "Code",
+    "codeHint": "1 to 4 upper-case letters or digits.",
+    "name": "Name",
+    "kind": "Kind",
+    "kinds": {
+      "MAIN": "Main (household)",
+      "THIRD_PARTY": "Third party (reimburses)"
+    },
+    "color": "Colour",
+    "email": "E-mail",
+    "whatsappPhone": "WhatsApp",
+    "phoneHint": "Use the +<country><number> format.",
+    "pixKey": "PIX key",
+    "preferredLanguage": "Statement language"
+  },
+  "card": {
+    "title": "Cards",
+    "new": "New card",
+    "form": "Card data",
+    "nickname": "Nickname",
+    "finals": "Finals",
+    "finalsHint": "4-digit finals separated by commas.",
+    "holderName": "Holder (as on the bill)",
+    "defaultMember": "Default member",
+    "primaryCard": "Primary card",
+    "noPrimary": "— primary card —",
+    "isPrimary": "Primary",
+    "closingDay": "Closing day",
+    "dueDay": "Due day",
+    "cycle": "Cycle",
+    "cycleText": "closes on {{closing}}, due on {{due}}",
+    "changeCycle": "Change closing/due day",
+    "validFrom": "From billing period"
+  },
+  "category": {
+    "title": "Categories",
+    "new": "New category",
+    "form": "Category data",
+    "name": "Name",
+    "parent": "Parent category",
+    "color": "Colour",
+    "icon": "Icon",
+    "system": "System"
+  },
+  "settings": {
+    "general": "General",
+    "language": "Language",
+    "languageSystem": "Same as the system",
+    "alertWarning": "Yellow alert (% of income)",
+    "alertDanger": "Red alert (% of income)",
+    "horizon": "Months of projected subscriptions",
+    "autoValidate": "Validate items with a complete alias automatically"
   }
 }

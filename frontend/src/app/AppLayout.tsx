@@ -1,17 +1,21 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
+import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
+import { Toaster } from '../shared/components/Toaster';
 import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
+import { useStartup } from './useStartup';
 
 /**
- * Window frame: sidebar with the tabs and the main area.
+ * Window frame: sidebar with the tabs, header with the global billing period, main area and notices.
  *
  * The sidebar shows icons only from 800 to 1199 px and icons with labels from 1200 px (SPEC section 14,
- * RNF-06).
+ * RNF-06); the billing period selector stays at the top (UI-02).
  *
  * @returns the layout with the current route rendered in the main area
  */
 export function AppLayout() {
   const { t } = useTranslation();
+  useStartup();
   return (
     <div className="flex h-full">
       <nav
@@ -27,9 +31,15 @@ export function AppLayout() {
           <SidebarLink key={item.path} item={item} />
         ))}
       </nav>
-      <main className="min-w-0 flex-1 overflow-auto p-4">
-        <Outlet />
-      </main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center justify-center border-b border-(--color-border) px-4 py-2">
+          <BillingPeriodSelector />
+        </header>
+        <main className="min-w-0 flex-1 overflow-auto p-4">
+          <Outlet />
+        </main>
+      </div>
+      <Toaster />
     </div>
   );
 }

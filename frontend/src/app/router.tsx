@@ -1,7 +1,16 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
+import { IncomesPage } from '../features/members/IncomesPage';
+import { SettingsPage } from '../features/settings/SettingsPage';
 import { PlaceholderPage } from '../shared/components/PlaceholderPage';
+import type { ReactElement } from 'react';
 import { AppLayout } from './AppLayout';
 import { EXTRA_SCREENS, MAIN_TABS } from './navigation';
+
+/** Real pages by path; the rest are placeholders until their milestone. */
+const PAGES: Record<string, ReactElement> = {
+  '/incomes': <IncomesPage />,
+  '/settings': <SettingsPage />,
+};
 
 /**
  * Routes of the app. The overview is the index route, so the app opens straight on it (RNF-10).
@@ -13,8 +22,8 @@ export const routes: RouteObject[] = [
     element: <AppLayout />,
     children: [...MAIN_TABS, ...EXTRA_SCREENS].map((item) =>
       item.path === '/'
-        ? { index: true, element: <PlaceholderPage titleKey={item.labelKey} /> }
-        : { path: item.path.slice(1), element: <PlaceholderPage titleKey={item.labelKey} /> },
+        ? { index: true, element: PAGES[item.path] ?? <PlaceholderPage titleKey={item.labelKey} /> }
+        : { path: item.path.slice(1), element: PAGES[item.path] ?? <PlaceholderPage titleKey={item.labelKey} /> },
     ),
   },
 ];

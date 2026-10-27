@@ -21,5 +21,97 @@
   "error": {
     "unexpected": "Algo deu errado.",
     "network": "Não foi possível falar com o serviço local."
+  },
+  "period": {
+    "label": "Competência",
+    "previous": "Mês anterior",
+    "next": "Próximo mês"
+  },
+  "action": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "confirmDelete": "Excluir este item? Esta ação não pode ser desfeita.",
+    "activate": "Reativar",
+    "inactivate": "Inativar"
+  },
+  "common": {
+    "none": "— nenhum —",
+    "search": "Buscar",
+    "actions": "Ações",
+    "empty": "Nada por aqui ainda.",
+    "saved": "Salvo.",
+    "status": "Situação",
+    "active": "Ativa",
+    "inactive": "Inativa",
+    "type": "Tipo"
+  },
+  "validation": {
+    "required": "Obrigatório.",
+    "invalid": "Valor inválido.",
+    "day": "Dia de 1 a 31."
+  },
+  "language": {
+    "pt-BR": "Português (Brasil)",
+    "en-US": "Inglês (EUA)"
+  },
+  "member": {
+    "title": "Contas (cotas)",
+    "new": "Nova conta",
+    "form": "Dados da conta",
+    "code": "Sigla",
+    "codeHint": "De 1 a 4 letras maiúsculas ou dígitos.",
+    "name": "Nome",
+    "kind": "Tipo",
+    "kinds": {
+      "MAIN": "Principal (casa)",
+      "THIRD_PARTY": "Terceiro (reembolsa)"
+    },
+    "color": "Cor",
+    "email": "E-mail",
+    "whatsappPhone": "WhatsApp",
+    "phoneHint": "Use o formato +55DDDNÚMERO.",
+    "pixKey": "Chave PIX",
+    "preferredLanguage": "Idioma do extrato"
+  },
+  "card": {
+    "title": "Cartões",
+    "new": "Novo cartão",
+    "form": "Dados do cartão",
+    "nickname": "Apelido",
+    "finals": "Finais",
+    "finalsHint": "Finais de 4 dígitos separados por vírgula.",
+    "holderName": "Portador (como na fatura)",
+    "defaultMember": "Conta padrão",
+    "primaryCard": "Cartão titular",
+    "noPrimary": "— é o titular —",
+    "isPrimary": "Titular",
+    "closingDay": "Dia de fechamento",
+    "dueDay": "Dia de vencimento",
+    "cycle": "Ciclo",
+    "cycleText": "fecha dia {{closing}}, vence dia {{due}}",
+    "changeCycle": "Alterar fechamento/vencimento",
+    "validFrom": "A partir da competência"
+  },
+  "category": {
+    "title": "Categorias",
+    "new": "Nova categoria",
+    "form": "Dados da categoria",
+    "name": "Nome",
+    "parent": "Categoria pai",
+    "color": "Cor",
+    "icon": "Ícone",
+    "system": "Sistema"
+  },
+  "settings": {
+    "general": "Geral",
+    "language": "Idioma",
+    "languageSystem": "Igual ao sistema",
+    "alertWarning": "Alerta amarelo (% da renda)",
+    "alertDanger": "Alerta vermelho (% da renda)",
+    "horizon": "Meses de assinaturas projetadas",
+    "autoValidate": "Validar automaticamente itens com alias completo"
   }
 }

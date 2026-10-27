@@ -18,7 +18,8 @@
     "i18n:check": "node scripts/check-locales.mjs",
     "prebuild": "npm run api:generate",
     "pretypecheck": "npm run api:generate",
-    "pretest": "npm run api:generate"
+    "pretest": "npm run api:generate",
+    "i18n:build": "node scripts/build-locales.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "6.0.0",
