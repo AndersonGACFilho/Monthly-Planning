@@ -14,8 +14,9 @@ SPEC §15: a feature is done only when it has Javadoc, automated tests and its r
 | Deduplication | RN-10 to RN-14 | `EntryKeyFactory`, `ImportClassifier` | `EntryKeyFactoryTest`, `ImportClassifierTest` | planned |
 | Alias | RF-46 to RF-51 | `DisplayDescriptionResolver`, `RenameEntryUseCase` | `DisplayDescriptionResolverTest`, `BillEntryControllerIT` | planned |
 | Itaú import | RF-60 to RF-73 | `ItauPdfParser`, `ItauXlsxParser`, `PreviewImportUseCase` | `ItauPdfParserTest`, `ItauXlsxParserTest`, `import.spec.ts` | planned |
-| Overview | RF-10 to RF-17 | `MonthlySummaryService` | `MonthlySummaryServiceTest`, `monthly-summary.spec.ts` | planned |
-| Incomes and fixed expenses | RF-21 to RF-24, RF-30 to RF-32 | `GenerateOccurrencesUseCase` | `GenerateOccurrencesUseCaseTest` | planned |
-| Split between members | RF-26 | `SplitPolicy` | `SplitPolicyTest` | planned |
+| Overview | RF-10 to RF-17, RF-25, RF-27, RF-79a, SOL-01 | `MonthlySummaryService`, `PeriodData`, `CategoryTotalsCalculator`, `MemberTotalsCalculator`, `CommittedInstallmentsCalculator`, `SettlementCalculator`, `Indicators`, `OverviewPage` | `SummaryCalculatorsTest`, `MonthlySummaryServiceTest`, `MonthlySummaryControllerIT`, `OverviewPage.test.tsx` (E2E `monthly-summary.spec.ts` in M7) | done |
+| Incomes and fixed expenses | RF-20 to RF-24, RF-30 to RF-33, RN-30, IMP-29, IMP-30 | `RecurrenceRule`, `Occurrence`, `GenerateOccurrencesUseCase`, `RecurrenceCommands`, `FixedExpenseLinker`, `RecurrenceRuleForm`, `OccurrencesSection`, `PendingLinks` | `RecurrenceRuleTest`, `GenerateOccurrencesUseCaseTest`, `FixedExpenseLinkerTest`, `RecurrenceControllerIT`, `RecurrenceRuleForm.test.tsx`, `IncomesPage.test.tsx`, `PendingLinks.test.tsx` | done |
+| Variable expenses and card totals | RF-34 to RF-38, IMP-31 | `VariableExpense`, `VariableExpenseCommands`, `CardBillQueries`, `CardBillSummaries`, `CardBillController`, `CardBillCards`, `VariableExpensesSection` | `VariableExpenseControllerIT`, `MonthlySummaryServiceTest`, `MonthlySummaryControllerIT`, `ExpensesPage.test.tsx` | done |
+| Split between members | RF-26 | `SplitPolicy`, `EntryRow.memberAmounts`, `SplitEditor` | `EntryPoliciesTest`, `MonthlySummaryServiceTest` | done |
 | Member statement | RF-80 to RF-94, TPL-01 to TPL-07 | `MemberStatementBuilder`, `SendStatementUseCase` | `MemberStatementBuilderTest`, `SendStatementUseCaseTest` | planned |
 | Language | I18N-01 to I18N-14 | `MessageSource`, `locales/*.json` | `MessageKeysConsistencyTest`, `i18n.test.ts`, `i18n.spec.ts` | partial |

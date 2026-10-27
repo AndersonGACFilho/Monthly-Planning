@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 12/34 · M6 1/52 · M7 0/22 (total 197/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 1/52 · M7 0/22 (total 219/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -219,34 +219,34 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] RF-22 — Generate expected incomes per period; change only that month's value · recurrence · accept: RF-22 · GenerateOccurrencesUseCaseTest · after: RF-21 · done (6c35a4d)
 - [x] RF-23 — One-off income in the period · recurrence · accept: RF-23 · IncomeControllerIT · after: RF-21 · done (6c35a4d)
 - [x] RF-24 — Mark income received/expected · recurrence · accept: RF-24 · IncomeControllerIT · after: RF-22 · done (6c35a4d)
-- [ ] IMP-30 — `RecurrenceRuleForm` shared by income and fixed expense (origin §13 front table) · frontend · accept: one form, two kinds · RecurrenceRuleForm.test.tsx · after: RF-21
+- [x] IMP-30 — `RecurrenceRuleForm` shared by income and fixed expense (origin §13 front table) · frontend · accept: one form, two kinds · RecurrenceRuleForm.test.tsx · after: RF-21 · done (ecef157)
 - [x] RF-20 — Members registry reachable from tab 2 · frontend · accept: RF-20 · IncomesPage.test.tsx · after: IMP-11 · done (9418ac1)
 - [x] RF-30 — Parameterized fixed expense: + category, due day, payment method · recurrence · accept: RF-30 · GenerateOccurrencesUseCaseTest · after: IMP-29 · done (6c35a4d)
 - [x] RF-31 — Automatic generation per period with monthly override · recurrence · accept: RF-31 · GenerateOccurrencesUseCaseTest · after: RF-30 · done (6c35a4d)
 - [x] RF-32 — Mark paid/pending with payment date · recurrence · accept: RF-32 · FixedExpenseControllerIT · after: RF-31 · done (6c35a4d)
 - [x] RF-33 — Fixed expense paid by card linked automatically to the bill entry (or `*`) by description (alias/RN-16) and close value; never counted twice · recurrence · accept: RF-33 · FixedExpenseLinkerTest · after: RF-31, RN-16, RF-46 · done (6c35a4d)
-- [ ] RN-30 — More than one candidate entry for the link → review queue · recurrence · accept: RN-30 · FixedExpenseLinkerTest · after: RF-33, IMP-25
+- [x] RN-30 — More than one candidate entry for the link → review queue · recurrence · accept: RN-30 · FixedExpenseLinkerTest · after: RF-33, IMP-25 · done (6c35a4d, ecef157)
 - [x] RF-34 — Variable expense: date, description, member, category, amount, payment method · expense · accept: RF-34 · VariableExpenseControllerIT · after: RF-06, RF-01 · done (6c35a4d)
-- [ ] RF-35 — Filterable list by member and category with filter total · expense/frontend · accept: RF-35 · VariableExpensesPage.test.tsx · after: RF-34, IMP-18, UI-03
-- [ ] RF-36 — Card total cards: bill total, closing, due, status (open, closed, paid) · summary · accept: RF-36 · CardBillControllerIT · after: RF-72 · (blocked: Q6)
-- [ ] IMP-31 — Card-bill HATEOAS links: `import` if open, `mark-paid` if closed and unpaid (origin §12 resource table) · api · accept: links per state · CardBillControllerIT · after: RF-36
-- [ ] RF-37 — Card total split into one-off, installments, subscriptions · summary · accept: RF-37 · CardBillSummaryTest · after: RF-36
-- [ ] RF-38 — Clicking a card total opens tab 4 filtered by card and period · frontend · accept: RF-38 · expenses.spec.ts · after: RF-36, RF-40
-- [ ] RF-25 — Total per member: income, fixed, variable, card and balance · summary · accept: RF-25 · MemberTotalsCalculatorTest · after: RF-22, RF-31, RF-34, RF-26
-- [ ] RF-27 — "Who owes whom" when a member paid expenses assigned to another · summary · accept: RF-27 · SettlementCalculatorTest · after: RF-25 · (blocked: Q8)
-- [ ] RF-11 — Total expense = fixed + variable + card bills of the period · summary · accept: RF-11 · MonthlySummaryServiceTest · after: RF-36, RF-31, RF-34 · (blocked: Q6, Q8)
-- [ ] RF-10 — Indicators: total income, total expense, balance, % of income spent · summary · accept: RF-10 (with XLS-04 reimbursement rule) · MonthlySummaryServiceTest · after: RF-11 · (blocked: Q8)
-- [ ] SOL-01 — `MonthlySummaryService` only orchestrates `CategoryTotalsCalculator`, `MemberTotalsCalculator`, `CommittedInstallmentsCalculator` · summary · accept: SOL-01 · calculator tests · after: RF-10
-- [ ] RF-12 — Summary by category: value, % of total, variation vs previous month, chart + table · summary · accept: RF-12 · CategoryTotalsCalculatorTest · after: SOL-01
-- [ ] RF-13 — Summary by member: income, expense, balance, % spent · summary · accept: RF-13 · MemberTotalsCalculatorTest · after: SOL-01, RF-25
-- [ ] RF-14 — Summary by card: bill total and amount committed in future installments · summary · accept: RF-14 · CommittedInstallmentsCalculatorTest · after: SOL-01
-- [ ] RF-17 — "Committed in the next months": projected installments of the next 3 periods · summary · accept: RF-17 · CommittedInstallmentsCalculatorTest · after: RF-14
-- [ ] RF-15 — Optional filter by member for the overview · summary · accept: RF-15 · MonthlySummaryControllerIT · after: RF-13
-- [ ] RF-16 — Visual alert above configurable thresholds (e.g. 80% yellow, 100% red) · summary/frontend · accept: RF-16 · OverviewPage.test.tsx · after: RF-10, IMP-10
-- [ ] IMP-32 — Summary resource `/api/summaries/{billingPeriod}` with `previous`, `next`, `by-member`, `by-category` (origin §12 resource table) · api · accept: links present · MonthlySummaryControllerIT · after: RF-10
-- [ ] UI-07 — Overview charts with Recharts · frontend · accept: UI-07 · OverviewPage.test.tsx · after: RF-12
-- [ ] IMP-33 — Overview tab (indicators, category chart/table, member and card summaries, pending block from RF-79a) (origin §4) · frontend · accept: matches backend totals · OverviewPage.test.tsx, monthly-summary.spec.ts · after: IMP-32, UI-07, RF-79a
-- [ ] IMP-34 — Incomes & members tab and Expenses tab screens (origin §5, §6) · frontend · accept: flows of RF-20…RF-38 · IncomesPage.test.tsx, ExpensesPage.test.tsx · after: RF-25, RF-36
+- [x] RF-35 — Filterable list by member and category with filter total · expense/frontend · accept: RF-35 · VariableExpensesPage.test.tsx · after: RF-34, IMP-18, UI-03 · done (6c35a4d, ecef157)
+- [x] RF-36 — Card total cards: bill total, closing, due, status (open, closed, paid) · summary · accept: RF-36 · CardBillControllerIT · after: RF-72 · done (aa99832)
+- [x] IMP-31 — Card-bill HATEOAS links: `import` if open, `mark-paid` if closed and unpaid (origin §12 resource table) · api · accept: links per state · CardBillControllerIT · after: RF-36 · done (aa99832)
+- [x] RF-37 — Card total split into one-off, installments, subscriptions · summary · accept: RF-37 · CardBillSummaryTest · after: RF-36 · done (aa99832)
+- [x] RF-38 — Clicking a card total opens tab 4 filtered by card and period · frontend · accept: RF-38 · expenses.spec.ts · after: RF-36, RF-40 · done (ecef157; E2E in M7)
+- [x] RF-25 — Total per member: income, fixed, variable, card and balance · summary · accept: RF-25 · MemberTotalsCalculatorTest · after: RF-22, RF-31, RF-34, RF-26 · done (aa99832)
+- [x] RF-27 — "Who owes whom" when a member paid expenses assigned to another · summary · accept: RF-27 · SettlementCalculatorTest · after: RF-25 · done (aa99832; payer = card default member (Q8))
+- [x] RF-11 — Total expense = fixed + variable + card bills of the period · summary · accept: RF-11 · MonthlySummaryServiceTest · after: RF-36, RF-31, RF-34 · done (aa99832)
+- [x] RF-10 — Indicators: total income, total expense, balance, % of income spent · summary · accept: RF-10 (with XLS-04 reimbursement rule) · MonthlySummaryServiceTest · after: RF-11 · done (aa99832)
+- [x] SOL-01 — `MonthlySummaryService` only orchestrates `CategoryTotalsCalculator`, `MemberTotalsCalculator`, `CommittedInstallmentsCalculator` · summary · accept: SOL-01 · calculator tests · after: RF-10 · done (aa99832)
+- [x] RF-12 — Summary by category: value, % of total, variation vs previous month, chart + table · summary · accept: RF-12 · CategoryTotalsCalculatorTest · after: SOL-01 · done (aa99832)
+- [x] RF-13 — Summary by member: income, expense, balance, % spent · summary · accept: RF-13 · MemberTotalsCalculatorTest · after: SOL-01, RF-25 · done (aa99832)
+- [x] RF-14 — Summary by card: bill total and amount committed in future installments · summary · accept: RF-14 · CommittedInstallmentsCalculatorTest · after: SOL-01 · done (aa99832)
+- [x] RF-17 — "Committed in the next months": projected installments of the next 3 periods · summary · accept: RF-17 · CommittedInstallmentsCalculatorTest · after: RF-14 · done (aa99832)
+- [x] RF-15 — Optional filter by member for the overview · summary · accept: RF-15 · MonthlySummaryControllerIT · after: RF-13 · done (aa99832)
+- [x] RF-16 — Visual alert above configurable thresholds (e.g. 80% yellow, 100% red) · summary/frontend · accept: RF-16 · OverviewPage.test.tsx · after: RF-10, IMP-10 · done (ecef157)
+- [x] IMP-32 — Summary resource `/api/summaries/{billingPeriod}` with `previous`, `next`, `by-member`, `by-category` (origin §12 resource table) · api · accept: links present · MonthlySummaryControllerIT · after: RF-10 · done (aa99832)
+- [x] UI-07 — Overview charts with Recharts · frontend · accept: UI-07 · OverviewPage.test.tsx · after: RF-12 · done (ecef157; Recharts 3.10.1)
+- [x] IMP-33 — Overview tab (indicators, category chart/table, member and card summaries, pending block from RF-79a) (origin §4) · frontend · accept: matches backend totals · OverviewPage.test.tsx, monthly-summary.spec.ts · after: IMP-32, UI-07, RF-79a · done (ecef157; E2E in M7)
+- [x] IMP-34 — Incomes & members tab and Expenses tab screens (origin §5, §6) · frontend · accept: flows of RF-20…RF-38 · IncomesPage.test.tsx, ExpensesPage.test.tsx · after: RF-25, RF-36 · done (ecef157)
 - [x] IMP-35 — Flyway migrations for recurrence_rule, occurrence, variable_expense, alias, alias_override (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-22 · done (6c35a4d; V7, V8)
 
 ## M6 — Member statement, templates, delivery and monthly spreadsheet
@@ -400,3 +400,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27 — M1 done except RNF-05 (audit wiring moves with IMP-26 to M3). Value objects (f273598), settings + ETag (cbd523d), members (b8733f5), cards (60bd14f), categories (db9c0c3), unique operation names (7ceb224), BEGIN IMMEDIATE fix for SQLITE_BUSY found in a manual UI run (0a2a880), registry screens and shared components (9418ac1). Decision: Hibernate schema validation off; Flyway owns the schema.
 - 2026-10-27 — M2 done (dc53a3f): Itaú PDF and XLSX parsers verified against the masked fixtures (79 + 16 future lines, totals match; 88 XLSX lines). M3 done (d00a988, 5aa24ce): preview/confirm/undo, projections, refunds, reconciliation, review queue, audit; found and fixed date persistence with a round-trip test after a manual run; added Q18 (RN-16 8-character minimum vs the nuuvem example).
 - 2026-10-27 — M4 done: aliases, entries API and tab (bac8c4c and the entries tab commit). Manual check with the fixtures: November shows 89 entries; BMB 01/02 (PDF, October) and 02/02 (XLSX, November) both confirmed.
+- 2026-10-27 — M5 done: incomes, fixed and variable expenses API (6c35a4d), overview and card totals (aa99832), screens (ecef157). Checked by hand against the dev backend with the masked fixtures: November totals match the XLSX file total plus one projected installment (Q6), mark-paid and card → entries navigation work. Playwright specs named in M5 items run in M7.
