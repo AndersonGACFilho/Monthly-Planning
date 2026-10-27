@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8" />
+  <title>Statement M November 2026</title>
+  <style>
+    @page { size: A4; margin: 16mm 14mm; }
+    body { font-family: 'Noto Sans', sans-serif; font-size: 10pt; color: #1b1f24; margin: 0; }
+    .head { border-bottom: 3px solid #2563EB; padding-bottom: 8px; margin-bottom: 12px; }
+    .head table { width: 100%; border-collapse: collapse; }
+    .logo { max-height: 48px; max-width: 160px; }
+    h1 { font-size: 16pt; color: #2563EB; margin: 0; }
+    h2 { font-size: 11pt; color: #475569; margin: 14px 0 4px; border-bottom: 1px solid #dde1e6; }
+    .muted { color: #59636e; font-size: 9pt; }
+    .message { margin: 4px 0; white-space: pre-line; }
+    .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 4px 8px; margin: 6px 0; font-size: 9pt; }
+    table.lines { width: 100%; border-collapse: collapse; }
+    table.lines th { text-align: left; font-size: 8.5pt; color: #59636e; border-bottom: 1px solid #dde1e6; padding: 3px 4px; }
+    table.lines td { border-bottom: 1px solid #f0f2f4; padding: 3px 4px; vertical-align: top; }
+    .num { text-align: right; white-space: nowrap; }
+    .pending td { background: #fff7d6; }
+    .subtotal td { font-weight: bold; border-top: 1px solid #dde1e6; }
+    .card-title { font-weight: bold; margin-top: 8px; }
+    .summary { width: 100%; border-collapse: collapse; }
+    .summary td { padding: 4px 6px; }
+    .summary .big { font-size: 15pt; font-weight: bold; color: #2563EB; }
+    .foot { margin-top: 18px; border-top: 1px solid #dde1e6; padding-top: 6px; font-size: 8.5pt; color: #59636e; }
+    
+  </style>
+</head>
+<body>
+  <div class="head">
+    
+    <table>
+      <tr>
+        <td>
+          <h1>Statement for Maria</h1>
+          <div class="muted">
+            <span>Member: M — Maria</span> ·
+            <span>Billing period: November 2026</span> ·
+            <span>Issued on <issue-date></span>
+          </div>
+        </td>
+        
+      </tr>
+    </table>
+  </div>
+  
+  <div class="warning">Some entries are still pending review.</div>
+
+  
+    
+
+      <div>
+        <h2>Summary</h2>
+        <table class="summary">
+          <tr>
+            <td>Total due</td>
+            <td class="num big">R$465.20</td>
+          </tr>
+          <tr>
+            <td>Due date</td>
+            <td class="num">11/10/2026</td>
+          </tr>
+          
+          
+        </table>
+      </div>
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+    
+  
+    
+
+      
+
+      <div>
+        <h2>Card entries</h2>
+        
+          <div class="card-title">
+            <span>Itaú</span>
+            <span class="muted">· Due date <issue-date></span>
+          </div>
+          <table class="lines">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Installment</th>
+                <th>Category</th>
+                <th class="num">Share</th>
+                <th class="num">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>10/03/2026</td>
+                <td>Supermercado</td>
+                <td>-</td>
+                <td>Mercado</td>
+                <td class="num">50%</td>
+                <td class="num">R$62.40</td>
+              </tr>
+              <tr>
+                <td>10/10/2026</td>
+                <td>Farmácia</td>
+                <td>02/03</td>
+                <td>Saúde</td>
+                <td class="num"></td>
+                <td class="num">R$45.90</td>
+              </tr>
+              <tr class="pending">
+                <td>10/16/2026</td>
+                <td>Streaming</td>
+                <td>*</td>
+                <td>Lazer</td>
+                <td class="num"></td>
+                <td class="num">R$21.90</td>
+              </tr>
+              <tr class="subtotal">
+                <td colspan="5">Subtotal</td>
+                <td class="num">R$130.20</td>
+              </tr>
+            </tbody>
+          </table>
+        
+      </div>
+
+      
+
+      
+
+      
+
+      
+
+      
+
+    
+  
+    
+
+      
+
+      
+
+      <div>
+        <h2>Fixed expenses</h2>
+        <table class="lines">
+          <tbody>
+            <tr>
+              <td>Plano de saúde</td>
+              <td>Saúde</td>
+              <td class="num">R$300.00</td>
+            </tr>
+            <tr class="subtotal">
+              <td colspan="2">Subtotal</td>
+              <td class="num">R$300.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      
+
+      
+
+      
+
+      
+
+    
+  
+    
+
+      
+
+      
+
+      
+
+      <div>
+        <h2>Variable expenses</h2>
+        <table class="lines">
+          <tbody>
+            <tr>
+              <td>11/04/2026</td>
+              <td>Feira</td>
+              <td>Mercado</td>
+              <td class="num">R$35.00</td>
+            </tr>
+            <tr class="subtotal">
+              <td colspan="3">Subtotal</td>
+              <td class="num">R$35.00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      
+
+      
+
+      
+
+    
+  
+    
+
+      
+
+      
+
+      
+
+      
+
+      <div>
+        <h2>Future installments</h2>
+        <table class="lines">
+          <tbody>
+            <tr>
+              <td>December 2026</td>
+              <td class="num">R$45.90</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      
+
+      
+
+    
+  
+    
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <div>
+        <h2>Payment</h2>
+        <p><span>PIX key: </span><strong>maria@example.com</strong></p>
+      </div>
+
+      
+
+    
+  
+    
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <div>
+        <h2>Note</h2>
+        <div class="message">Hi Maria, here is your statement for November 2026.</div>
+      </div>
+
+    
+  
+  
+  <div class="foot">Generated by Planejamento Mensal</div>
+</body>
+</html>

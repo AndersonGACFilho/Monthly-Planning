@@ -19,7 +19,8 @@
     "prebuild": "npm run api:generate",
     "pretypecheck": "npm run api:generate",
     "pretest": "npm run api:generate",
-    "i18n:build": "node scripts/build-locales.mjs"
+    "i18n:build": "node scripts/build-locales.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "6.0.0",
@@ -42,8 +43,10 @@
     "zustand": "5.0.16"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@faker-js/faker": "10.6.0",
+    "@playwright/test": "1.64.0",
     "@tailwindcss/vite": "4.3.3",
     "@tauri-apps/cli": "2.12.4",
     "@testing-library/jest-dom": "7.0.1",
