@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 52/58 · M1 1/33 · M2 1/27 · M3 0/47 · M4 0/24 · M5 0/34 · M6 0/52 · M7 0/22 (total 54/297)
+Progress: M0 53/58 · M1 32/33 · M2 1/27 · M3 0/47 · M4 0/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 88/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -33,7 +33,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] POR-10 — Single-instance lock in `data/` (host, OS, PID); orphan lock freed after confirmation · shared · accept: POR-10 · InstanceLockTest · after: POR-03 · done (746018f)
 - [x] IMP-04 — Session token filter: random token per launch, required on every `/api` call; bind to 127.0.0.1 on a free port (origin §12 Security, POR-08) · shared · accept: request without token → 401 · SessionTokenFilterIT · after: IMP-02 · done (ec32d39)
 - [x] API-01 — Resource naming: English plural kebab-case, actions as sub-resources · api · accept: API-01 · ApiNamingArchTest · after: IMP-02 · done (ec32d39)
-- [ ] API-02 — HTTP verbs with correct semantics · api · accept: API-02 · contract tests per resource · after: API-01 · (in progress: rule applies per resource from M1; root and profile are GET-only)
+- [x] API-02 — HTTP verbs with correct semantics · api · accept: API-02 · contract tests per resource · after: API-01 · done (b8733f5, 60bd14f)
 - [x] API-03 — Status codes + single `@RestControllerAdvice` returning RFC 9457 `ProblemDetail` · shared · accept: 400/404/409/412 shapes (API-03) · GlobalExceptionHandlerIT · after: IMP-02 · done (ec32d39)
 - [x] I18N-06 — Backend `MessageSource` (`messages_pt_BR`, `messages_en_US`); ProblemDetail and Bean Validation follow `Accept-Language` · i18n · accept: I18N-06 · LocalizedProblemDetailIT · after: API-03 · done (ec32d39)
 - [x] API-07 — `GET /api` entry point with links to every top-level resource · api · accept: API-07 · RootControllerIT · after: API-03 · done (ec32d39)
@@ -71,38 +71,38 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 
 ## M1 — Domain and registries (Money, BillingPeriod, members, cards, categories)
 
-- [ ] RNF-01 — `Money` value object (exact decimal, scale 2, never floating point): sum, negate, compare, allocate · shared · accept: RNF-01 · MoneyTest · after: IMP-02
-- [ ] IMP-09 — `BillingPeriod` value object (year-month of due date, next/previous, parse `2026-11`) (origin §13 DRY) · shared · accept: Dec→Jan rollover, February · BillingPeriodTest · after: IMP-02
-- [ ] TST-05 — Shared test builders (`CardBuilder`, `BillEntryBuilder`, `MemberBuilder`, `PurchaseBuilder`) · test · accept: TST-05 · used by all domain tests · after: RNF-01, IMP-09
-- [ ] SOL-04 — Small ports per use case in `application` (`BillEntryReader`, `BillEntryWriter`, …) · backend · accept: each use case depends only on the ports it uses (SOL-04) · LayerDependencyTest · after: SOL-05
-- [ ] IMP-10 — `AppSetting` key/value store in DB plus a settings resource (Q16; origin RF-16, RF-79d, XLS-06, XLS-09, I18N-03) · shared · accept: typed get/set with defaults · AppSettingServiceTest, SettingsControllerIT · after: IMP-03
+- [x] RNF-01 — `Money` value object (exact decimal, scale 2, never floating point): sum, negate, compare, allocate · shared · accept: RNF-01 · MoneyTest · after: IMP-02 · done (f273598)
+- [x] IMP-09 — `BillingPeriod` value object (year-month of due date, next/previous, parse `2026-11`) (origin §13 DRY) · shared · accept: Dec→Jan rollover, February · BillingPeriodTest · after: IMP-02 · done (f273598)
+- [x] TST-05 — Shared test builders (`CardBuilder`, `BillEntryBuilder`, `MemberBuilder`, `PurchaseBuilder`) · test · accept: TST-05 · used by all domain tests · after: RNF-01, IMP-09 · done (b8733f5; more builders per module as they come)
+- [x] SOL-04 — Small ports per use case in `application` (`BillEntryReader`, `BillEntryWriter`, …) · backend · accept: each use case depends only on the ports it uses (SOL-04) · LayerDependencyTest · after: SOL-05 · done (b8733f5)
+- [x] IMP-10 — `AppSetting` key/value store in DB plus a settings resource (Q16; origin RF-16, RF-79d, XLS-06, XLS-09, I18N-03) · shared · accept: typed get/set with defaults · AppSettingServiceTest, SettingsControllerIT · after: IMP-03 · done (cbd523d)
 - [ ] RNF-05 — Audit: JPA `@EntityListeners` writes `AuditEntry` (before, after, timestamp) on change of a confirmed entry · shared · accept: RNF-05 · AuditListenerIT · after: IMP-03 · (proposed entity: Q16)
-- [ ] API-08 — Every resource has `self` + related links (`card`, `category`, `purchase`, `bill`) · api · accept: API-08 · contract tests · after: API-07
-- [ ] API-11 — One `RepresentationModelAssembler` per resource; controllers only call use case + assembler · api · accept: API-11 · ArchUnit rule · after: API-08
-- [ ] API-09 — State-dependent action links decided only in the backend · api · accept: API-09 · per-state link tests (API-13) · after: API-11
-- [ ] API-04 — `ETag`/`If-Match` from JPA `@Version`; stale write → 412 · api · accept: API-04 · OptimisticLockIT · after: API-03
-- [ ] API-05 — Paged lists as `PagedModel` with `page`, `size`, `sort`, first/prev/next/last · api · accept: API-05 · PagingIT · after: API-11
-- [ ] API-13 — Contract tests (MockMvc + Spring HATEOAS) asserting present/absent links per state · api · accept: API-13 · *ControllerIT · after: API-09
-- [ ] RF-01 — Members: create, edit, inactivate (name, code, kind MAIN/THIRD_PARTY, color, active); member with entries cannot be deleted · member · accept: delete with entries → 409 (RF-01) · MemberServiceTest, MemberControllerIT · after: API-13 · (partially blocked: Q8 on MAIN count)
-- [ ] RF-03 — Cards: nickname, bank Itaú, list of finals, holder name, default member, closing and due day · card · accept: RF-03 · CardServiceTest, CardControllerIT · after: RF-01
-- [ ] RF-02 — Default member per card, used when an entry has none · card · accept: RF-02 · CardServiceTest · after: RF-03
-- [ ] RF-04 — `CardCycle` with `validFrom` billing period; past bills not recalculated · card · accept: RF-04 · CardCycleTest · after: RF-03
-- [ ] RF-05 — Additional cards grouped under the primary for billing, identifiable by final · card · accept: RF-05 · CardGroupingTest · after: RF-03 · (blocked: Q3)
-- [ ] RF-06 — Categories with color, icon, optional parent · category · accept: RF-06 · CategoryServiceTest, CategoryControllerIT · after: API-13
-- [ ] RF-07 — "Não classificado" default category, highlighted in UI · category · accept: entries without category get it (RF-07) · CategoryDefaultsTest · after: RF-06
-- [ ] I18N-07 — User data never translated; initial categories seeded in the language chosen on first use · category · accept: I18N-07 · InitialCategoriesSeederTest · after: RF-07, IMP-10
-- [ ] IMP-11 — Registry screens (members, cards with cycles, categories) (origin RF-01…RF-07) · frontend · accept: CRUD via HAL links · MembersPage.test.tsx, CardsPage.test.tsx · after: RF-01, RF-03, RF-06
-- [ ] IMP-12 — `useAction(resource, rel)` hook: shows an action only when its link exists (origin API-09, §12) · frontend · accept: button hidden without link · useAction.test.ts · after: API-12
-- [ ] IMP-13 — `MemberPicker`, `CategoryPicker` shared components (origin §13 front table) · frontend · accept: used in every form with member/category · pickers tests · after: IMP-11
-- [ ] RNF-02 — Numbers and dates by chosen language, always BRL · frontend · accept: RNF-02 · MoneyText.test.tsx · after: IMP-05
-- [ ] I18N-05 — `Intl` formatting: R$ 1.234,56 / 26/10/2026 (pt-BR); R$1,234.56 / 10/26/2026 (en-US) · frontend · accept: I18N-05 · format.test.ts · after: RNF-02
-- [ ] IMP-14 — `MoneyText`, `MoneyInput` shared components (origin §13 front table) · frontend · accept: all R$ values use them · MoneyInput.test.tsx · after: I18N-05
-- [ ] UI-02 — `BillingPeriodSelector` + `useBillingPeriod()` fixed in the header (Zustand), Alt+←/→ · frontend · accept: UI-02 · BillingPeriodSelector.test.tsx · after: IMP-09, IMP-05
-- [ ] IMP-15 — Frontend API error interceptor showing ProblemDetail messages (origin §13 DRY) · frontend · accept: one interceptor · apiClient.test.ts · after: API-03, API-12
-- [ ] IMP-16 — Zod schemas generated by Orval mirror Bean Validation; React Hook Form uses them (origin §13 DRY, §12) · frontend · accept: no hand-written DTOs · type check · after: API-12
-- [ ] IMP-17 — `SummaryCard` shared component (origin §13 front table) · frontend · accept: reused by overview and card totals · SummaryCard.test.tsx · after: IMP-14
-- [ ] IMP-18 — `FilterableList` shared component (list + filters + sorting) (origin §13 front table) · frontend · accept: reused by entries, variable expenses, incomes · FilterableList.test.tsx · after: IMP-05
-- [ ] IMP-19 — Flyway migrations for member, card, card_cycle, category, app_setting, audit_entry (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-03
+- [x] API-08 — Every resource has `self` + related links (`card`, `category`, `purchase`, `bill`) · api · accept: API-08 · contract tests · after: API-07 · done (b8733f5)
+- [x] API-11 — One `RepresentationModelAssembler` per resource; controllers only call use case + assembler · api · accept: API-11 · ArchUnit rule · after: API-08 · done (b8733f5)
+- [x] API-09 — State-dependent action links decided only in the backend · api · accept: API-09 · per-state link tests (API-13) · after: API-11 · done (b8733f5)
+- [x] API-04 — `ETag`/`If-Match` from JPA `@Version`; stale write → 412 · api · accept: API-04 · OptimisticLockIT · after: API-03 · done (cbd523d, b8733f5)
+- [x] API-05 — Paged lists as `PagedModel` with `page`, `size`, `sort`, first/prev/next/last · api · accept: API-05 · PagingIT · after: API-11 · done (b8733f5, 7ceb224)
+- [x] API-13 — Contract tests (MockMvc + Spring HATEOAS) asserting present/absent links per state · api · accept: API-13 · *ControllerIT · after: API-09 · done (b8733f5)
+- [x] RF-01 — Members: create, edit, inactivate (name, code, kind MAIN/THIRD_PARTY, color, active); member with entries cannot be deleted · member · accept: delete with entries → 409 (RF-01) · MemberServiceTest, MemberControllerIT · after: API-13 · done (b8733f5)
+- [x] RF-03 — Cards: nickname, bank Itaú, list of finals, holder name, default member, closing and due day · card · accept: RF-03 · CardServiceTest, CardControllerIT · after: RF-01 · done (60bd14f)
+- [x] RF-02 — Default member per card, used when an entry has none · card · accept: RF-02 · CardServiceTest · after: RF-03 · done (60bd14f)
+- [x] RF-04 — `CardCycle` with `validFrom` billing period; past bills not recalculated · card · accept: RF-04 · CardCycleTest · after: RF-03 · done (60bd14f)
+- [x] RF-05 — Additional cards grouped under the primary for billing, identifiable by final · card · accept: RF-05 · CardGroupingTest · after: RF-03 · done (60bd14f; default Q3)
+- [x] RF-06 — Categories with color, icon, optional parent · category · accept: RF-06 · CategoryServiceTest, CategoryControllerIT · after: API-13 · done (db9c0c3)
+- [x] RF-07 — "Não classificado" default category, highlighted in UI · category · accept: entries without category get it (RF-07) · CategoryDefaultsTest · after: RF-06 · done (db9c0c3)
+- [x] I18N-07 — User data never translated; initial categories seeded in the language chosen on first use · category · accept: I18N-07 · InitialCategoriesSeederTest · after: RF-07, IMP-10 · done (db9c0c3)
+- [x] IMP-11 — Registry screens (members, cards with cycles, categories) (origin RF-01…RF-07) · frontend · accept: CRUD via HAL links · MembersPage.test.tsx, CardsPage.test.tsx · after: RF-01, RF-03, RF-06 · done (9418ac1)
+- [x] IMP-12 — `useAction(resource, rel)` hook: shows an action only when its link exists (origin API-09, §12) · frontend · accept: button hidden without link · useAction.test.ts · after: API-12 · done (9418ac1)
+- [x] IMP-13 — `MemberPicker`, `CategoryPicker` shared components (origin §13 front table) · frontend · accept: used in every form with member/category · pickers tests · after: IMP-11 · done (9418ac1)
+- [x] RNF-02 — Numbers and dates by chosen language, always BRL · frontend · accept: RNF-02 · MoneyText.test.tsx · after: IMP-05 · done (9418ac1)
+- [x] I18N-05 — `Intl` formatting: R$ 1.234,56 / 26/10/2026 (pt-BR); R$1,234.56 / 10/26/2026 (en-US) · frontend · accept: I18N-05 · format.test.ts · after: RNF-02 · done (9418ac1)
+- [x] IMP-14 — `MoneyText`, `MoneyInput` shared components (origin §13 front table) · frontend · accept: all R$ values use them · MoneyInput.test.tsx · after: I18N-05 · done (9418ac1)
+- [x] UI-02 — `BillingPeriodSelector` + `useBillingPeriod()` fixed in the header (Zustand), Alt+←/→ · frontend · accept: UI-02 · BillingPeriodSelector.test.tsx · after: IMP-09, IMP-05 · done (9418ac1)
+- [x] IMP-15 — Frontend API error interceptor showing ProblemDetail messages (origin §13 DRY) · frontend · accept: one interceptor · apiClient.test.ts · after: API-03, API-12 · done (9418ac1)
+- [x] IMP-16 — Zod schemas generated by Orval mirror Bean Validation; React Hook Form uses them (origin §13 DRY, §12) · frontend · accept: no hand-written DTOs · type check · after: API-12 · done (9418ac1)
+- [x] IMP-17 — `SummaryCard` shared component (origin §13 front table) · frontend · accept: reused by overview and card totals · SummaryCard.test.tsx · after: IMP-14 · done (9418ac1)
+- [x] IMP-18 — `FilterableList` shared component (list + filters + sorting) (origin §13 front table) · frontend · accept: reused by entries, variable expenses, incomes · FilterableList.test.tsx · after: IMP-05 · done (9418ac1)
+- [x] IMP-19 — Flyway migrations for member, card, card_cycle, category, app_setting, audit_entry (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-03 · done (b8733f5, 60bd14f, db9c0c3)
 - [x] IMP-20 — Traceability matrix (§15) maintained in `docs/` and updated per feature (origin §15) · docs · accept: one row per feature · review · after: AGT-05 · done (db6919e; updated per feature)
 
 ## M2 — Itaú parsers with masked fixtures
@@ -220,7 +220,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [ ] RF-23 — One-off income in the period · recurrence · accept: RF-23 · IncomeControllerIT · after: RF-21
 - [ ] RF-24 — Mark income received/expected · recurrence · accept: RF-24 · IncomeControllerIT · after: RF-22
 - [ ] IMP-30 — `RecurrenceRuleForm` shared by income and fixed expense (origin §13 front table) · frontend · accept: one form, two kinds · RecurrenceRuleForm.test.tsx · after: RF-21
-- [ ] RF-20 — Members registry reachable from tab 2 · frontend · accept: RF-20 · IncomesPage.test.tsx · after: IMP-11
+- [x] RF-20 — Members registry reachable from tab 2 · frontend · accept: RF-20 · IncomesPage.test.tsx · after: IMP-11 · done (9418ac1)
 - [ ] RF-30 — Parameterized fixed expense: + category, due day, payment method · recurrence · accept: RF-30 · GenerateOccurrencesUseCaseTest · after: IMP-29
 - [ ] RF-31 — Automatic generation per period with monthly override · recurrence · accept: RF-31 · GenerateOccurrencesUseCaseTest · after: RF-30
 - [ ] RF-32 — Mark paid/pending with payment date · recurrence · accept: RF-32 · FixedExpenseControllerIT · after: RF-31
@@ -251,7 +251,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 
 ## M6 — Member statement, templates, delivery and monthly spreadsheet
 
-- [ ] RF-80 — Member e-mail, WhatsApp phone with country code, optional PIX key, preferred language · member · accept: RF-80 · MemberControllerIT · after: RF-01
+- [x] RF-80 — Member e-mail, WhatsApp phone with country code, optional PIX key, preferred language · member · accept: RF-80 · MemberControllerIT · after: RF-01 · done (b8733f5, 9418ac1)
 - [ ] RF-81 — Choose period and one or more members; one statement per member · statement · accept: RF-81 · MemberStatementBuilderTest · after: RF-80, RF-25
 - [ ] RF-82 — Statement content: header, summary, entries by card with split %, fixed/variable expenses, committed installments, total, PIX data, free note · statement · accept: RF-82 · MemberStatementBuilderTest · after: RF-81, RF-17
 - [ ] RF-83 — Options: show/hide categories, alias vs original, include future installments · statement · accept: RF-83 · MemberStatementBuilderTest · after: RF-82
@@ -387,3 +387,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-26 — M0 started. Done: IMP-02, DOC-01 (2456bc9); IMP-03, POR-03, POR-11 (20412cb); POR-04, POR-10 (746018f); IMP-04, API-01, API-03, I18N-06, API-07, API-10 (ec32d39). Added Q17 (XLS-01 vs POR-04).
 - 2026-10-26 — SOL-05, SOL-06, TST-01, TST-02 done (182333b); rules verified by a throw-away mutation (domain → Spring, module → other module's infra, test without rule id all failed the build). TST-03 is a review convention, followed by every test so far.
 - 2026-10-26 — M0: frontend shell (fb66d73), quality gates (d859619), OpenAPI contract (33dcde0), shutdown endpoint (a787481), parent watcher (7336c56), I18N-13 (629bd6a), traceability + CLAUDE suggestion (db6919e), Tauri shell + CI + portable scripts (e60a687). Release app started the backend from the portable folder in 3.9 s; killing the shell stopped the backend cleanly. Open: UI-10 manual check, POR-01/IMP-07 on Windows, TST-07/POR-15 need a remote (Q2).
+- 2026-10-27 — M1 done except RNF-05 (audit wiring moves with IMP-26 to M3). Value objects (f273598), settings + ETag (cbd523d), members (b8733f5), cards (60bd14f), categories (db9c0c3), unique operation names (7ceb224), BEGIN IMMEDIATE fix for SQLITE_BUSY found in a manual UI run (0a2a880), registry screens and shared components (9418ac1). Decision: Hibernate schema validation off; Flyway owns the schema.
