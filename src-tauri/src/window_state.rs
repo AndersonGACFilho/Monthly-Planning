@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
-use tauri::{PhysicalPosition, PhysicalSize, Runtime, WebviewWindow};
+use tauri::{LogicalPosition, LogicalSize, Runtime, WebviewWindow};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct WindowState {
@@ -32,12 +32,21 @@ pub fn save(data_dir: &Path, state: &WindowState) {
     }
 }
 
-/// Captures the current state of a window.
+/// Captures the current state of a window in logical pixels, so it restores the same on any display scale.
+/// Wayland does not tell windows where they are, so the position may be missing; the size and the maximized
+/// flag are kept anyway.
 pub fn capture<R: Runtime>(window: &WebviewWindow<R>) -> Option<WindowState> {
     let maximized = window.is_maximized().unwrap_or(false);
-    let position = window.outer_position().ok()?;
-    let size = window.inner_size().ok()?;
-    Some(WindowState { x: position.x, y: position.y, width: size.width, height: size.height, maximized })
+    let scale = window.scale_factor().unwrap_or(1.0);
+    let size = window.inner_size().ok()?.to_logical::<f64>(scale);
+    let (x, y) = window
+        .outer_position()
+        .map(|p| {
+            let p = p.to_logical::<f64>(scale);
+            (p.x.round() as i32, p.y.round() as i32)
+        })
+        .unwrap_or((0, 0));
+    Some(WindowState { x, y, width: size.width.round() as u32, height: size.height.round() as u32, maximized })
 }
 
 /// Applies a saved state; the position is only used if it is on a connected monitor.
@@ -46,14 +55,17 @@ pub fn apply<R: Runtime>(window: &WebviewWindow<R>, state: &WindowState) {
         .available_monitors()
         .map(|monitors| {
             monitors.iter().any(|m| {
-                let (p, s) = (m.position(), m.size());
-                state.x >= p.x && state.y >= p.y && state.x < p.x + s.width as i32 && state.y < p.y + s.height as i32
+                let scale = m.scale_factor();
+                let p = m.position().to_logical::<f64>(scale);
+                let s = m.size().to_logical::<f64>(scale);
+                let (x, y) = (f64::from(state.x), f64::from(state.y));
+                x >= p.x && y >= p.y && x < p.x + s.width && y < p.y + s.height
             })
         })
         .unwrap_or(false);
-    let _ = window.set_size(PhysicalSize::new(state.width.max(800), state.height.max(600)));
+    let _ = window.set_size(LogicalSize::new(state.width.max(800), state.height.max(600)));
     if on_screen {
-        let _ = window.set_position(PhysicalPosition::new(state.x, state.y));
+        let _ = window.set_position(LogicalPosition::new(state.x, state.y));
     }
     if state.maximized {
         let _ = window.maximize();

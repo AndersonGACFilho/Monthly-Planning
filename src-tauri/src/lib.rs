@@ -144,7 +144,8 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            if let WindowEvent::CloseRequested { .. } = event {
+            // Saved on close and after every move or resize, so a crash or a forced stop keeps the last layout
+            if matches!(event, WindowEvent::CloseRequested { .. } | WindowEvent::Resized(_) | WindowEvent::Moved(_)) {
                 let shell = window.state::<Shell>();
                 if let Some(webview) = window.app_handle().get_webview_window(window.label()) {
                     if let Some(state) = window_state::capture(&webview) {
