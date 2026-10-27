@@ -40,9 +40,13 @@ pub fn runtime_dir_name() -> &'static str {
     }
 }
 
-/// Java executable of the bundled JRE, falling back to `JAVA_HOME` in debug builds.
+/// Java executable of the bundled JRE, falling back to `JAVA_HOME` in debug builds. `PM_JAVA_HOME` points to a
+/// copy of the JRE, used by `start-linux.sh` when the drive does not allow running programs (POR-09).
 pub fn java_executable(home: &Path) -> PathBuf {
     let exe = if cfg!(windows) { "java.exe" } else { "java" };
+    if let Some(copy) = env::var_os("PM_JAVA_HOME") {
+        return PathBuf::from(copy).join("bin").join(exe);
+    }
     let bundled = home.join("backend").join(runtime_dir_name()).join("bin").join(exe);
     if bundled.exists() || !cfg!(debug_assertions) {
         return bundled;
@@ -64,6 +68,14 @@ pub fn backend_jar(home: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn por_09_java_copy_overrides_bundled_runtime() {
+        env::set_var("PM_JAVA_HOME", "/tmp/jre-copy");
+        let java = java_executable(Path::new("/media/ssd/PlanejamentoMensal"));
+        env::remove_var("PM_JAVA_HOME");
+        assert!(java.starts_with("/tmp/jre-copy/bin"));
+    }
 
     #[test]
     fn por_01_runtime_folder_matches_os() {

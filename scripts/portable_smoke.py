@@ -5,7 +5,10 @@ health, calls the API, stops it through the shutdown endpoint and checks that:
   - the backend ends with code 0, releasing the lock and the WAL file;
   - nothing was written outside the copied folder (HOME and temp dirs point to an empty sentinel).
 
-Usage: python scripts/portable_smoke.py <portable folder> [--os linux|windows]
+Usage: python scripts/portable_smoke.py <portable folder> [--os linux|windows] [--in-place] [--java <java>]
+
+--in-place runs the folder where it is (such as an exFAT drive mounted noexec, POR-02) instead of a copy;
+--java runs the backend with another java, as start-linux.sh does with its temporary copy (POR-09).
 """
 import os
 import secrets
@@ -36,10 +39,11 @@ def call(port: int, method: str, path: str, token: str | None = None) -> int:
         return e.code
 
 
-def main(source: Path, os_name: str) -> None:
+def main(source: Path, os_name: str, in_place: bool = False, java_override: Path | None = None) -> None:
     with tempfile.TemporaryDirectory() as work:
-        home = Path(work) / "copied" / "PlanejamentoMensal"
-        shutil.copytree(source, home)
+        home = source.resolve() if in_place else Path(work) / "copied" / "PlanejamentoMensal"
+        if not in_place:
+            shutil.copytree(source, home)
         sentinel = Path(work) / "outside"
         sentinel.mkdir()
         env = {k: v for k, v in os.environ.items() if k in ("PATH", "SYSTEMROOT", "WINDIR", "LANG")}
@@ -49,7 +53,7 @@ def main(source: Path, os_name: str) -> None:
         token = secrets.token_hex(32)
         env["APP_SESSION_TOKEN"] = token
         port = free_port()
-        java = home / "backend" / f"runtime-{os_name}" / "bin" / ("java.exe" if os_name == "windows" else "java")
+        java = java_override or home / "backend" / f"runtime-{os_name}" / "bin" / ("java.exe" if os_name == "windows" else "java")
         (home / "data" / "tmp").mkdir(parents=True, exist_ok=True)
         backend = subprocess.Popen(
             [str(java), f"-Djava.io.tmpdir={home / 'data' / 'tmp'}",
@@ -86,6 +90,13 @@ def main(source: Path, os_name: str) -> None:
             or (data / "planejamento-mensal.db-wal").stat().st_size == 0,
             "nothing written outside the folder": not any(sentinel.iterdir()),
         }
+        if os_name == "linux" and (home / "start-linux.sh").exists():
+            scratch = Path(work) / "start-linux-tmp"
+            scratch.mkdir()
+            run = subprocess.run(["sh", str(home / "start-linux.sh")], capture_output=True, text=True, timeout=300,
+                                 env={**env, "TMPDIR": str(scratch), "PM_START_DRY_RUN": "1"})
+            checks["start-linux.sh prepares a temporary copy (POR-09)"] = run.returncode == 0 and "would run" in run.stdout
+            checks["start-linux.sh removes its copy"] = not any(scratch.iterdir())
         for name, ok in checks.items():
             print(f"{'OK  ' if ok else 'FAIL'} {name}")
         if not all(checks.values()):
@@ -98,4 +109,5 @@ def main(source: Path, os_name: str) -> None:
 
 if __name__ == "__main__":
     os_arg = sys.argv[sys.argv.index("--os") + 1] if "--os" in sys.argv else ("windows" if os.name == "nt" else "linux")
-    main(Path(sys.argv[1]), os_arg)
+    java_arg = Path(sys.argv[sys.argv.index("--java") + 1]) if "--java" in sys.argv else None
+    main(Path(sys.argv[1]), os_arg, "--in-place" in sys.argv, java_arg)
