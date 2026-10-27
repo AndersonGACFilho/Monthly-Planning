@@ -384,6 +384,9 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27: A purchase dated after a closing date read from a file goes to the next bill even if the card's typical closing day is later (RN-22).
 - 2026-10-27: LocalDate/Instant stored as ISO text through JPA converters (the SQLite driver default did not read back); round-trip tests run without a shared transaction.
 - 2026-10-27: Jackson 3 fails on missing primitives by default; turned off so missing booleans in requests mean false.
+- 2026-10-27: Incomes and fixed expenses share `/api/recurrence-rules?kind=` and `/api/occurrences?billingPeriod=&kind=`; periods are generated lazily on first read, once per rule and period (unique key). A new default amount reaches only EXPECTED periods not changed by hand. A one-off income (RF-23) is a rule with recurrence ONCE. A rule with received or paid periods cannot be deleted, only inactivated.
+- 2026-10-27: RF-33 link = same normalized description (alias, original or RN-16 store prefix) and amount at most 10% apart, among non-UNCONFIRMED entries of the same period; a linked expense is DONE on the entry date. Several candidates (RN-30) are listed at `/api/occurrences/pending-links` and shown in the review queue screen.
+- 2026-10-27: `PaymentMethod` lives in `shared.domain` (used by recurrence and expense). Variable expenses (RF-34) refuse `CARD`: card purchases come from the bill (manual card entries use RF-44), so RF-11 never counts them twice. Their billing period is the month of the date unless given.
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log

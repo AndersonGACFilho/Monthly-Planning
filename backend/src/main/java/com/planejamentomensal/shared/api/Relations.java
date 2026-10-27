@@ -32,7 +32,25 @@ public enum Relations implements LinkRelation {
     /** Import a bill file into an open card bill. */
     IMPORT("import", "Import a bill file into this card bill (RF-60)."),
     /** Mark a closed card bill as paid. */
-    MARK_PAID("mark-paid", "Mark a closed card bill as paid (RF-36)."),
+    MARK_PAID("mark-paid", "Mark a closed card bill or a fixed expense as paid (RF-32, RF-36)."),
+
+    /** Mark an income received. */
+    MARK_RECEIVED("mark-received", "Mark an expected income as received (RF-24)."),
+
+    /** Return an occurrence to expected. */
+    MARK_EXPECTED("mark-expected", "Return an income or fixed expense to expected or pending (RF-24, RF-32)."),
+
+    /** Change the amount of one period. */
+    OVERRIDE_AMOUNT("override-amount", "Change the amount of one period without changing the rule (RF-22, RF-31)."),
+
+    /** Choose the card entry of a fixed expense. */
+    CHOOSE_LINK("choose-link", "Choose which card entry holds a fixed expense paid by card (RN-30)."),
+
+    /** Rule of an occurrence. */
+    RULE("rule", "Recurrence rule that generates the income or fixed expense (RF-21, RF-30)."),
+
+    /** Card entry linked to a fixed expense. */
+    LINKED_ENTRY("linked-entry", "Card entry that holds a fixed expense paid by card (RF-33)."),
     /** Installments of a purchase. */
     INSTALLMENTS("installments", "Bill entries (installments) of a purchase."),
     /** Previous billing period. */

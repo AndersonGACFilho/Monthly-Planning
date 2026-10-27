@@ -12,6 +12,15 @@
     "sessionToken" : [ ]
   } ],
   "tags" : [ {
+    "description" : "Variable expenses entered by hand (RF-34, RF-35).",
+    "name" : "variable-expense-controller"
+  }, {
+    "description" : "Parameterized incomes (RF-21, RF-23) and fixed expenses (RF-30); both kinds share this resource.",
+    "name" : "recurrence-rule-controller"
+  }, {
+    "description" : "Incomes and fixed expenses of a billing period, generated from their rules on first read (RF-22, RF-24,\n RF-31 to RF-33, RN-30).",
+    "name" : "occurrence-controller"
+  }, {
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
@@ -1434,6 +1443,225 @@
         "tags" : [ "member-controller" ]
       }
     },
+    "/api/occurrences" : {
+      "get" : {
+        "description" : "Lists the incomes or fixed expenses of a period, generating the missing ones; card-paid expenses are linked\n to their bill entry (RF-33).",
+        "operationId" : "occurrences",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "<code>INCOME</code> or <code>FIXED_EXPENSE</code>",
+          "in" : "query",
+          "name" : "kind",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INCOME", "FIXED_EXPENSE" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelOccurrenceModel"
+                }
+              }
+            },
+            "description" : "occurrences, by description"
+          }
+        },
+        "summary" : "Lists the incomes or fixed expenses of a period, generating the missing ones; card-paid expenses are linked\n to their bill entry (RF-33).",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
+    "/api/occurrences/pending-links" : {
+      "get" : {
+        "description" : "Lists the card-paid fixed expenses waiting for the user's choice of entry, for the review queue (RN-30).",
+        "operationId" : "pendingOccurrenceLinks",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelOccurrenceModel"
+                }
+              }
+            },
+            "description" : "occurrences with candidates"
+          }
+        },
+        "summary" : "Lists the card-paid fixed expenses waiting for the user's choice of entry, for the review queue (RN-30).",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
+    "/api/occurrences/{id}" : {
+      "get" : {
+        "description" : "Returns one occurrence with its version as <code>ETag</code>.",
+        "operationId" : "occurrence",
+        "parameters" : [ {
+          "description" : "occurrence id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OccurrenceModel"
+                }
+              }
+            },
+            "description" : "the occurrence"
+          }
+        },
+        "summary" : "Returns one occurrence with its version as <code>ETag</code>.",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
+    "/api/occurrences/{id}/amount" : {
+      "put" : {
+        "description" : "Changes the amount of this period only, keeping the rule's default (RF-22, RF-31).",
+        "operationId" : "overrideOccurrenceAmount",
+        "parameters" : [ {
+          "description" : "occurrence id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/AmountRequest"
+              }
+            }
+          },
+          "description" : "amount",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OccurrenceModel"
+                }
+              }
+            },
+            "description" : "the updated occurrence"
+          }
+        },
+        "summary" : "Changes the amount of this period only, keeping the rule's default (RF-22, RF-31).",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
+    "/api/occurrences/{id}/link" : {
+      "post" : {
+        "description" : "Links a card-paid fixed expense to the entry chosen among its candidates (RN-30).",
+        "operationId" : "chooseOccurrenceLink",
+        "parameters" : [ {
+          "description" : "occurrence id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/LinkRequest"
+              }
+            }
+          },
+          "description" : "chosen entry",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OccurrenceModel"
+                }
+              }
+            },
+            "description" : "the updated occurrence"
+          }
+        },
+        "summary" : "Links a card-paid fixed expense to the entry chosen among its candidates (RN-30).",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
+    "/api/occurrences/{id}/status" : {
+      "post" : {
+        "description" : "Marks an income received or an expense paid, with its date, or back to expected (RF-24, RF-32).",
+        "operationId" : "changeOccurrenceStatus",
+        "parameters" : [ {
+          "description" : "occurrence id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/StatusRequest"
+              }
+            }
+          },
+          "description" : "flag and date",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OccurrenceModel"
+                }
+              }
+            },
+            "description" : "the updated occurrence"
+          }
+        },
+        "summary" : "Marks an income received or an expense paid, with its date, or back to expected (RF-24, RF-32).",
+        "tags" : [ "occurrence-controller" ]
+      }
+    },
     "/api/profile" : {
       "get" : {
         "description" : "Lists every custom relation.",
@@ -1541,6 +1769,212 @@
         },
         "summary" : "Lists the installments of a purchase.",
         "tags" : [ "purchase-controller" ]
+      }
+    },
+    "/api/recurrence-rules" : {
+      "get" : {
+        "description" : "Lists the rules of a kind, by description.",
+        "operationId" : "recurrenceRules",
+        "parameters" : [ {
+          "description" : "<code>INCOME</code> or <code>FIXED_EXPENSE</code>",
+          "in" : "query",
+          "name" : "kind",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INCOME", "FIXED_EXPENSE" ]
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelRecurrenceRuleModel"
+                }
+              }
+            },
+            "description" : "rules"
+          }
+        },
+        "summary" : "Lists the rules of a kind, by description.",
+        "tags" : [ "recurrence-rule-controller" ]
+      },
+      "post" : {
+        "description" : "Creates an income or fixed expense rule; a one-off income uses recurrence <code>ONCE</code> (RF-23).",
+        "operationId" : "createRecurrenceRule",
+        "parameters" : [ {
+          "description" : "<code>INCOME</code> or <code>FIXED_EXPENSE</code>",
+          "in" : "query",
+          "name" : "kind",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "INCOME", "FIXED_EXPENSE" ]
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurrenceRuleRequest"
+              }
+            }
+          },
+          "description" : "rule data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurrenceRuleModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates an income or fixed expense rule; a one-off income uses recurrence <code>ONCE</code> (RF-23).",
+        "tags" : [ "recurrence-rule-controller" ]
+      }
+    },
+    "/api/recurrence-rules/{id}" : {
+      "delete" : {
+        "description" : "Deletes a rule without received or paid periods.",
+        "operationId" : "removeRecurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes a rule without received or paid periods.",
+        "tags" : [ "recurrence-rule-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one rule with its version as <code>ETag</code>.",
+        "operationId" : "recurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurrenceRuleModel"
+                }
+              }
+            },
+            "description" : "the rule"
+          }
+        },
+        "summary" : "Returns one rule with its version as <code>ETag</code>.",
+        "tags" : [ "recurrence-rule-controller" ]
+      },
+      "patch" : {
+        "description" : "Activates or inactivates a rule; inactive rules stop generating new periods.",
+        "operationId" : "patchRecurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ActivePatch"
+              }
+            }
+          },
+          "description" : "new active flag",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurrenceRuleModel"
+                }
+              }
+            },
+            "description" : "the updated rule"
+          }
+        },
+        "summary" : "Activates or inactivates a rule; inactive rules stop generating new periods.",
+        "tags" : [ "recurrence-rule-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces the data of a rule; periods changed by hand keep their amounts (RF-22).",
+        "operationId" : "replaceRecurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RecurrenceRuleRequest"
+              }
+            }
+          },
+          "description" : "new data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/RecurrenceRuleModel"
+                }
+              }
+            },
+            "description" : "the updated rule"
+          }
+        },
+        "summary" : "Replaces the data of a rule; periods changed by hand keep their amounts (RF-22).",
+        "tags" : [ "recurrence-rule-controller" ]
       }
     },
     "/api/review-queue" : {
@@ -1750,6 +2184,180 @@
         "summary" : "Changes some settings; keys left out keep their value.",
         "tags" : [ "settings-controller" ]
       }
+    },
+    "/api/variable-expenses" : {
+      "get" : {
+        "description" : "Lists the expenses of a period, newest first, with the filter total (RF-35).",
+        "operationId" : "variableExpenses",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "category, optional",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VariableExpenseListModel"
+                }
+              }
+            },
+            "description" : "expenses and total"
+          }
+        },
+        "summary" : "Lists the expenses of a period, newest first, with the filter total (RF-35).",
+        "tags" : [ "variable-expense-controller" ]
+      },
+      "post" : {
+        "description" : "Creates an expense (RF-34).",
+        "operationId" : "createVariableExpense",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VariableExpenseRequest"
+              }
+            }
+          },
+          "description" : "expense data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VariableExpenseModel"
+                }
+              }
+            },
+            "description" : "201 with <code>Location</code>"
+          }
+        },
+        "summary" : "Creates an expense (RF-34).",
+        "tags" : [ "variable-expense-controller" ]
+      }
+    },
+    "/api/variable-expenses/{id}" : {
+      "delete" : {
+        "description" : "Deletes an expense.",
+        "operationId" : "removeVariableExpense",
+        "parameters" : [ {
+          "description" : "expense id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes an expense.",
+        "tags" : [ "variable-expense-controller" ]
+      },
+      "get" : {
+        "description" : "Returns one expense with its version as <code>ETag</code>.",
+        "operationId" : "variableExpense",
+        "parameters" : [ {
+          "description" : "expense id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VariableExpenseModel"
+                }
+              }
+            },
+            "description" : "the expense"
+          }
+        },
+        "summary" : "Returns one expense with its version as <code>ETag</code>.",
+        "tags" : [ "variable-expense-controller" ]
+      },
+      "put" : {
+        "description" : "Replaces the data of an expense.",
+        "operationId" : "replaceVariableExpense",
+        "parameters" : [ {
+          "description" : "expense id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/VariableExpenseRequest"
+              }
+            }
+          },
+          "description" : "new data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/VariableExpenseModel"
+                }
+              }
+            },
+            "description" : "the updated expense"
+          }
+        },
+        "summary" : "Replaces the data of an expense.",
+        "tags" : [ "variable-expense-controller" ]
+      }
     }
   },
   "components" : {
@@ -1764,6 +2372,18 @@
           }
         },
         "required" : [ "active" ]
+      },
+      "AmountRequest" : {
+        "type" : "object",
+        "description" : "Amount of one period (RF-22, RF-31).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount",
+            "minimum" : 0
+          }
+        },
+        "required" : [ "amount" ]
       },
       "BatchValidationRequest" : {
         "type" : "object",
@@ -2142,6 +2762,44 @@
                 "type" : "array",
                 "items" : {
                   "$ref" : "#/components/schemas/EntityModelRelationDescription"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelOccurrenceModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "occurrences" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/OccurrenceModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelRecurrenceRuleModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "recurrenceRules" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/RecurrenceRuleModel"
                 }
               }
             }
@@ -2638,6 +3296,18 @@
           }
         }
       },
+      "LinkRequest" : {
+        "type" : "object",
+        "description" : "Card entry chosen for a fixed expense paid by card (RN-30).",
+        "properties" : {
+          "entryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "chosen entry"
+          }
+        },
+        "required" : [ "entryId" ]
+      },
       "Links" : {
         "type" : "object",
         "additionalProperties" : {
@@ -2804,6 +3474,103 @@
         },
         "required" : [ "code", "color", "kind", "name", "preferredLanguage" ]
       },
+      "OccurrenceModel" : {
+        "type" : "object",
+        "description" : "HAL representation of the income or fixed expense of one billing period.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "Amount of the period."
+          },
+          "amountOverridden" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when the amount was changed for this period only."
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category, or <code>null</code>."
+          },
+          "day" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Expected or due day."
+          },
+          "defaultAmount" : {
+            "type" : "number",
+            "description" : "Default amount of the rule."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Description of the rule."
+          },
+          "effectiveDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Receipt or payment date."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "incomeType" : {
+            "type" : "string",
+            "description" : "Income type; <code>null</code> for fixed expenses.",
+            "enum" : [ "SALARY", "FREELANCE", "SCHOLARSHIP", "RENT", "OTHER" ]
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Income or fixed expense.",
+            "enum" : [ "INCOME", "FIXED_EXPENSE" ]
+          },
+          "linkCandidates" : {
+            "type" : "array",
+            "description" : "Candidate entries waiting for the user's choice (RN-30).",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "linkedEntryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Card entry that holds a card-paid expense (RF-33)."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "description" : "Payment method; <code>null</code> for incomes.",
+            "enum" : [ "BOLETO", "DEBIT", "PIX", "CASH", "CARD" ]
+          },
+          "ruleId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Rule."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Expected or done (received or paid).",
+            "enum" : [ "EXPECTED", "DONE" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version for <code>If-Match</code> (API-04)."
+          }
+        }
+      },
       "PageMetadata" : {
         "type" : "object",
         "properties" : {
@@ -2946,6 +3713,152 @@
           }
         },
         "required" : [ "originalDescription" ]
+      },
+      "RecurrenceRuleModel" : {
+        "type" : "object",
+        "description" : "HAL representation of an income or fixed expense rule.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "active" : {
+            "type" : "boolean",
+            "description" : "Active flag."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category, or <code>null</code>."
+          },
+          "day" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Expected day or due day."
+          },
+          "defaultAmount" : {
+            "type" : "number",
+            "description" : "Default amount."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Description."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "incomeType" : {
+            "type" : "string",
+            "description" : "Income type; <code>null</code> for fixed expenses.",
+            "enum" : [ "SALARY", "FREELANCE", "SCHOLARSHIP", "RENT", "OTHER" ]
+          },
+          "intervalMonths" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "N of every N months; 1 otherwise."
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Income or fixed expense.",
+            "enum" : [ "INCOME", "FIXED_EXPENSE" ]
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "description" : "Payment method; <code>null</code> for incomes.",
+            "enum" : [ "BOLETO", "DEBIT", "PIX", "CASH", "CARD" ]
+          },
+          "recurrence" : {
+            "type" : "string",
+            "description" : "Recurrence.",
+            "enum" : [ "MONTHLY", "ONCE", "EVERY_N_MONTHS" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "description" : "First billing period."
+          },
+          "validUntil" : {
+            "type" : "string",
+            "description" : "Last billing period, or <code>null</code>."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version for <code>If-Match</code> (API-04)."
+          }
+        }
+      },
+      "RecurrenceRuleRequest" : {
+        "type" : "object",
+        "description" : "Data of an income (RF-21, RF-23) or a fixed expense (RF-30); a one-off income is a rule with recurrence\n <code>ONCE</code> in its period.",
+        "properties" : {
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category (fixed expenses), optional"
+          },
+          "day" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "expected day or due day",
+            "maximum" : 31,
+            "minimum" : 1
+          },
+          "defaultAmount" : {
+            "type" : "number",
+            "description" : "default amount",
+            "minimum" : 0
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "incomeType" : {
+            "type" : "string",
+            "description" : "income type (incomes)",
+            "enum" : [ "SALARY", "FREELANCE", "SCHOLARSHIP", "RENT", "OTHER" ]
+          },
+          "intervalMonths" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "N for every N months",
+            "maximum" : 24,
+            "minimum" : 1
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "description" : "payment method (fixed expenses)",
+            "enum" : [ "BOLETO", "DEBIT", "PIX", "CASH", "CARD" ]
+          },
+          "recurrence" : {
+            "type" : "string",
+            "description" : "monthly, once or every N months",
+            "enum" : [ "MONTHLY", "ONCE", "EVERY_N_MONTHS" ]
+          },
+          "validFrom" : {
+            "type" : "string",
+            "description" : "first billing period, <code>yyyy-MM</code>",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          },
+          "validUntil" : {
+            "type" : "string",
+            "description" : "last billing period, optional",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          }
+        },
+        "required" : [ "defaultAmount", "description", "memberId", "recurrence", "validFrom" ]
       },
       "RenameRequest" : {
         "type" : "object",
@@ -3170,6 +4083,134 @@
           }
         },
         "required" : [ "memberId" ]
+      },
+      "StatusRequest" : {
+        "type" : "object",
+        "description" : "Received or paid flag of a period (RF-24, RF-32).",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "receipt or payment date; today when missing"
+          },
+          "done" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> for received or paid, <code>false</code> for expected or pending"
+          }
+        }
+      },
+      "VariableExpenseListModel" : {
+        "type" : "object",
+        "description" : "Filtered variable expenses with the filter total (RF-35).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "items" : {
+            "type" : "array",
+            "description" : "Expenses.",
+            "items" : {
+              "$ref" : "#/components/schemas/VariableExpenseModel"
+            }
+          },
+          "total" : {
+            "type" : "number",
+            "description" : "Sum of the listed expenses."
+          }
+        }
+      },
+      "VariableExpenseModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a variable expense.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "Amount."
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category, or <code>null</code>."
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "Description."
+          },
+          "expenseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Date."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member."
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "description" : "Payment method.",
+            "enum" : [ "BOLETO", "DEBIT", "PIX", "CASH", "CARD" ]
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version for <code>If-Match</code> (API-04)."
+          }
+        }
+      },
+      "VariableExpenseRequest" : {
+        "type" : "object",
+        "description" : "Data of a variable expense (RF-34).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period it counts in, <code>yyyy-MM</code>; the month of the date when missing",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category, optional"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "expenseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "date"
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          },
+          "paymentMethod" : {
+            "type" : "string",
+            "description" : "payment method other than card",
+            "enum" : [ "BOLETO", "DEBIT", "PIX", "CASH", "CARD" ]
+          }
+        },
+        "required" : [ "amount", "description", "expenseDate", "memberId", "paymentMethod" ]
       }
     },
     "securitySchemes" : {
