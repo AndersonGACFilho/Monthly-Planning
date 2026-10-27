@@ -5,11 +5,13 @@ import com.planejamentomensal.shared.domain.DomainException;
 import com.planejamentomensal.shared.domain.InvalidInputException;
 import com.planejamentomensal.shared.domain.NotFoundException;
 import com.planejamentomensal.shared.domain.StaleVersionException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.springframework.context.MessageSource;
+import org.springframework.dao.DataAccessException;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -145,6 +147,26 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         problem.setTitle(messages.getMessage("error.invalid-argument.title", null, "Invalid argument", locale));
         problem.setDetail(e.getMessage());
         problem.setProperty("code", "invalid-argument");
+        return problem;
+    }
+
+    /**
+     * Turns a failed read or write of the data folder (drive removed, disk full, read-only) into 503 with a clear
+     * message (POR-13); other database errors stay 500.
+     *
+     * @param e      exception
+     * @param locale locale resolved from {@code Accept-Language}
+     * @return problem with status 503, or 500 when the storage is fine
+     */
+    @ExceptionHandler({DataAccessException.class, UncheckedIOException.class})
+    public ProblemDetail handleStorage(RuntimeException e, Locale locale) {
+        boolean storage = StorageFailures.isStorageFailure(e);
+        ProblemDetail problem = ProblemDetail.forStatus(storage ? HttpStatus.SERVICE_UNAVAILABLE : HttpStatus.INTERNAL_SERVER_ERROR);
+        String code = storage ? "storage-unavailable" : "internal-error";
+        problem.setType(URI.create(PROBLEM_TYPE_BASE + code));
+        problem.setTitle(messages.getMessage("error." + code + ".title", null, code, locale));
+        problem.setDetail(messages.getMessage("error." + code + ".detail", null, null, locale));
+        problem.setProperty("code", code);
         return problem;
     }
 

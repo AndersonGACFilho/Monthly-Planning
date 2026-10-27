@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -52,8 +51,8 @@ public class AliasController {
      * @return aliases
      */
     @GetMapping
-    public CollectionModel<EntityModel<AliasView>> aliases() {
-        List<EntityModel<AliasView>> all = aliases.all().values().stream()
+    public CollectionModel<AliasModel> aliases() {
+        List<AliasModel> all = aliases.all().values().stream()
                 .sorted(Comparator.comparing(AliasView::displayName, String.CASE_INSENSITIVE_ORDER))
                 .map(this::model).toList();
         return CollectionModel.of(all, Link.of("/api/aliases").withSelfRel());
@@ -67,12 +66,14 @@ public class AliasController {
      * @return the alias
      */
     @PostMapping("/{id}/patterns")
-    public EntityModel<AliasView> groupDescription(@PathVariable long id, @Valid @RequestBody PatternRequest request) {
+    public AliasModel groupDescription(@PathVariable long id, @Valid @RequestBody PatternRequest request) {
         return model(aliases.addDescription(id, request.originalDescription()));
     }
 
-    private EntityModel<AliasView> model(AliasView alias) {
-        return EntityModel.of(alias, Link.of("/api/aliases/" + alias.id() + "/patterns", "group"));
+    private AliasModel model(AliasView alias) {
+        AliasModel model = new AliasModel(alias);
+        model.add(Link.of("/api/aliases/" + alias.id() + "/patterns", "group"));
+        return model;
     }
 
     /**

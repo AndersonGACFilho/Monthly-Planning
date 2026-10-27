@@ -54,6 +54,9 @@
     "description" : "Card totals of a billing period with closing, due date and status (RF-36, RF-37, IMP-31).",
     "name" : "card-bill-controller"
   }, {
+    "description" : "Backups of the database and export of all data (POR-12, RNF-07).",
+    "name" : "backup-controller"
+  }, {
     "description" : "Aliases and the descriptions they group (RF-46 to RF-49, RN-24).",
     "name" : "alias-controller"
   }, {
@@ -105,7 +108,7 @@
             "content" : {
               "application/hal+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CollectionModelEntityModelAliasView"
+                  "$ref" : "#/components/schemas/CollectionModelAliasModel"
                 }
               }
             },
@@ -146,7 +149,7 @@
             "content" : {
               "application/hal+json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/EntityModelAliasView"
+                  "$ref" : "#/components/schemas/AliasModel"
                 }
               }
             },
@@ -155,6 +158,61 @@
         },
         "summary" : "Groups another description of the same store into an alias (RN-24).",
         "tags" : [ "alias-controller" ]
+      }
+    },
+    "/api/backups" : {
+      "get" : {
+        "description" : "Lists the copies in <code>data/backups/</code>, newest first.",
+        "operationId" : "backups",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            },
+            "description" : "file names"
+          }
+        },
+        "summary" : "Lists the copies in <code>data/backups/</code>, newest first.",
+        "tags" : [ "backup-controller" ]
+      },
+      "post" : {
+        "description" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12).",
+        "operationId" : "backupNow",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/BackupRequest"
+              }
+            }
+          },
+          "description" : "destination",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            },
+            "description" : "<code>{&quot;file&quot;: path</code>}"
+          }
+        },
+        "summary" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12).",
+        "tags" : [ "backup-controller" ]
       }
     },
     "/api/bill-entries" : {
@@ -1064,6 +1122,43 @@
         },
         "summary" : "Replaces a category.",
         "tags" : [ "category-controller" ]
+      }
+    },
+    "/api/data-export" : {
+      "get" : {
+        "description" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "operationId" : "exportData",
+        "parameters" : [ {
+          "description" : "<code>json</code> or <code>csv</code>",
+          "in" : "query",
+          "name" : "format",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "default" : "json"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              },
+              "application/zip" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              }
+            },
+            "description" : "the file"
+          }
+        },
+        "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "tags" : [ "backup-controller" ]
       }
     },
     "/api/imports" : {
@@ -3776,6 +3871,37 @@
         },
         "required" : [ "active" ]
       },
+      "AliasModel" : {
+        "type" : "object",
+        "description" : "HAL representation of an alias (RF-46, RN-24).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "defaultCategoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Default category, or <code>null</code>."
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "Displayed name."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "patterns" : {
+            "type" : "array",
+            "description" : "Normalized original descriptions grouped by the alias.",
+            "items" : {
+              "type" : "string"
+            },
+            "uniqueItems" : true
+          }
+        }
+      },
       "AmountRequest" : {
         "type" : "object",
         "description" : "Amount of one period (RF-22, RF-31).",
@@ -3787,6 +3913,18 @@
           }
         },
         "required" : [ "amount" ]
+      },
+      "BackupRequest" : {
+        "type" : "object",
+        "description" : "Destination of a manual backup.",
+        "properties" : {
+          "destination" : {
+            "type" : "string",
+            "description" : "file chosen by the user, or empty for <code>data/backups/</code>",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }
       },
       "BatchValidationRequest" : {
         "type" : "object",
@@ -4211,6 +4349,25 @@
           }
         }
       },
+      "CollectionModelAliasModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "aliases" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/AliasModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "CollectionModelBillEntryModel" : {
         "type" : "object",
         "properties" : {
@@ -4278,25 +4435,6 @@
                 "type" : "array",
                 "items" : {
                   "$ref" : "#/components/schemas/DeliveryModel"
-                }
-              }
-            }
-          },
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
-          }
-        }
-      },
-      "CollectionModelEntityModelAliasView" : {
-        "type" : "object",
-        "properties" : {
-          "_embedded" : {
-            "type" : "object",
-            "properties" : {
-              "aliasViewList" : {
-                "type" : "array",
-                "items" : {
-                  "$ref" : "#/components/schemas/EntityModelAliasView"
                 }
               }
             }
@@ -4561,36 +4699,6 @@
             "type" : "string",
             "description" : "Result.",
             "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
-          }
-        }
-      },
-      "EntityModelAliasView" : {
-        "type" : "object",
-        "properties" : {
-          "_links" : {
-            "$ref" : "#/components/schemas/Links"
-          },
-          "defaultCategoryId" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "default category, or <code>null</code>"
-          },
-          "displayName" : {
-            "type" : "string",
-            "description" : "name"
-          },
-          "id" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "id"
-          },
-          "patterns" : {
-            "type" : "array",
-            "description" : "normalized descriptions",
-            "items" : {
-              "type" : "string"
-            },
-            "uniqueItems" : true
           }
         }
       },
