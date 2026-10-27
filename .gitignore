@@ -37,3 +37,4 @@ frontend/src/api/generated/
 
 # Local tool settings
 .claude/
+build/
