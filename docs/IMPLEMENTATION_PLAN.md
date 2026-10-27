@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 1/34 · M6 1/52 · M7 0/22 (total 186/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 12/34 · M6 1/52 · M7 0/22 (total 197/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -214,19 +214,19 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 
 ## M5 — Incomes, expenses, splits and overview
 
-- [ ] IMP-29 — `RecurrenceRule` + `Occurrence` shared by income and fixed expense (`kind`), `GenerateOccurrencesUseCase` (origin §10, §13 DRY) · recurrence · accept: one implementation for both kinds · GenerateOccurrencesUseCaseTest · after: IMP-09
-- [ ] RF-21 — Parameterized income: description, member, type, default amount, recurrence (monthly, once, every N months), day, validity · recurrence · accept: RF-21 · GenerateOccurrencesUseCaseTest · after: IMP-29
-- [ ] RF-22 — Generate expected incomes per period; change only that month's value · recurrence · accept: RF-22 · GenerateOccurrencesUseCaseTest · after: RF-21
-- [ ] RF-23 — One-off income in the period · recurrence · accept: RF-23 · IncomeControllerIT · after: RF-21
-- [ ] RF-24 — Mark income received/expected · recurrence · accept: RF-24 · IncomeControllerIT · after: RF-22
+- [x] IMP-29 — `RecurrenceRule` + `Occurrence` shared by income and fixed expense (`kind`), `GenerateOccurrencesUseCase` (origin §10, §13 DRY) · recurrence · accept: one implementation for both kinds · GenerateOccurrencesUseCaseTest · after: IMP-09 · done (6c35a4d)
+- [x] RF-21 — Parameterized income: description, member, type, default amount, recurrence (monthly, once, every N months), day, validity · recurrence · accept: RF-21 · GenerateOccurrencesUseCaseTest · after: IMP-29 · done (6c35a4d)
+- [x] RF-22 — Generate expected incomes per period; change only that month's value · recurrence · accept: RF-22 · GenerateOccurrencesUseCaseTest · after: RF-21 · done (6c35a4d)
+- [x] RF-23 — One-off income in the period · recurrence · accept: RF-23 · IncomeControllerIT · after: RF-21 · done (6c35a4d)
+- [x] RF-24 — Mark income received/expected · recurrence · accept: RF-24 · IncomeControllerIT · after: RF-22 · done (6c35a4d)
 - [ ] IMP-30 — `RecurrenceRuleForm` shared by income and fixed expense (origin §13 front table) · frontend · accept: one form, two kinds · RecurrenceRuleForm.test.tsx · after: RF-21
 - [x] RF-20 — Members registry reachable from tab 2 · frontend · accept: RF-20 · IncomesPage.test.tsx · after: IMP-11 · done (9418ac1)
-- [ ] RF-30 — Parameterized fixed expense: + category, due day, payment method · recurrence · accept: RF-30 · GenerateOccurrencesUseCaseTest · after: IMP-29
-- [ ] RF-31 — Automatic generation per period with monthly override · recurrence · accept: RF-31 · GenerateOccurrencesUseCaseTest · after: RF-30
-- [ ] RF-32 — Mark paid/pending with payment date · recurrence · accept: RF-32 · FixedExpenseControllerIT · after: RF-31
-- [ ] RF-33 — Fixed expense paid by card linked automatically to the bill entry (or `*`) by description (alias/RN-16) and close value; never counted twice · recurrence · accept: RF-33 · FixedExpenseLinkerTest · after: RF-31, RN-16, RF-46
+- [x] RF-30 — Parameterized fixed expense: + category, due day, payment method · recurrence · accept: RF-30 · GenerateOccurrencesUseCaseTest · after: IMP-29 · done (6c35a4d)
+- [x] RF-31 — Automatic generation per period with monthly override · recurrence · accept: RF-31 · GenerateOccurrencesUseCaseTest · after: RF-30 · done (6c35a4d)
+- [x] RF-32 — Mark paid/pending with payment date · recurrence · accept: RF-32 · FixedExpenseControllerIT · after: RF-31 · done (6c35a4d)
+- [x] RF-33 — Fixed expense paid by card linked automatically to the bill entry (or `*`) by description (alias/RN-16) and close value; never counted twice · recurrence · accept: RF-33 · FixedExpenseLinkerTest · after: RF-31, RN-16, RF-46 · done (6c35a4d)
 - [ ] RN-30 — More than one candidate entry for the link → review queue · recurrence · accept: RN-30 · FixedExpenseLinkerTest · after: RF-33, IMP-25
-- [ ] RF-34 — Variable expense: date, description, member, category, amount, payment method · expense · accept: RF-34 · VariableExpenseControllerIT · after: RF-06, RF-01
+- [x] RF-34 — Variable expense: date, description, member, category, amount, payment method · expense · accept: RF-34 · VariableExpenseControllerIT · after: RF-06, RF-01 · done (6c35a4d)
 - [ ] RF-35 — Filterable list by member and category with filter total · expense/frontend · accept: RF-35 · VariableExpensesPage.test.tsx · after: RF-34, IMP-18, UI-03
 - [ ] RF-36 — Card total cards: bill total, closing, due, status (open, closed, paid) · summary · accept: RF-36 · CardBillControllerIT · after: RF-72 · (blocked: Q6)
 - [ ] IMP-31 — Card-bill HATEOAS links: `import` if open, `mark-paid` if closed and unpaid (origin §12 resource table) · api · accept: links per state · CardBillControllerIT · after: RF-36
@@ -247,7 +247,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [ ] UI-07 — Overview charts with Recharts · frontend · accept: UI-07 · OverviewPage.test.tsx · after: RF-12
 - [ ] IMP-33 — Overview tab (indicators, category chart/table, member and card summaries, pending block from RF-79a) (origin §4) · frontend · accept: matches backend totals · OverviewPage.test.tsx, monthly-summary.spec.ts · after: IMP-32, UI-07, RF-79a
 - [ ] IMP-34 — Incomes & members tab and Expenses tab screens (origin §5, §6) · frontend · accept: flows of RF-20…RF-38 · IncomesPage.test.tsx, ExpensesPage.test.tsx · after: RF-25, RF-36
-- [ ] IMP-35 — Flyway migrations for recurrence_rule, occurrence, variable_expense, alias, alias_override (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-22
+- [x] IMP-35 — Flyway migrations for recurrence_rule, occurrence, variable_expense, alias, alias_override (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-22 · done (6c35a4d; V7, V8)
 
 ## M6 — Member statement, templates, delivery and monthly spreadsheet
 
@@ -387,6 +387,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27: Incomes and fixed expenses share `/api/recurrence-rules?kind=` and `/api/occurrences?billingPeriod=&kind=`; periods are generated lazily on first read, once per rule and period (unique key). A new default amount reaches only EXPECTED periods not changed by hand. A one-off income (RF-23) is a rule with recurrence ONCE. A rule with received or paid periods cannot be deleted, only inactivated.
 - 2026-10-27: RF-33 link = same normalized description (alias, original or RN-16 store prefix) and amount at most 10% apart, among non-UNCONFIRMED entries of the same period; a linked expense is DONE on the entry date. Several candidates (RN-30) are listed at `/api/occurrences/pending-links` and shown in the review queue screen.
 - 2026-10-27: `PaymentMethod` lives in `shared.domain` (used by recurrence and expense). Variable expenses (RF-34) refuse `CARD`: card purchases come from the bill (manual card entries use RF-44), so RF-11 never counts them twice. Their billing period is the month of the date unless given.
+- 2026-10-27: Overview (SOL-01): `PeriodData` turns incomes, fixed (not card), variable and card entry shares into `ExpenseLine`s with member and payer; small calculators build categories, members, committed installments and settlements. Card bills are addressed as `/api/cards/{id}/bills/{period}`; without a stored bill the closing and due dates are forecast from the card cycle (closing = last closing day before the due date). Review-pending entries (RF-79a) count in totals and are reported separately; UNCONFIRMED ones are left out (Q6).
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log

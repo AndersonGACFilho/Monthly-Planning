@@ -62,7 +62,7 @@ public class VariableExpenseController {
         VariableExpenseListModel model = new VariableExpenseListModel(list.stream().map(this::toModel).toList(),
                 VariableExpenseCommands.total(list).amount());
         model.add(linkTo(methodOn(VariableExpenseController.class).variableExpenses(billingPeriod, member, category))
-                .withSelfRel());
+                .withSelfRel().expand());
         return model;
     }
 

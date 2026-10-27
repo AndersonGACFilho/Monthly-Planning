@@ -1,9 +1,13 @@
 package com.planejamentomensal.entry.application;
 
+import com.planejamentomensal.entry.domain.PurchaseSplit;
+import com.planejamentomensal.entry.domain.SplitPolicy;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.Money;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * One line of the card entries tab (SPEC section 7, RF-40).
@@ -38,4 +42,23 @@ public record EntryRow(long entryId, long purchaseId, long cardBillId, long card
         String displayDescription, boolean renamed, Long aliasId, String installment, String type, String kind,
         Money amount, String status, Long categoryId, List<ReviewItem.Share> splits, String reviewStatus,
         String refundStatus, String note, long version) {
+
+    /**
+     * Divides the amount between the members of the purchase without losing cents (RF-26).
+     *
+     * @param fallbackMemberId member that takes the whole amount when the purchase has no shares (the card's default)
+     * @return amount of each member, in split order
+     */
+    public Map<Long, Money> memberAmounts(long fallbackMemberId) {
+        Map<Long, Money> result = new LinkedHashMap<>();
+        if (splits.isEmpty()) {
+            result.put(fallbackMemberId, amount);
+            return result;
+        }
+        List<PurchaseSplit> shares = splits.stream()
+                .map(s -> new PurchaseSplit(s.memberId(), s.percentage(), s.amount()))
+                .toList();
+        SplitPolicy.divide(amount, shares).forEach(s -> result.merge(s.memberId(), s.amount(), Money::plus));
+        return result;
+    }
 }

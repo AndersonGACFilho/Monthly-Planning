@@ -39,6 +39,9 @@
     "description" : "Imports of Itaú bills: preview, line decisions, confirmation, cancellation and undo (RF-60 to RF-73).",
     "name" : "import-controller"
   }, {
+    "description" : "Card totals of a billing period with closing, due date and status (RF-36, RF-37, IMP-31).",
+    "name" : "card-bill-controller"
+  }, {
     "description" : "Aliases and the descriptions they group (RF-46 to RF-49, RN-24).",
     "name" : "alias-controller"
   }, {
@@ -47,6 +50,9 @@
   }, {
     "description" : "API entry point: the only URL the interface knows (API-07).",
     "name" : "root-controller"
+  }, {
+    "description" : "Overview of a billing period: indicators, categories, members, cards and what is committed ahead\n (RF-10 to RF-17, IMP-32).",
+    "name" : "monthly-summary-controller"
   }, {
     "description" : "Purchases (the fact behind the installments) with the link to their installments (SPEC section 12).",
     "name" : "purchase-controller"
@@ -453,6 +459,35 @@
         "tags" : [ "bill-entry-controller" ]
       }
     },
+    "/api/card-bills" : {
+      "get" : {
+        "description" : "Lists the card totals of a period, one per active card and per card with entries.",
+        "operationId" : "cardBills",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelCardBillModel"
+                }
+              }
+            },
+            "description" : "card totals by nickname"
+          }
+        },
+        "summary" : "Lists the card totals of a period, one per active card and per card with entries.",
+        "tags" : [ "card-bill-controller" ]
+      }
+    },
     "/api/cards" : {
       "get" : {
         "description" : "Lists cards, sorted by nickname by default.",
@@ -533,6 +568,90 @@
         },
         "summary" : "Creates a card with its first cycle.",
         "tags" : [ "card-controller" ]
+      }
+    },
+    "/api/cards/{cardId}/bills/{billingPeriod}" : {
+      "get" : {
+        "description" : "Returns the total of one card in a period.",
+        "operationId" : "cardBill",
+        "parameters" : [ {
+          "description" : "primary card",
+          "in" : "path",
+          "name" : "cardId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardBillModel"
+                }
+              }
+            },
+            "description" : "the card total with the bill version as <code>ETag</code>"
+          }
+        },
+        "summary" : "Returns the total of one card in a period.",
+        "tags" : [ "card-bill-controller" ]
+      }
+    },
+    "/api/cards/{cardId}/bills/{billingPeriod}/payment" : {
+      "post" : {
+        "description" : "Marks a closed bill as paid (RF-36).",
+        "operationId" : "payCardBill",
+        "parameters" : [ {
+          "description" : "primary card",
+          "in" : "path",
+          "name" : "cardId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CardBillModel"
+                }
+              }
+            },
+            "description" : "the updated card total"
+          }
+        },
+        "summary" : "Marks a closed bill as paid (RF-36).",
+        "tags" : [ "card-bill-controller" ]
       }
     },
     "/api/cards/{id}" : {
@@ -2185,6 +2304,117 @@
         "tags" : [ "settings-controller" ]
       }
     },
+    "/api/summaries/{billingPeriod}" : {
+      "get" : {
+        "description" : "Returns the overview of a period, optionally for one member (RF-15).",
+        "operationId" : "monthlySummary",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member filter, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MonthlySummaryModel"
+                }
+              }
+            },
+            "description" : "the overview with <code>previous</code>, <code>next</code>, <code>by-member</code> and <code>by-category</code>"
+          }
+        },
+        "summary" : "Returns the overview of a period, optionally for one member (RF-15).",
+        "tags" : [ "monthly-summary-controller" ]
+      }
+    },
+    "/api/summaries/{billingPeriod}/categories" : {
+      "get" : {
+        "description" : "Returns the expense by category of a period (RF-12).",
+        "operationId" : "summaryByCategory",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member filter, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoryRow"
+                  }
+                }
+              }
+            },
+            "description" : "expense by category, largest first"
+          }
+        },
+        "summary" : "Returns the expense by category of a period (RF-12).",
+        "tags" : [ "monthly-summary-controller" ]
+      }
+    },
+    "/api/summaries/{billingPeriod}/members" : {
+      "get" : {
+        "description" : "Returns the totals by member of a period (RF-13, RF-25).",
+        "operationId" : "summaryByMember",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/MemberRow"
+                  }
+                }
+              }
+            },
+            "description" : "totals by member"
+          }
+        },
+        "summary" : "Returns the totals by member of a period (RF-13, RF-25).",
+        "tags" : [ "monthly-summary-controller" ]
+      }
+    },
     "/api/variable-expenses" : {
       "get" : {
         "description" : "Lists the expenses of a period, newest first, with the filter total (RF-35).",
@@ -2508,6 +2738,92 @@
           }
         }
       },
+      "CardBillModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a card total in a billing period (RF-14, RF-36, RF-37).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Primary card."
+          },
+          "closingDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Closing date, read from a file or forecast."
+          },
+          "committedFuture" : {
+            "type" : "number",
+            "description" : "Projected installments in later periods."
+          },
+          "dueDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Due date, read from a file or forecast."
+          },
+          "fileTotal" : {
+            "type" : "number",
+            "description" : "Total printed on the imported file, or <code>null</code>."
+          },
+          "installments" : {
+            "type" : "number",
+            "description" : "Installments."
+          },
+          "lastDigits" : {
+            "type" : "array",
+            "description" : "Finals.",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "nickname" : {
+            "type" : "string",
+            "description" : "Card nickname."
+          },
+          "partial" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> while only the open bill was imported."
+          },
+          "pendingReviewCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Entries pending review."
+          },
+          "single" : {
+            "type" : "number",
+            "description" : "One-off purchases, refunds, IOF and fees."
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "<code>OPEN</code>, <code>CLOSED</code> or <code>PAID</code>."
+          },
+          "subscriptions" : {
+            "type" : "number",
+            "description" : "Subscriptions."
+          },
+          "total" : {
+            "type" : "number",
+            "description" : "Bill total: CONFIRMED and PROJECTED entries."
+          },
+          "unconfirmedCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "UNCONFIRMED entries left out of the total."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Version of the stored bill for <code>If-Match</code>."
+          }
+        }
+      },
       "CardModel" : {
         "type" : "object",
         "description" : "HAL representation of a card.",
@@ -2695,6 +3011,33 @@
         },
         "required" : [ "color", "icon", "name" ]
       },
+      "CategoryRow" : {
+        "type" : "object",
+        "description" : "Expense of one category (RF-12).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount"
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category, or <code>null</code> for \"not classified\""
+          },
+          "percentOfTotal" : {
+            "type" : "number",
+            "description" : "share of the total expense"
+          },
+          "previousAmount" : {
+            "type" : "number",
+            "description" : "amount in the previous period"
+          },
+          "variation" : {
+            "type" : "number",
+            "description" : "change from the previous period in percent, or <code>null</code>"
+          }
+        }
+      },
       "CollectionModelBillEntryModel" : {
         "type" : "object",
         "properties" : {
@@ -2705,6 +3048,25 @@
                 "type" : "array",
                 "items" : {
                   "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelCardBillModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "cardBills" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/CardBillModel"
                 }
               }
             }
@@ -2825,6 +3187,20 @@
           },
           "_links" : {
             "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CommittedRow" : {
+        "type" : "object",
+        "description" : "Committed amount of a future period (RF-17).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "projected installments"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period"
           }
         }
       },
@@ -3474,6 +3850,156 @@
         },
         "required" : [ "code", "color", "kind", "name", "preferredLanguage" ]
       },
+      "MemberRow" : {
+        "type" : "object",
+        "description" : "Totals of one member (RF-13, RF-25).",
+        "properties" : {
+          "balance" : {
+            "type" : "number",
+            "description" : "income − expense"
+          },
+          "card" : {
+            "type" : "number",
+            "description" : "share of card entries"
+          },
+          "expense" : {
+            "type" : "number",
+            "description" : "total expense"
+          },
+          "fixed" : {
+            "type" : "number",
+            "description" : "fixed expenses not paid by card"
+          },
+          "income" : {
+            "type" : "number",
+            "description" : "incomes"
+          },
+          "main" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> for a MAIN member"
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member"
+          },
+          "percentSpent" : {
+            "type" : "number",
+            "description" : "expense ÷ income × 100, or <code>null</code>"
+          },
+          "variable" : {
+            "type" : "number",
+            "description" : "variable expenses"
+          }
+        }
+      },
+      "MonthlySummaryModel" : {
+        "type" : "object",
+        "description" : "HAL representation of the overview of a billing period (RF-10 to RF-17, RF-25, RF-27, RF-79a).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "alert" : {
+            "type" : "string",
+            "description" : "<code>NONE</code>, <code>WARNING</code> or <code>DANGER</code> (RF-16)."
+          },
+          "balance" : {
+            "type" : "number",
+            "description" : "Income − expense."
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "cardTotal" : {
+            "type" : "number",
+            "description" : "Card bills."
+          },
+          "cards" : {
+            "type" : "array",
+            "description" : "Totals by card.",
+            "items" : {
+              "$ref" : "#/components/schemas/CardBillModel"
+            }
+          },
+          "categories" : {
+            "type" : "array",
+            "description" : "Expense by category, largest first.",
+            "items" : {
+              "$ref" : "#/components/schemas/CategoryRow"
+            }
+          },
+          "committedNext" : {
+            "type" : "array",
+            "description" : "Projected installments of the next three periods.",
+            "items" : {
+              "$ref" : "#/components/schemas/CommittedRow"
+            }
+          },
+          "expense" : {
+            "type" : "number",
+            "description" : "Total expense."
+          },
+          "fixedTotal" : {
+            "type" : "number",
+            "description" : "Fixed expenses not paid by card."
+          },
+          "income" : {
+            "type" : "number",
+            "description" : "Total income: MAIN incomes + reimbursements."
+          },
+          "mainIncome" : {
+            "type" : "number",
+            "description" : "Incomes of MAIN members (or of the filtered member)."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member filter, or <code>null</code>."
+          },
+          "members" : {
+            "type" : "array",
+            "description" : "Totals by member.",
+            "items" : {
+              "$ref" : "#/components/schemas/MemberRow"
+            }
+          },
+          "pendingAmount" : {
+            "type" : "number",
+            "description" : "Their sum."
+          },
+          "pendingCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "Card entries pending review (RF-79a)."
+          },
+          "percentSpent" : {
+            "type" : "number",
+            "description" : "Expense ÷ income × 100, or <code>null</code>."
+          },
+          "reimbursements" : {
+            "type" : "number",
+            "description" : "Third-party share of the expenses, counted as income (XLS-04)."
+          },
+          "settlements" : {
+            "type" : "array",
+            "description" : "Who owes whom.",
+            "items" : {
+              "$ref" : "#/components/schemas/SettlementRow"
+            }
+          },
+          "unconfirmedCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "UNCONFIRMED entries left out of the totals."
+          },
+          "variableTotal" : {
+            "type" : "number",
+            "description" : "Variable expenses."
+          }
+        }
+      },
       "OccurrenceModel" : {
         "type" : "object",
         "description" : "HAL representation of the income or fixed expense of one billing period.",
@@ -4039,6 +4565,26 @@
             "type" : "integer",
             "format" : "int64",
             "description" : "Version for <code>If-Match</code>."
+          }
+        }
+      },
+      "SettlementRow" : {
+        "type" : "object",
+        "description" : "One debt between members (RF-27).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount"
+          },
+          "fromMemberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member who owes"
+          },
+          "toMemberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member who paid"
           }
         }
       },

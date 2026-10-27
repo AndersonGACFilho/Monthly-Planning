@@ -3,6 +3,7 @@ package com.planejamentomensal.expense.application;
 import com.planejamentomensal.expense.domain.ExpenseDetails;
 import com.planejamentomensal.expense.domain.VariableExpense;
 import com.planejamentomensal.member.application.MemberQueries;
+import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.shared.domain.NotFoundException;
@@ -50,6 +51,17 @@ public class VariableExpenseCommands {
                 .sorted(Comparator.comparing(VariableExpense::expenseDate).reversed()
                         .thenComparing(VariableExpense::description, String.CASE_INSENSITIVE_ORDER))
                 .toList();
+    }
+
+    /**
+     * Returns the expenses of a period for other modules.
+     *
+     * @param period billing period
+     * @return expenses
+     */
+    @Transactional(readOnly = true)
+    public List<ExpenseView> views(BillingPeriod period) {
+        return expenses.findByBillingPeriod(period).stream().map(ExpenseView::of).toList();
     }
 
     /**

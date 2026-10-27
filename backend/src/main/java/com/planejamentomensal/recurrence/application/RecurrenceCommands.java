@@ -13,6 +13,7 @@ import com.planejamentomensal.shared.domain.NotFoundException;
 import com.planejamentomensal.shared.domain.Versions;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,6 +65,17 @@ public class RecurrenceCommands {
             linker.link(list);
         }
         return list;
+    }
+
+    /**
+     * Returns the incomes and fixed expenses of a period for other modules, generated on demand.
+     *
+     * @param period billing period
+     * @return incomes followed by fixed expenses
+     */
+    public List<OccurrenceView> views(BillingPeriod period) {
+        return Stream.concat(occurrences(period, RuleKind.INCOME).stream(),
+                occurrences(period, RuleKind.FIXED_EXPENSE).stream()).map(OccurrenceView::of).toList();
     }
 
     /**
