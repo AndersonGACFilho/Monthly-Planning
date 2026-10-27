@@ -47,4 +47,35 @@ export async function apiFetch<T>(url: string, init: RequestInit = {}): Promise<
   return body as T;
 }
 
+/**
+ * Fetches a file from the local API, such as a statement PDF, with the session token.
+ *
+ * @param url - absolute URL or path starting at `/api`
+ * @returns the file body
+ * @throws ProblemError when the API answers with a status of 400 or more
+ */
+export async function apiFetchBlob(url: string): Promise<Blob> {
+  return (await apiFetchFile(url)).blob;
+}
+
+/**
+ * Fetches a file from the local API with the name the API suggests in `Content-Disposition`.
+ *
+ * @param url - absolute URL or path starting at `/api`
+ * @returns the file body and its suggested name, or `null` when the API gives none
+ * @throws ProblemError when the API answers with a status of 400 or more
+ */
+export async function apiFetchFile(url: string): Promise<{ blob: Blob; fileName: string | null }> {
+  const { baseUrl, token } = await getBackendConfig();
+  const target = /^https?:\/\//.test(url) ? url : `${baseUrl}${url}`;
+  const response = await fetch(target, { headers: { 'X-Session-Token': token, 'Accept-Language': i18n.language } });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new ProblemError(text ? (JSON.parse(text) as Problem) : { status: response.status });
+  }
+  const disposition = response.headers.get('Content-Disposition') ?? '';
+  const fileName = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? null;
+  return { blob: await response.blob(), fileName };
+}
+
 export default apiFetch;

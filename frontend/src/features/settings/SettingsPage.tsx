@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { CardsSection } from '../cards/CardsSection';
 import { CategoriesSection } from '../categories/CategoriesSection';
 import { GeneralSettings } from './GeneralSettings';
+import { SmtpSettings } from './SmtpSettings';
 
 /**
  * Settings screen: general options, cards and categories (Q15, IMP-39).
@@ -14,6 +15,7 @@ export function SettingsPage() {
     <div className="flex flex-col gap-6">
       <h1 className="text-xl font-semibold">{t('nav.settings')}</h1>
       <GeneralSettings />
+      <SmtpSettings />
       <CardsSection />
       <CategoriesSection />
     </div>

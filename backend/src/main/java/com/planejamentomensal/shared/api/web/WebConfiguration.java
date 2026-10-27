@@ -52,6 +52,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .exposedHeaders(HttpHeaders.ETAG, HttpHeaders.LOCATION);
+                .exposedHeaders(HttpHeaders.ETAG, HttpHeaders.LOCATION, HttpHeaders.CONTENT_DISPOSITION);
     }
 }

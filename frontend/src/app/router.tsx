@@ -6,6 +6,8 @@ import { IncomesPage } from '../features/members/IncomesPage';
 import { OverviewPage } from '../features/overview/OverviewPage';
 import { ReviewQueuePage } from '../features/review/ReviewQueuePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
+import { StatementsPage } from '../features/statements/StatementsPage';
+import { TemplatesPage } from '../features/templates/TemplatesPage';
 import { PlaceholderPage } from '../shared/components/PlaceholderPage';
 import type { ReactElement } from 'react';
 import { AppLayout } from './AppLayout';
@@ -19,6 +21,8 @@ const PAGES: Record<string, ReactElement> = {
   '/entries': <EntriesPage />,
   '/import': <ImportPage />,
   '/review-queue': <ReviewQueuePage />,
+  '/deliveries': <StatementsPage />,
+  '/templates': <TemplatesPage />,
   '/settings': <SettingsPage />,
 };
 
