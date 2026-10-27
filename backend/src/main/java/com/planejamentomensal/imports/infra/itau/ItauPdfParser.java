@@ -280,7 +280,7 @@ public class ItauPdfParser implements BillParser {
                 String category = line.split(" ", 2)[0];
                 pending = new RawBillLine(0, pending.kind(), pending.purchaseDate(), pending.description(),
                         pending.installmentNumber(), pending.installmentCount(), pending.amount(), pending.holderName(),
-                        null, category.toLowerCase(Locale.ROOT), line, null);
+                        null, category.toLowerCase(Locale.ROOT), null, null);
                 pendingHasDetail = true;
                 return;
             }

@@ -46,7 +46,8 @@
     "status": "Status",
     "active": "Active",
     "inactive": "Inactive",
-    "type": "Type"
+    "type": "Type",
+    "all": "All"
   },
   "validation": {
     "required": "Required.",
@@ -104,6 +105,88 @@
     "color": "Colour",
     "icon": "Icon",
     "system": "System"
+  },
+  "entry": {
+    "date": "Date",
+    "description": "Description",
+    "installment": "Installment",
+    "amount": "Amount",
+    "card": "Card"
+  },
+  "import": {
+    "newImport": "New import",
+    "card": "Card",
+    "noCards": "Register a card in Settings before importing.",
+    "dropHint": "Drop the bill here or click to choose",
+    "formats": "Itaú bill as PDF (closed) or XLSX (open)",
+    "due": "due",
+    "openBill": "open bill (partial)",
+    "closedBill": "closed bill",
+    "fileTotal": "Bill total",
+    "computedTotal": "Total read",
+    "difference": "Difference",
+    "acknowledge": "I reviewed the warnings above and want to import anyway.",
+    "decision": "Decision",
+    "decideDivergent": "Decide what to do with the divergent lines.",
+    "confirm": "Confirm import",
+    "cancel": "Discard preview",
+    "undo": "Undo import",
+    "confirmUndo": "Undo removes every entry of this import. Continue?",
+    "openReviewQueue": "Open review queue",
+    "unknownFinal": "unregistered final",
+    "history": "Previous imports",
+    "file": "File",
+    "when": "When",
+    "status": {
+      "PREVIEW": "Preview",
+      "CONFIRMED": "Confirmed",
+      "CANCELLED": "Discarded",
+      "UNDONE": "Undone"
+    },
+    "line": {
+      "NEW": "New",
+      "DUPLICATE": "Duplicates",
+      "MATCHED": "Matched installments",
+      "DIVERGENT": "Divergent",
+      "FUTURE": "Installments of next bills (check only)"
+    },
+    "decisions": {
+      "IMPORT": "Import",
+      "IMPORT_AS_NEW": "Import as new",
+      "UPDATE_EXISTING": "Update existing",
+      "IGNORE": "Ignore",
+      "UNDECIDED": "— decide —"
+    },
+    "warning": {
+      "periodMismatch": "The bill is due in another billing period.",
+      "cardMismatch": "The card final on the bill does not belong to this card.",
+      "alreadyImported": "This file was already imported; its lines show as duplicates.",
+      "totalsMismatch": "The sum of the lines does not match the bill total."
+    }
+  },
+  "review": {
+    "member": "Member",
+    "percentage": "Percentage",
+    "removeShare": "Remove member from split",
+    "split": "Split",
+    "splitTotal": "Split adds up to {{total}}%",
+    "category": "Category",
+    "note": "Note",
+    "validate": "Validate",
+    "select": "Select",
+    "selectAll": "Select all",
+    "refund": "refund of an earlier purchase",
+    "subscriptionSuggested": "Looks like a subscription (*) — mark it",
+    "batchFilter": "Import {{id}}",
+    "pendingCount_one": "{{count}} pending",
+    "pendingCount_other": "{{count}} pending",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "batchActions": "Batch actions",
+    "applyToSelected": "Apply to selected",
+    "validateSelected": "Validate selected",
+    "empty": "Nothing pending. All validated!",
+    "keyboardHint": "Enter validates and moves on; Tab goes through the fields; Esc skips without validating."
   },
   "settings": {
     "general": "General",

@@ -59,7 +59,7 @@ class ItauPdfParserTest {
     void categoryAndHolder() {
         RawBillLine fruit = line("FRUTEIRA DA ECONOMIA LP", "55.53");
         assertThat(fruit.bankCategory()).isEqualTo("supermercado");
-        assertThat(fruit.note()).isEqualTo("supermercado PORTO ALEGRE");
+        assertThat(fruit.note()).isNull();
         assertThat(fruit.holderName()).isEqualTo("MARIANA S F SILVA");
     }
 

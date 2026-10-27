@@ -46,7 +46,8 @@
     "status": "Situação",
     "active": "Ativa",
     "inactive": "Inativa",
-    "type": "Tipo"
+    "type": "Tipo",
+    "all": "Todos"
   },
   "validation": {
     "required": "Obrigatório.",
@@ -104,6 +105,88 @@
     "color": "Cor",
     "icon": "Ícone",
     "system": "Sistema"
+  },
+  "entry": {
+    "date": "Data",
+    "description": "Descrição",
+    "installment": "Parcela",
+    "amount": "Valor",
+    "card": "Cartão"
+  },
+  "import": {
+    "newImport": "Nova importação",
+    "card": "Cartão",
+    "noCards": "Cadastre um cartão em Ajustes antes de importar.",
+    "dropHint": "Arraste a fatura aqui ou clique para escolher",
+    "formats": "Fatura Itaú em PDF (fechada) ou XLSX (aberta)",
+    "due": "vencimento",
+    "openBill": "fatura aberta (parcial)",
+    "closedBill": "fatura fechada",
+    "fileTotal": "Total da fatura",
+    "computedTotal": "Total lido",
+    "difference": "Diferença",
+    "acknowledge": "Revisei os avisos acima e quero importar assim mesmo.",
+    "decision": "Decisão",
+    "decideDivergent": "Decida o que fazer com as linhas divergentes.",
+    "confirm": "Confirmar importação",
+    "cancel": "Descartar prévia",
+    "undo": "Desfazer importação",
+    "confirmUndo": "Desfazer remove todos os lançamentos desta importação. Continuar?",
+    "openReviewQueue": "Abrir fila de validação",
+    "unknownFinal": "final não cadastrado",
+    "history": "Importações anteriores",
+    "file": "Arquivo",
+    "when": "Quando",
+    "status": {
+      "PREVIEW": "Prévia",
+      "CONFIRMED": "Confirmada",
+      "CANCELLED": "Descartada",
+      "UNDONE": "Desfeita"
+    },
+    "line": {
+      "NEW": "Novos",
+      "DUPLICATE": "Duplicados",
+      "MATCHED": "Parcelas conciliadas",
+      "DIVERGENT": "Divergentes",
+      "FUTURE": "Parcelas das próximas faturas (só conferência)"
+    },
+    "decisions": {
+      "IMPORT": "Importar",
+      "IMPORT_AS_NEW": "Importar como novo",
+      "UPDATE_EXISTING": "Atualizar o existente",
+      "IGNORE": "Ignorar",
+      "UNDECIDED": "— decidir —"
+    },
+    "warning": {
+      "periodMismatch": "O vencimento da fatura é de outra competência.",
+      "cardMismatch": "O final do cartão na fatura não é deste cartão.",
+      "alreadyImported": "Este arquivo já foi importado; as linhas aparecem como duplicadas.",
+      "totalsMismatch": "A soma das linhas não bate com o total da fatura."
+    }
+  },
+  "review": {
+    "member": "Conta",
+    "percentage": "Percentual",
+    "removeShare": "Remover conta do rateio",
+    "split": "Dividir",
+    "splitTotal": "Rateio soma {{total}}%",
+    "category": "Categoria",
+    "note": "Observação",
+    "validate": "Validar",
+    "select": "Selecionar",
+    "selectAll": "Selecionar todos",
+    "refund": "estorno de uma compra anterior",
+    "subscriptionSuggested": "Parece assinatura (*) — marcar",
+    "batchFilter": "Importação {{id}}",
+    "pendingCount_one": "{{count}} pendente",
+    "pendingCount_other": "{{count}} pendentes",
+    "selectedCount_one": "{{count}} selecionado",
+    "selectedCount_other": "{{count}} selecionados",
+    "batchActions": "Ações em lote",
+    "applyToSelected": "Aplicar aos selecionados",
+    "validateSelected": "Validar selecionados",
+    "empty": "Nada pendente. Tudo validado!",
+    "keyboardHint": "Enter valida e vai para o próximo; Tab passa pelos campos; Esc pula sem validar."
   },
   "settings": {
     "general": "Geral",

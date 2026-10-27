@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
+import { useReviewSummary } from '../api/generated/endpoints/review-queue-controller/review-queue-controller';
 import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
 import { Toaster } from '../shared/components/Toaster';
 import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
@@ -47,6 +48,7 @@ export function AppLayout() {
 function SidebarLink({ item }: { item: NavItem }) {
   const { t } = useTranslation();
   const label = t(item.labelKey);
+  const pending = usePendingCount(item.path === '/review-queue');
   const Icon = item.icon;
   return (
     <NavLink
@@ -59,8 +61,21 @@ function SidebarLink({ item }: { item: NavItem }) {
         }`
       }
     >
-      <Icon aria-hidden size={18} className="shrink-0" />
+      <span className="relative shrink-0">
+        <Icon aria-hidden size={18} />
+        {pending > 0 && (
+          <span className="absolute -top-2 -right-2 rounded-full bg-amber-500 px-1 text-[10px] leading-4 text-white" aria-label={t('review.pendingCount', { count: pending })}>
+            {pending > 99 ? '99+' : pending}
+          </span>
+        )}
+      </span>
       <span className="sr-only wide:not-sr-only">{label}</span>
     </NavLink>
   );
+}
+
+/** Number of items waiting in the review queue, for the sidebar badge (RF-79). */
+function usePendingCount(enabled: boolean): number {
+  const { data } = useReviewSummary(undefined, { query: { enabled, refetchInterval: 60_000 } });
+  return enabled ? (data?.count ?? 0) : 0;
 }
