@@ -22,14 +22,14 @@ import jakarta.validation.constraints.Size;
  * @since 1.0
  */
 public record MemberRequest(
-        @NotBlank @Pattern(regexp = "[A-Z0-9]{1,4}") String code,
+        @NotBlank @Pattern(regexp = "^[A-Z0-9]{1,4}$") String code,
         @NotBlank @Size(max = 60) String name,
         @NotNull MemberKind kind,
-        @NotBlank @Pattern(regexp = "#[0-9a-fA-F]{6}") String color,
+        @NotBlank @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String color,
         @Email @Size(max = 254) String email,
-        @Pattern(regexp = "\\+[1-9][0-9]{7,14}") String whatsappPhone,
+        @Pattern(regexp = "^\\+[1-9][0-9]{7,14}$") String whatsappPhone,
         @Size(max = 77) String pixKey,
-        @NotBlank @Pattern(regexp = "pt-BR|en-US") String preferredLanguage) {
+        @NotBlank @Pattern(regexp = "^(pt-BR|en-US)$") String preferredLanguage) {
 
     /**
      * Converts to domain data, turning blank optional fields into {@code null}.

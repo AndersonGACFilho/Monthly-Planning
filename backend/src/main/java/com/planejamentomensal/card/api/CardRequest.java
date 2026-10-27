@@ -27,7 +27,7 @@ import java.util.List;
 public record CardRequest(
         @NotBlank @Size(max = 60) String nickname,
         @NotNull Bank bank,
-        @NotEmpty List<@Pattern(regexp = "\\d{4}") String> lastDigits,
+        @NotEmpty List<@Pattern(regexp = "^\\d{4}$") String> lastDigits,
         @NotBlank @Size(max = 80) String holderName,
         Long primaryCardId,
         @NotNull Long defaultMemberId,

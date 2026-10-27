@@ -14,5 +14,5 @@ import jakarta.validation.constraints.Pattern;
  * @since 1.0
  */
 public record CycleRequest(@Min(1) @Max(31) int closingDay, @Min(1) @Max(31) int dueDay,
-        @NotBlank @Pattern(regexp = "\\d{4}-\\d{2}") String validFrom) {
+        @NotBlank @Pattern(regexp = "^\\d{4}-\\d{2}$") String validFrom) {
 }

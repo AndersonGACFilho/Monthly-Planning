@@ -9,5 +9,5 @@ import jakarta.validation.constraints.Pattern;
  * @param language {@code pt-BR} or {@code en-US}
  * @since 1.0
  */
-public record InitialSetRequest(@NotBlank @Pattern(regexp = "pt-BR|en-US") String language) {
+public record InitialSetRequest(@NotBlank @Pattern(regexp = "^(pt-BR|en-US)$") String language) {
 }

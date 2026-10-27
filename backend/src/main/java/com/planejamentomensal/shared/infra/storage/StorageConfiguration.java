@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * Wires the portable app folder and the SQLite database inside it.
  *
  * <p>Implements POR-03 (database under {@code data/}) and POR-11 (WAL journal with
- * {@code synchronous=FULL}).</p>
+ * {@code synchronous=FULL}); transactions start with {@code BEGIN IMMEDIATE} so writers queue.</p>
  *
  * @since 1.0
  */
@@ -66,6 +66,9 @@ public class StorageConfiguration {
         config.addDataSourceProperty("synchronous", "FULL");
         config.addDataSourceProperty("foreign_keys", "true");
         config.addDataSourceProperty("busy_timeout", "10000");
+        // BEGIN IMMEDIATE: concurrent writers wait for the lock instead of failing with SQLITE_BUSY when a
+        // read transaction is upgraded to a write
+        config.addDataSourceProperty("transaction_mode", "IMMEDIATE");
         return new HikariDataSource(config);
     }
 }

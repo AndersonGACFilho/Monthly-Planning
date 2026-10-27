@@ -34,6 +34,9 @@ public class MemberModel extends RepresentationModel<MemberModel> {
     /** Statement language. */
     public final String preferredLanguage;
 
+    /** Version for {@code If-Match} (API-04). */
+    public final long version;
+
     /**
      * Copies a member.
      *
@@ -50,5 +53,6 @@ public class MemberModel extends RepresentationModel<MemberModel> {
         this.whatsappPhone = member.whatsappPhone();
         this.pixKey = member.pixKey();
         this.preferredLanguage = member.preferredLanguage();
+        this.version = member.version();
     }
 }

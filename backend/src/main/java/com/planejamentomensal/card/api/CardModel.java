@@ -43,6 +43,9 @@ public class CardModel extends RepresentationModel<CardModel> {
     /** Cycles, oldest first; empty for additional cards. */
     public final List<Cycle> cycles;
 
+    /** Version for {@code If-Match} (API-04). */
+    public final long version;
+
     /**
      * Copies a card.
      *
@@ -57,6 +60,7 @@ public class CardModel extends RepresentationModel<CardModel> {
         this.primaryCardId = card.primaryCardId();
         this.defaultMemberId = card.defaultMemberId();
         this.active = card.active();
+        this.version = card.version();
         this.cycles = card.cycles().stream()
                 .map(c -> new Cycle(c.closingDay(), c.dueDay(), c.validFrom().toString()))
                 .toList();

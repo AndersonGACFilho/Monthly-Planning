@@ -25,6 +25,9 @@ public class CategoryModel extends RepresentationModel<CategoryModel> {
     /** {@code true} for "not classified". */
     public final boolean system;
 
+    /** Version for {@code If-Match} (API-04). */
+    public final long version;
+
     /**
      * Copies a category.
      *
@@ -37,5 +40,6 @@ public class CategoryModel extends RepresentationModel<CategoryModel> {
         this.color = category.color();
         this.icon = category.icon();
         this.system = category.system();
+        this.version = category.version();
     }
 }

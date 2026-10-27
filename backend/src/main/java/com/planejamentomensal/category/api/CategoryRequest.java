@@ -16,6 +16,6 @@ import jakarta.validation.constraints.Size;
 public record CategoryRequest(
         @NotBlank @Size(max = 40) String name,
         Long parentId,
-        @NotBlank @Pattern(regexp = "#[0-9a-fA-F]{6}") String color,
-        @NotBlank @Pattern(regexp = "[a-z0-9-]{1,40}") String icon) {
+        @NotBlank @Pattern(regexp = "^#[0-9a-fA-F]{6}$") String color,
+        @NotBlank @Pattern(regexp = "^[a-z0-9-]{1,40}$") String icon) {
 }
