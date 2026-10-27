@@ -521,5 +521,20 @@
     "downloadModel": "Baixar modelo atual",
     "uploadModel": "Enviar novo modelo",
     "resetModel": "Voltar ao modelo padrão"
+  },
+  "backup": {
+    "title": "Cópias de segurança e dados",
+    "automatic": "O app copia o banco ao abrir (mantém as 10 últimas em data/backups).",
+    "now": "Fazer cópia agora",
+    "nowTo": "Copiar para…",
+    "done": "Cópia salva em {{file}}",
+    "list": "Cópias em data/backups",
+    "exportJson": "Exportar todos os dados (JSON)",
+    "exportCsv": "Exportar todos os dados (CSV)",
+    "eject": "Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade."
+  },
+  "shortcuts": {
+    "title": "Atalhos",
+    "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência"
   }
 }

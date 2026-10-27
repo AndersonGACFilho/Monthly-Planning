@@ -508,5 +508,20 @@ export default {
     uploadModel: ['Enviar novo modelo', 'Upload new model'],
     resetModel: ['Voltar ao modelo padrão', 'Back to the default model'],
   },
+  backup: {
+    title: ['Cópias de segurança e dados', 'Backups and data'],
+    automatic: ['O app copia o banco ao abrir (mantém as 10 últimas em data/backups).', 'The app copies the database when it opens (keeps the latest 10 in data/backups).'],
+    now: ['Fazer cópia agora', 'Back up now'],
+    nowTo: ['Copiar para…', 'Copy to…'],
+    done: ['Cópia salva em {{file}}', 'Backup saved to {{file}}'],
+    list: ['Cópias em data/backups', 'Backups in data/backups'],
+    exportJson: ['Exportar todos os dados (JSON)', 'Export all data (JSON)'],
+    exportCsv: ['Exportar todos os dados (CSV)', 'Export all data (CSV)'],
+    eject: ['Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade.', 'Close the app before removing the drive, so no write is left half done.'],
+  },
+  shortcuts: {
+    title: ['Atalhos', 'Shortcuts'],
+    list: ['Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência', 'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period'],
+  },
 };
 

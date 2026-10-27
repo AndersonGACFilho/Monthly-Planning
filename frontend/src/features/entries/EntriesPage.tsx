@@ -63,7 +63,15 @@ export function EntriesPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [anchor, setAnchor] = useState<number | null>(null);
   const [focused, setFocused] = useState<number | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(params.get('new') === '1');
+  // Ctrl+N opens this tab with ?new=1 (UI-01): show the manual entry form and drop the flag
+  useEffect(() => {
+    if (params.get('new') !== '1') return;
+    setCreating(true);
+    const next = new URLSearchParams(params);
+    next.delete('new');
+    setParams(next, { replace: true });
+  }, [params, setParams]);
   const scroller = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line react-hooks/incompatible-library -- the virtualizer is read on every render on purpose (UI-09)
   const virtualizer = useVirtualizer({

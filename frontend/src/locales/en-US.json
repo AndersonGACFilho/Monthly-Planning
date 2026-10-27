@@ -521,5 +521,20 @@
     "downloadModel": "Download current model",
     "uploadModel": "Upload new model",
     "resetModel": "Back to the default model"
+  },
+  "backup": {
+    "title": "Backups and data",
+    "automatic": "The app copies the database when it opens (keeps the latest 10 in data/backups).",
+    "now": "Back up now",
+    "nowTo": "Copy to…",
+    "done": "Backup saved to {{file}}",
+    "list": "Backups in data/backups",
+    "exportJson": "Export all data (JSON)",
+    "exportCsv": "Export all data (CSV)",
+    "eject": "Close the app before removing the drive, so no write is left half done."
+  },
+  "shortcuts": {
+    "title": "Shortcuts",
+    "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period"
   }
 }

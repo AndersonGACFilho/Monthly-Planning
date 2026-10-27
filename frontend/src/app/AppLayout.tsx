@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
 import { useReviewSummary } from '../api/generated/endpoints/review-queue-controller/review-queue-controller';
+import { useShortcuts } from './useShortcuts';
 import { WorkbookExportButton } from '../features/workbook/WorkbookExportButton';
 import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
 import { Toaster } from '../shared/components/Toaster';
@@ -16,6 +17,7 @@ import { useStartup } from './useStartup';
  * @returns the layout with the current route rendered in the main area
  */
 export function AppLayout() {
+  useShortcuts();
   const { t } = useTranslation();
   useStartup();
   return (

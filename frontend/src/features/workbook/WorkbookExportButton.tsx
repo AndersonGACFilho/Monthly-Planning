@@ -8,19 +8,21 @@ import { reportError } from '../../app/queryClient';
 import { Field } from '../../shared/components/Field';
 import { downloadFile } from '../../shared/desktop';
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
+import { useUiStore } from '../../shared/state/ui';
 
 type Mode = 'EXCEL_365' | 'COMPATIBLE';
 
 /**
  * Button beside the billing period that exports the monthly spreadsheet: formula mode (default by system),
- * language and the warning about entries pending review (XLS-01, XLS-07, XLS-09, XLS-10).
+ * language and the warning about entries pending review (XLS-01, XLS-07, XLS-09, XLS-10). Ctrl+E opens it (UI-01).
  *
  * @returns the button and its dialog
  */
 export function WorkbookExportButton() {
   const { t, i18n } = useTranslation();
   const period = useBillingPeriod();
-  const [open, setOpen] = useState(false);
+  const open = useUiStore((state) => state.exportOpen);
+  const setOpen = useUiStore((state) => state.setExportOpen);
   const [mode, setMode] = useState<Mode | ''>('');
   const [language, setLanguage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -46,7 +48,7 @@ export function WorkbookExportButton() {
 
   return (
     <div className="relative">
-      <button type="button" className="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+      <button type="button" className="button" onClick={() => setOpen(!open)} aria-expanded={open}>
         <FileSpreadsheet size={16} aria-hidden /> {t('workbook.export')}
       </button>
       {open && (
