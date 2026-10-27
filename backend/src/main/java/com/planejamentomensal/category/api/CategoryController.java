@@ -6,8 +6,10 @@ import com.planejamentomensal.category.application.SaveCategoryUseCase;
 import com.planejamentomensal.category.domain.Category;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import java.util.Locale;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -66,8 +68,8 @@ public class CategoryController {
      * @return one page of categories
      */
     @GetMapping
-    public PagedModel<CategoryModel> categories(@PageableDefault(size = 200, sort = "name", direction = Sort.Direction.ASC)
-            Pageable pageable, PagedResourcesAssembler<Category> resources) {
+    public PagedModel<CategoryModel> categories(@ParameterObject @PageableDefault(size = 200, sort = "name", direction = Sort.Direction.ASC)
+            Pageable pageable, @Parameter(hidden = true) PagedResourcesAssembler<Category> resources) {
         queries.unclassifiedId();
         return resources.toModel(categories.findAll(pageable), assembler);
     }
@@ -91,7 +93,7 @@ public class CategoryController {
      * @return 201 with {@code Location}
      */
     @PostMapping
-    public ResponseEntity<CategoryModel> create(@Valid @RequestBody CategoryRequest request) {
+    public ResponseEntity<CategoryModel> createCategory(@Valid @RequestBody CategoryRequest request) {
         Category category = save.create(request.name().strip(), request.parentId(), request.color().toUpperCase(),
                 request.icon());
         CategoryModel model = assembler.toModel(category);
@@ -108,7 +110,7 @@ public class CategoryController {
      * @return the updated category
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryModel> replace(@PathVariable long id, @Valid @RequestBody CategoryRequest request,
+    public ResponseEntity<CategoryModel> replaceCategory(@PathVariable long id, @Valid @RequestBody CategoryRequest request,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
         Category category = save.update(id, request.name().strip(), request.parentId(), request.color().toUpperCase(),
                 request.icon(), ETags.expectedVersion(ifMatch));
@@ -122,7 +124,7 @@ public class CategoryController {
      * @return 204
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remove(@PathVariable long id) {
+    public ResponseEntity<Void> removeCategory(@PathVariable long id) {
         save.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -134,7 +136,7 @@ public class CategoryController {
      * @return the categories created (empty if there were already user categories)
      */
     @PostMapping("/defaults")
-    public CollectionModel<CategoryModel> defaults(@Valid @RequestBody InitialSetRequest request) {
+    public CollectionModel<CategoryModel> createDefaultCategories(@Valid @RequestBody InitialSetRequest request) {
         return assembler.toCollectionModel(save.seedInitial(Locale.forLanguageTag(request.language())));
     }
 

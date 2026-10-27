@@ -56,20 +56,36 @@
         "description" : "Lists cards, sorted by nickname by default.",
         "operationId" : "cards",
         "parameters" : [ {
-          "description" : "page, size and sort",
+          "description" : "Zero-based page index (0..N)",
           "in" : "query",
-          "name" : "pageable",
-          "required" : true,
+          "name" : "page",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
           }
         }, {
-          "description" : "paging assembler",
+          "description" : "The size of the page to be returned",
           "in" : "query",
-          "name" : "resources",
-          "required" : true,
+          "name" : "size",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/PagedResourcesAssemblerCard"
+            "type" : "integer",
+            "default" : 50,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "nickname,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -89,7 +105,7 @@
       },
       "post" : {
         "description" : "Creates a card with its first cycle.",
-        "operationId" : "create_2",
+        "operationId" : "createCard",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -120,7 +136,7 @@
     "/api/cards/{id}" : {
       "delete" : {
         "description" : "Deletes a card without entries or additional cards.",
-        "operationId" : "remove_2",
+        "operationId" : "removeCard",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -169,7 +185,7 @@
       },
       "patch" : {
         "description" : "Activates or inactivates a card.",
-        "operationId" : "patch_1",
+        "operationId" : "patchCard",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -216,7 +232,7 @@
       },
       "put" : {
         "description" : "Replaces the data of a card; closing and due day change through <code>cycles</code>.",
-        "operationId" : "replace_2",
+        "operationId" : "replaceCard",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -265,7 +281,7 @@
     "/api/cards/{id}/cycles" : {
       "post" : {
         "description" : "Changes closing and due day from a billing period on, without touching past bills (RF-04).",
-        "operationId" : "changeCycle",
+        "operationId" : "changeCardCycle",
         "parameters" : [ {
           "description" : "card id",
           "in" : "path",
@@ -308,20 +324,36 @@
         "description" : "Lists categories by name; \"not classified\" is always present.",
         "operationId" : "categories",
         "parameters" : [ {
-          "description" : "page, size and sort",
+          "description" : "Zero-based page index (0..N)",
           "in" : "query",
-          "name" : "pageable",
-          "required" : true,
+          "name" : "page",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
           }
         }, {
-          "description" : "paging assembler",
+          "description" : "The size of the page to be returned",
           "in" : "query",
-          "name" : "resources",
-          "required" : true,
+          "name" : "size",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/PagedResourcesAssemblerCategory"
+            "type" : "integer",
+            "default" : 200,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "name,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -341,7 +373,7 @@
       },
       "post" : {
         "description" : "Creates a category.",
-        "operationId" : "create_1",
+        "operationId" : "createCategory",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -372,7 +404,7 @@
     "/api/categories/defaults" : {
       "post" : {
         "description" : "Creates the initial categories in a language, if the user has none yet (I18N-07).",
-        "operationId" : "defaults",
+        "operationId" : "createDefaultCategories",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -403,7 +435,7 @@
     "/api/categories/{id}" : {
       "delete" : {
         "description" : "Deletes a category nothing points to.",
-        "operationId" : "remove_1",
+        "operationId" : "removeCategory",
         "parameters" : [ {
           "description" : "category id",
           "in" : "path",
@@ -452,7 +484,7 @@
       },
       "put" : {
         "description" : "Replaces a category.",
-        "operationId" : "replace_1",
+        "operationId" : "replaceCategory",
         "parameters" : [ {
           "description" : "category id",
           "in" : "path",
@@ -503,20 +535,36 @@
         "description" : "Lists members, sorted by code by default.",
         "operationId" : "members",
         "parameters" : [ {
-          "description" : "page, size and sort",
+          "description" : "Zero-based page index (0..N)",
           "in" : "query",
-          "name" : "pageable",
-          "required" : true,
+          "name" : "page",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/Pageable"
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
           }
         }, {
-          "description" : "paging assembler",
+          "description" : "The size of the page to be returned",
           "in" : "query",
-          "name" : "resources",
-          "required" : true,
+          "name" : "size",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/components/schemas/PagedResourcesAssemblerMember"
+            "type" : "integer",
+            "default" : 50,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "code,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
           }
         } ],
         "responses" : {
@@ -536,7 +584,7 @@
       },
       "post" : {
         "description" : "Creates a member.",
-        "operationId" : "create",
+        "operationId" : "createMember",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -567,7 +615,7 @@
     "/api/members/{id}" : {
       "delete" : {
         "description" : "Deletes a member that nothing references.",
-        "operationId" : "remove",
+        "operationId" : "removeMember",
         "parameters" : [ {
           "description" : "member id",
           "in" : "path",
@@ -616,7 +664,7 @@
       },
       "patch" : {
         "description" : "Activates or inactivates a member.",
-        "operationId" : "patch",
+        "operationId" : "patchMember",
         "parameters" : [ {
           "description" : "member id",
           "in" : "path",
@@ -663,7 +711,7 @@
       },
       "put" : {
         "description" : "Replaces the data of a member.",
-        "operationId" : "replace",
+        "operationId" : "replaceMember",
         "parameters" : [ {
           "description" : "member id",
           "in" : "path",
@@ -779,7 +827,7 @@
       },
       "patch" : {
         "description" : "Changes some settings; keys left out keep their value.",
-        "operationId" : "change",
+        "operationId" : "changeSettings",
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -1284,27 +1332,6 @@
           }
         }
       },
-      "Pageable" : {
-        "type" : "object",
-        "properties" : {
-          "page" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 0
-          },
-          "size" : {
-            "type" : "integer",
-            "format" : "int32",
-            "minimum" : 1
-          },
-          "sort" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          }
-        }
-      },
       "PagedModelCardModel" : {
         "type" : "object",
         "properties" : {
@@ -1368,33 +1395,6 @@
           },
           "page" : {
             "$ref" : "#/components/schemas/PageMetadata"
-          }
-        }
-      },
-      "PagedResourcesAssemblerCard" : {
-        "type" : "object",
-        "properties" : {
-          "forceFirstAndLastRels" : {
-            "type" : "boolean",
-            "writeOnly" : true
-          }
-        }
-      },
-      "PagedResourcesAssemblerCategory" : {
-        "type" : "object",
-        "properties" : {
-          "forceFirstAndLastRels" : {
-            "type" : "boolean",
-            "writeOnly" : true
-          }
-        }
-      },
-      "PagedResourcesAssemblerMember" : {
-        "type" : "object",
-        "properties" : {
-          "forceFirstAndLastRels" : {
-            "type" : "boolean",
-            "writeOnly" : true
           }
         }
       },

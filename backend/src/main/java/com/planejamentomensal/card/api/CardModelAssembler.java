@@ -45,7 +45,7 @@ public class CardModelAssembler implements RepresentationModelAssembler<Card, Ca
         if (card.isAdditional()) {
             model.add(linkTo(methodOn(CardController.class).card(card.primaryCardId())).withRel("primary-card"));
         } else {
-            model.add(linkTo(methodOn(CardController.class).changeCycle(card.id(), null)).withRel("cycles"));
+            model.add(linkTo(methodOn(CardController.class).changeCardCycle(card.id(), null)).withRel("cycles"));
         }
         model.add(self.withRel(card.active() ? Relations.INACTIVATE : Relations.ACTIVATE));
         if (queries.isDeletable(card.id())) {

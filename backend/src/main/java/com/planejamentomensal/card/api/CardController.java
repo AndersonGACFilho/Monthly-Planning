@@ -9,7 +9,9 @@ import com.planejamentomensal.shared.api.ActivePatch;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
 import com.planejamentomensal.shared.domain.BillingPeriod;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -71,8 +73,8 @@ public class CardController {
      * @return one page of cards
      */
     @GetMapping
-    public PagedModel<CardModel> cards(@PageableDefault(size = 50, sort = "nickname", direction = Sort.Direction.ASC)
-            Pageable pageable, PagedResourcesAssembler<Card> resources) {
+    public PagedModel<CardModel> cards(@ParameterObject @PageableDefault(size = 50, sort = "nickname", direction = Sort.Direction.ASC)
+            Pageable pageable, @Parameter(hidden = true) PagedResourcesAssembler<Card> resources) {
         return resources.toModel(cards.findAll(pageable), assembler);
     }
 
@@ -95,7 +97,7 @@ public class CardController {
      * @return 201 with {@code Location}
      */
     @PostMapping
-    public ResponseEntity<CardModel> create(@Valid @RequestBody CardRequest request) {
+    public ResponseEntity<CardModel> createCard(@Valid @RequestBody CardRequest request) {
         Card card = save.create(request.toDetails(), request.closingDay(), request.dueDay());
         CardModel model = assembler.toModel(card);
         return ResponseEntity.created(model.getRequiredLink("self").toUri()).eTag(ETags.of(card.version())).body(model);
@@ -110,7 +112,7 @@ public class CardController {
      * @return the updated card
      */
     @PutMapping("/{id}")
-    public ResponseEntity<CardModel> replace(@PathVariable long id, @Valid @RequestBody CardRequest request,
+    public ResponseEntity<CardModel> replaceCard(@PathVariable long id, @Valid @RequestBody CardRequest request,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
         Card card = save.update(id, request.toDetails(), ETags.expectedVersion(ifMatch));
         return ETags.ok(assembler.toModel(card), card.version());
@@ -125,7 +127,7 @@ public class CardController {
      * @return the updated card
      */
     @PatchMapping("/{id}")
-    public ResponseEntity<CardModel> patch(@PathVariable long id, @Valid @RequestBody ActivePatch patch,
+    public ResponseEntity<CardModel> patchCard(@PathVariable long id, @Valid @RequestBody ActivePatch patch,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
         Card card = save.setActive(id, patch.active(), ETags.expectedVersion(ifMatch));
         return ETags.ok(assembler.toModel(card), card.version());
@@ -139,7 +141,7 @@ public class CardController {
      * @return the updated card
      */
     @PostMapping("/{id}/cycles")
-    public ResponseEntity<CardModel> changeCycle(@PathVariable long id, @Valid @RequestBody CycleRequest request) {
+    public ResponseEntity<CardModel> changeCardCycle(@PathVariable long id, @Valid @RequestBody CycleRequest request) {
         Card card = save.changeCycle(id, request.closingDay(), request.dueDay(), BillingPeriod.parse(request.validFrom()));
         return ETags.ok(assembler.toModel(card), card.version());
     }
@@ -151,7 +153,7 @@ public class CardController {
      * @return 204
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remove(@PathVariable long id) {
+    public ResponseEntity<Void> removeCard(@PathVariable long id) {
         delete.delete(id);
         return ResponseEntity.noContent().build();
     }

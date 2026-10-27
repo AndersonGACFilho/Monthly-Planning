@@ -51,7 +51,7 @@ public class SettingsController {
      * @return every setting after the change
      */
     @PatchMapping
-    public EntityModel<Map<String, String>> change(@RequestBody Map<String, String> changes) {
+    public EntityModel<Map<String, String>> changeSettings(@RequestBody Map<String, String> changes) {
         settings.change(changes);
         return settings();
     }

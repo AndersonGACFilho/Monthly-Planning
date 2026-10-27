@@ -11,7 +11,9 @@ import com.planejamentomensal.member.domain.Member;
 import com.planejamentomensal.shared.api.ActivePatch;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -74,8 +76,8 @@ public class MemberController {
      * @return one page of members with paging links
      */
     @GetMapping
-    public PagedModel<MemberModel> members(@PageableDefault(size = 50, sort = "code", direction = Sort.Direction.ASC)
-            Pageable pageable, PagedResourcesAssembler<Member> resources) {
+    public PagedModel<MemberModel> members(@ParameterObject @PageableDefault(size = 50, sort = "code", direction = Sort.Direction.ASC)
+            Pageable pageable, @Parameter(hidden = true) PagedResourcesAssembler<Member> resources) {
         return resources.toModel(members.findAll(pageable), assembler);
     }
 
@@ -98,7 +100,7 @@ public class MemberController {
      * @return 201 with {@code Location}
      */
     @PostMapping
-    public ResponseEntity<MemberModel> create(@Valid @RequestBody MemberRequest request) {
+    public ResponseEntity<MemberModel> createMember(@Valid @RequestBody MemberRequest request) {
         Member member = save.create(request.toDetails());
         MemberModel model = assembler.toModel(member);
         return ResponseEntity.created(model.getRequiredLink("self").toUri()).eTag(ETags.of(member.version())).body(model);
@@ -113,7 +115,7 @@ public class MemberController {
      * @return the updated member
      */
     @PutMapping("/{id}")
-    public ResponseEntity<MemberModel> replace(@PathVariable long id, @Valid @RequestBody MemberRequest request,
+    public ResponseEntity<MemberModel> replaceMember(@PathVariable long id, @Valid @RequestBody MemberRequest request,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
         Member member = save.update(id, request.toDetails(), ETags.expectedVersion(ifMatch));
         return ETags.ok(assembler.toModel(member), member.version());
@@ -128,7 +130,7 @@ public class MemberController {
      * @return the updated member
      */
     @PatchMapping("/{id}")
-    public ResponseEntity<MemberModel> patch(@PathVariable long id, @Valid @RequestBody ActivePatch patch,
+    public ResponseEntity<MemberModel> patchMember(@PathVariable long id, @Valid @RequestBody ActivePatch patch,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
         Member member = save.setActive(id, patch.active(), ETags.expectedVersion(ifMatch));
         return ETags.ok(assembler.toModel(member), member.version());
@@ -141,7 +143,7 @@ public class MemberController {
      * @return 204
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> remove(@PathVariable long id) {
+    public ResponseEntity<Void> removeMember(@PathVariable long id) {
         delete.delete(id);
         return ResponseEntity.noContent().build();
     }
