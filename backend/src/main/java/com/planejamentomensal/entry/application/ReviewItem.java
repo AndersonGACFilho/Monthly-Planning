@@ -27,13 +27,19 @@ import java.util.List;
  * @param refundOfPurchaseId    refunded purchase, or {@code null}
  * @param importBatchId         batch that created it, or {@code null}
  * @param subscriptionSuggested {@code true} to suggest {@code *} (RN-23)
+ * @param displayDescription    alias or override, otherwise the original (RF-75)
+ * @param aliasId               alias of the description, or {@code null}
+ * @param suggestedCategoryId   category of the alias or last used for the description (RF-75, RF-08)
+ * @param mergeAliasId          alias of the same store to group with (RN-24), or {@code null}
+ * @param mergeAliasName        its name, or {@code null}
  * @param version               version for {@code If-Match}
  * @since 1.0
  */
 public record ReviewItem(long purchaseId, long entryId, long cardId, String cardLastDigits, boolean unknownFinal,
         BillingPeriod billingPeriod, LocalDate purchaseDate, String originalDescription, String installment, Money amount,
         String kind, String bankCategory, Long categoryId, List<Share> splits, String note, Long refundOfPurchaseId,
-        Long importBatchId, boolean subscriptionSuggested, long version) {
+        Long importBatchId, boolean subscriptionSuggested, String displayDescription, Long aliasId,
+        Long suggestedCategoryId, Long mergeAliasId, String mergeAliasName, long version) {
 
     /**
      * Share of one member.

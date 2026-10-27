@@ -61,6 +61,16 @@ public class ReviewItemModel extends RepresentationModel<ReviewItemModel> {
     public final Long importBatchId;
     /** Suggest marking as subscription (RN-23). */
     public final boolean subscriptionSuggested;
+    /** Alias or override, otherwise the original description (RF-75). */
+    public final String displayDescription;
+    /** Alias of the description. */
+    public final Long aliasId;
+    /** Category suggested by the alias or by the last use of the description (RF-75, RF-08). */
+    public final Long suggestedCategoryId;
+    /** Alias of the same store to group with (RN-24). */
+    public final Long mergeAliasId;
+    /** Name of that alias. */
+    public final String mergeAliasName;
     /** Version for {@code If-Match}. */
     public final long version;
 
@@ -90,6 +100,11 @@ public class ReviewItemModel extends RepresentationModel<ReviewItemModel> {
         this.refundOfPurchaseId = item.refundOfPurchaseId();
         this.importBatchId = item.importBatchId();
         this.subscriptionSuggested = item.subscriptionSuggested();
+        this.displayDescription = item.displayDescription();
+        this.aliasId = item.aliasId();
+        this.suggestedCategoryId = item.suggestedCategoryId();
+        this.mergeAliasId = item.mergeAliasId();
+        this.mergeAliasName = item.mergeAliasName();
         this.version = item.version();
     }
 }

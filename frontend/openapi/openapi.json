@@ -21,17 +21,26 @@
     "description" : "Credit cards with finals, holder, default member and closing/due cycles (RF-02 to RF-05).",
     "name" : "card-controller"
   }, {
+    "description" : "Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries\n (RF-40 to RF-51).",
+    "name" : "bill-entry-controller"
+  }, {
     "description" : "Review queue: imported purchases waiting for the user to check member, split, category and alias\n (RF-74 to RF-79a).",
     "name" : "review-queue-controller"
   }, {
     "description" : "Imports of Itaú bills: preview, line decisions, confirmation, cancellation and undo (RF-60 to RF-73).",
     "name" : "import-controller"
   }, {
+    "description" : "Aliases and the descriptions they group (RF-46 to RF-49, RN-24).",
+    "name" : "alias-controller"
+  }, {
     "description" : "User settings (IMP-10): thresholds, auto-validation, spreadsheet and e-mail options, language.",
     "name" : "settings-controller"
   }, {
     "description" : "API entry point: the only URL the interface knows (API-07).",
     "name" : "root-controller"
+  }, {
+    "description" : "Purchases (the fact behind the installments) with the link to their installments (SPEC section 12).",
+    "name" : "purchase-controller"
   }, {
     "description" : "HAL profile that documents the custom link relations of the API (API-10).",
     "name" : "profile-controller"
@@ -55,6 +64,384 @@
         },
         "summary" : "Returns links to every top-level resource and to the HAL profile.",
         "tags" : [ "root-controller" ]
+      }
+    },
+    "/api/aliases" : {
+      "get" : {
+        "description" : "Lists aliases by name.",
+        "operationId" : "aliases",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelEntityModelAliasView"
+                }
+              }
+            },
+            "description" : "aliases"
+          }
+        },
+        "summary" : "Lists aliases by name.",
+        "tags" : [ "alias-controller" ]
+      }
+    },
+    "/api/aliases/{id}/patterns" : {
+      "post" : {
+        "description" : "Groups another description of the same store into an alias (RN-24).",
+        "operationId" : "groupDescription",
+        "parameters" : [ {
+          "description" : "alias id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/PatternRequest"
+              }
+            }
+          },
+          "description" : "description",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelAliasView"
+                }
+              }
+            },
+            "description" : "the alias"
+          }
+        },
+        "summary" : "Groups another description of the same store into an alias (RN-24).",
+        "tags" : [ "alias-controller" ]
+      }
+    },
+    "/api/bill-entries" : {
+      "get" : {
+        "description" : "Lists entries of a billing period or card, filtered and sorted (RF-40, RF-41, RF-51, API-06).",
+        "operationId" : "billEntries",
+        "parameters" : [ {
+          "description" : "period <code>yyyy-MM</code>",
+          "in" : "query",
+          "name" : "billingPeriod",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "primary card",
+          "in" : "query",
+          "name" : "card",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "member with a share",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "category",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "<code>-</code>, <code>n/N</code> or <code>*</code>",
+          "in" : "query",
+          "name" : "type",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "text in the original description or alias",
+          "in" : "query",
+          "name" : "q",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "<code>PROJECTED</code>, <code>CONFIRMED</code> or <code>UNCONFIRMED</code>",
+          "in" : "query",
+          "name" : "status",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "Zero-based page index (0..N)",
+          "in" : "query",
+          "name" : "page",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 0,
+            "minimum" : 0
+          }
+        }, {
+          "description" : "The size of the page to be returned",
+          "in" : "query",
+          "name" : "size",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "default" : 500,
+            "minimum" : 1
+          }
+        }, {
+          "description" : "Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported.",
+          "in" : "query",
+          "name" : "sort",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "default" : [ "entryDate,ASC" ],
+            "items" : {
+              "type" : "string"
+            }
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PagedModelBillEntryModel"
+                }
+              }
+            },
+            "description" : "one page of entries"
+          }
+        },
+        "summary" : "Lists entries of a billing period or card, filtered and sorted (RF-40, RF-41, RF-51, API-06).",
+        "tags" : [ "bill-entry-controller" ]
+      },
+      "post" : {
+        "description" : "Records a purchase that was not imported, already validated; installment purchases project the next\n installments (RF-44, RF-45, RF-79c).",
+        "operationId" : "createEntry",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ManualEntryRequest"
+              }
+            }
+          },
+          "description" : "purchase",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "201 with the first entry"
+          }
+        },
+        "summary" : "Records a purchase that was not imported, already validated; installment purchases project the next\n installments (RF-44, RF-45, RF-79c).",
+        "tags" : [ "bill-entry-controller" ]
+      }
+    },
+    "/api/bill-entries/{id}" : {
+      "get" : {
+        "description" : "Returns one entry.",
+        "operationId" : "billEntry",
+        "parameters" : [ {
+          "description" : "entry id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the entry with the purchase version as <code>ETag</code>"
+          }
+        },
+        "summary" : "Returns one entry.",
+        "tags" : [ "bill-entry-controller" ]
+      },
+      "patch" : {
+        "description" : "Changes category, member split or note; applies to every installment of the purchase (RF-43, RN-08).",
+        "operationId" : "editEntry",
+        "parameters" : [ {
+          "description" : "entry id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "purchase version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EntryEditRequest"
+              }
+            }
+          },
+          "description" : "changes",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the updated entry"
+          }
+        },
+        "summary" : "Changes category, member split or note; applies to every installment of the purchase (RF-43, RN-08).",
+        "tags" : [ "bill-entry-controller" ]
+      }
+    },
+    "/api/bill-entries/{id}/alias" : {
+      "delete" : {
+        "description" : "Shows the card's description again (RF-50).",
+        "operationId" : "restoreOriginal",
+        "parameters" : [ {
+          "description" : "entry id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the updated entry"
+          }
+        },
+        "summary" : "Shows the card's description again (RF-50).",
+        "tags" : [ "bill-entry-controller" ]
+      },
+      "put" : {
+        "description" : "Renames the description, of every entry with it or of this one only (RF-46 to RF-49).",
+        "operationId" : "renameEntry",
+        "parameters" : [ {
+          "description" : "entry id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RenameRequest"
+              }
+            }
+          },
+          "description" : "new name, scope and default category",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the updated entry"
+          }
+        },
+        "summary" : "Renames the description, of every entry with it or of this one only (RF-46 to RF-49).",
+        "tags" : [ "bill-entry-controller" ]
+      }
+    },
+    "/api/bill-entries/{id}/confirmation" : {
+      "post" : {
+        "description" : "Confirms a projected installment by hand.",
+        "operationId" : "confirmEntry",
+        "parameters" : [ {
+          "description" : "entry id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the confirmed entry"
+          }
+        },
+        "summary" : "Confirms a projected installment by hand.",
+        "tags" : [ "bill-entry-controller" ]
       }
     },
     "/api/cards" : {
@@ -1096,6 +1483,66 @@
         "tags" : [ "profile-controller" ]
       }
     },
+    "/api/purchases/{id}" : {
+      "get" : {
+        "description" : "Returns a purchase with links to its installments.",
+        "operationId" : "purchase",
+        "parameters" : [ {
+          "description" : "purchase id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/EntityModelPurchaseModel"
+                }
+              }
+            },
+            "description" : "the purchase"
+          }
+        },
+        "summary" : "Returns a purchase with links to its installments.",
+        "tags" : [ "purchase-controller" ]
+      }
+    },
+    "/api/purchases/{id}/installments" : {
+      "get" : {
+        "description" : "Lists the installments of a purchase.",
+        "operationId" : "installments",
+        "parameters" : [ {
+          "description" : "purchase id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CollectionModelBillEntryModel"
+                }
+              }
+            },
+            "description" : "entries in date order"
+          }
+        },
+        "summary" : "Lists the installments of a purchase.",
+        "tags" : [ "purchase-controller" ]
+      }
+    },
     "/api/review-queue" : {
       "get" : {
         "description" : "Lists pending items, filtered by card, billing period and import batch (RF-79).",
@@ -1342,6 +1789,105 @@
         },
         "required" : [ "changes", "purchaseIds" ]
       },
+      "BillEntryModel" : {
+        "type" : "object",
+        "description" : "HAL representation of a card entry (SPEC section 7 fields, section 12 example).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "amount" : {
+            "type" : "number",
+            "description" : "Amount; negative for refunds and credits."
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "Billing period."
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Primary card."
+          },
+          "cardLastDigits" : {
+            "type" : "string",
+            "description" : "Card final."
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category."
+          },
+          "displayDescription" : {
+            "type" : "string",
+            "description" : "Alias or override, otherwise the original."
+          },
+          "entryDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Date on the bill."
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Id."
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "<code>n/N</code>, <code>-</code> or <code>*</code>."
+          },
+          "kind" : {
+            "type" : "string",
+            "description" : "Kind."
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "Note."
+          },
+          "originalDescription" : {
+            "type" : "string",
+            "description" : "Description as on the card; read-only."
+          },
+          "purchaseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Purchase date."
+          },
+          "purchaseId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Purchase."
+          },
+          "refundStatus" : {
+            "type" : "string",
+            "description" : "Refund state."
+          },
+          "reviewStatus" : {
+            "type" : "string",
+            "description" : "Review state."
+          },
+          "splits" : {
+            "type" : "array",
+            "description" : "Member shares.",
+            "items" : {
+              "$ref" : "#/components/schemas/Share"
+            }
+          },
+          "status" : {
+            "type" : "string",
+            "description" : "Status."
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "Type."
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Purchase version for <code>If-Match</code>."
+          }
+        }
+      },
       "CardModel" : {
         "type" : "object",
         "description" : "HAL representation of a card.",
@@ -1529,6 +2075,25 @@
         },
         "required" : [ "color", "icon", "name" ]
       },
+      "CollectionModelBillEntryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "billEntries" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
       "CollectionModelCategoryModel" : {
         "type" : "object",
         "properties" : {
@@ -1539,6 +2104,25 @@
                 "type" : "array",
                 "items" : {
                   "$ref" : "#/components/schemas/CategoryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "CollectionModelEntityModelAliasView" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "aliasViewList" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/EntityModelAliasView"
                 }
               }
             }
@@ -1643,11 +2227,80 @@
         },
         "required" : [ "validFrom" ]
       },
+      "EntityModelAliasView" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "defaultCategoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "default category, or <code>null</code>"
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "name"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "id"
+          },
+          "patterns" : {
+            "type" : "array",
+            "description" : "normalized descriptions",
+            "items" : {
+              "type" : "string"
+            },
+            "uniqueItems" : true
+          }
+        }
+      },
       "EntityModelMapStringString" : {
         "type" : "object",
         "properties" : {
           "_links" : {
             "$ref" : "#/components/schemas/Links"
+          }
+        }
+      },
+      "EntityModelPurchaseModel" : {
+        "type" : "object",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "displayDescription" : {
+            "type" : "string",
+            "description" : "displayed description"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "purchase id"
+          },
+          "installmentCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "number of installments known"
+          },
+          "originalDescription" : {
+            "type" : "string",
+            "description" : "description as on the card"
+          },
+          "purchaseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "purchase date"
+          },
+          "refundStatus" : {
+            "type" : "string",
+            "description" : "refund state"
+          },
+          "type" : {
+            "type" : "string",
+            "description" : "single, installment or subscription"
           }
         }
       },
@@ -1681,6 +2334,34 @@
           "total" : {
             "type" : "number",
             "description" : "sum of their entries"
+          }
+        }
+      },
+      "EntryEditRequest" : {
+        "type" : "object",
+        "description" : "Inline edit of an entry's purchase (RF-43); <code>null</code> fields keep their value.",
+        "properties" : {
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category"
+          },
+          "clearCategory" : {
+            "type" : "boolean",
+            "description" : "remove the category"
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "note; blank removes it",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "splits" : {
+            "type" : "array",
+            "description" : "member shares",
+            "items" : {
+              "$ref" : "#/components/schemas/ShareRequest"
+            }
           }
         }
       },
@@ -1963,6 +2644,56 @@
           "$ref" : "#/components/schemas/Link"
         }
       },
+      "ManualEntryRequest" : {
+        "type" : "object",
+        "description" : "A card purchase entered by hand (RF-44, RF-45).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount of each installment; negative for a credit"
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "card"
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category, optional"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description",
+            "maxLength" : 120,
+            "minLength" : 0
+          },
+          "installmentCount" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "number of installments, 1 for a single purchase",
+            "maximum" : 72,
+            "minimum" : 1
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member, optional (card default)"
+          },
+          "note" : {
+            "type" : "string",
+            "description" : "note, optional",
+            "maxLength" : 500,
+            "minLength" : 0
+          },
+          "purchaseDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "purchase date"
+          }
+        },
+        "required" : [ "amount", "cardId", "description", "purchaseDate" ]
+      },
       "MemberModel" : {
         "type" : "object",
         "description" : "HAL representation of a member.",
@@ -2094,6 +2825,28 @@
           }
         }
       },
+      "PagedModelBillEntryModel" : {
+        "type" : "object",
+        "properties" : {
+          "_embedded" : {
+            "type" : "object",
+            "properties" : {
+              "billEntries" : {
+                "type" : "array",
+                "items" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            }
+          },
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "page" : {
+            "$ref" : "#/components/schemas/PageMetadata"
+          }
+        }
+      },
       "PagedModelCardModel" : {
         "type" : "object",
         "properties" : {
@@ -2182,6 +2935,41 @@
           }
         }
       },
+      "PatternRequest" : {
+        "type" : "object",
+        "description" : "Description to group into an alias.",
+        "properties" : {
+          "originalDescription" : {
+            "type" : "string",
+            "description" : "original description of the same store",
+            "minLength" : 1
+          }
+        },
+        "required" : [ "originalDescription" ]
+      },
+      "RenameRequest" : {
+        "type" : "object",
+        "description" : "Rename of an entry's description (RF-46 to RF-49).",
+        "properties" : {
+          "defaultCategoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "category for future imports, optional"
+          },
+          "displayName" : {
+            "type" : "string",
+            "description" : "new name",
+            "maxLength" : 80,
+            "minLength" : 0
+          },
+          "scope" : {
+            "type" : "string",
+            "description" : "<code>ALL</code> (default) or <code>ONLY_THIS</code>",
+            "enum" : [ "ALL", "ONLY_THIS" ]
+          }
+        },
+        "required" : [ "displayName" ]
+      },
       "RepresentationModelObject" : {
         "type" : "object",
         "properties" : {
@@ -2229,6 +3017,11 @@
           "_links" : {
             "$ref" : "#/components/schemas/Links"
           },
+          "aliasId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Alias of the description."
+          },
           "amount" : {
             "type" : "number",
             "description" : "Amount."
@@ -2255,6 +3048,10 @@
             "format" : "int64",
             "description" : "Category."
           },
+          "displayDescription" : {
+            "type" : "string",
+            "description" : "Alias or override, otherwise the original description (RF-75)."
+          },
           "entryId" : {
             "type" : "integer",
             "format" : "int64",
@@ -2272,6 +3069,15 @@
           "kind" : {
             "type" : "string",
             "description" : "Kind."
+          },
+          "mergeAliasId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Alias of the same store to group with (RN-24)."
+          },
+          "mergeAliasName" : {
+            "type" : "string",
+            "description" : "Name of that alias."
           },
           "note" : {
             "type" : "string",
@@ -2306,6 +3112,11 @@
           "subscriptionSuggested" : {
             "type" : "boolean",
             "description" : "Suggest marking as subscription (RN-23)."
+          },
+          "suggestedCategoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category suggested by the alias or by the last use of the description (RF-75, RF-08)."
           },
           "unknownFinal" : {
             "type" : "boolean",

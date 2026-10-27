@@ -1,5 +1,7 @@
 package com.planejamentomensal.entry.application;
 
+import com.planejamentomensal.alias.application.AliasService;
+import com.planejamentomensal.alias.application.AliasView;
 import com.planejamentomensal.category.application.CategoryQueries;
 import com.planejamentomensal.entry.domain.BillEntry;
 import com.planejamentomensal.entry.domain.EntryStatus;
@@ -39,6 +41,7 @@ public class ReviewQueue {
     private final MemberQueries members;
     private final CategoryQueries categories;
     private final EntryLedger ledger;
+    private final AliasService aliases;
 
     /**
      * Creates the queue.
@@ -48,14 +51,16 @@ public class ReviewQueue {
      * @param members    member queries, for the MAIN rule of RF-76
      * @param categories category queries, for "not classified"
      * @param ledger     ledger, to project accepted subscriptions (RN-09)
+     * @param aliases    alias service, for suggestions (RF-75, RN-24)
      */
     public ReviewQueue(PurchaseRepository purchases, BillEntryRepository entries, MemberQueries members,
-            CategoryQueries categories, EntryLedger ledger) {
+            CategoryQueries categories, EntryLedger ledger, AliasService aliases) {
         this.purchases = purchases;
         this.entries = entries;
         this.members = members;
         this.categories = categories;
         this.ledger = ledger;
+        this.aliases = aliases;
     }
 
     /**
@@ -145,16 +150,39 @@ public class ReviewQueue {
         }).toList();
     }
 
+    /**
+     * Validates the purchases that already meet the rules of RF-76, leaving the others pending; never fails,
+     * so it can run inside another transaction (RF-79d).
+     *
+     * @param purchaseIds candidates
+     * @return the purchases validated
+     */
+    public List<Long> validateWhereComplete(List<Long> purchaseIds) {
+        return purchaseIds.stream().map(this::purchase)
+                .filter(p -> problem(p, p.splits(), p.categoryId()) == null)
+                .peek(p -> {
+                    p.markReviewed();
+                    purchases.save(p);
+                })
+                .map(Purchase::id)
+                .toList();
+    }
+
     private void check(Purchase purchase, List<PurchaseSplit> splits, Long category) {
+        String problem = problem(purchase, splits, category);
+        if (problem != null) {
+            throw new BusinessRuleException(problem, purchase.originalDescription());
+        }
+    }
+
+    private String problem(Purchase purchase, List<PurchaseSplit> splits, Long category) {
         if (!SplitPolicy.isComplete(purchase.installmentAmount(), splits)) {
-            throw new BusinessRuleException("review-split-incomplete", purchase.originalDescription());
+            return "review-split-incomplete";
         }
         boolean hasMain = splits.stream().map(s -> members.find(s.memberId())).flatMap(Optional::stream)
                 .anyMatch(MemberView::main);
         boolean classified = category != null && category != categories.unclassifiedId();
-        if (hasMain && !classified) {
-            throw new BusinessRuleException("review-category-required", purchase.originalDescription());
-        }
+        return hasMain && !classified ? "review-category-required" : null;
     }
 
     private Optional<ReviewItem> item(Purchase p) {
@@ -168,7 +196,27 @@ public class ReviewQueue {
                 p.kind().name(), p.bankCategory(), p.categoryId(),
                 p.splits().stream().map(s -> new ReviewItem.Share(s.memberId(), s.percentage(), s.amount())).toList(),
                 p.note(), p.refundOfPurchaseId(), e.importBatchId(),
-                p.type() == PurchaseType.SINGLE && !e.amount().isNegative() && looksLikeSubscription(p, e), p.version()));
+                p.type() == PurchaseType.SINGLE && !e.amount().isNegative() && looksLikeSubscription(p, e),
+                display(e), alias(p).map(AliasView::id).orElse(null), suggestedCategory(p),
+                aliases.sameStoreAlias(p.originalDescription()).map(AliasView::id).orElse(null),
+                aliases.sameStoreAlias(p.originalDescription()).map(AliasView::displayName).orElse(null), p.version()));
+    }
+
+    private Optional<AliasView> alias(Purchase purchase) {
+        return aliases.aliasOf(purchase.originalDescription());
+    }
+
+    private String display(BillEntry entry) {
+        return aliases.display(java.util.Map.of(entry.id(), entry.purchase().originalDescription())).get(entry.id()).text();
+    }
+
+    private Long suggestedCategory(Purchase purchase) {
+        return alias(purchase).map(AliasView::defaultCategoryId)
+                .or(() -> purchases.findByNormalizedDescription(purchase.normalizedDescription()).stream()
+                        .filter(other -> other.reviewStatus() == ReviewStatus.REVIEWED && other.categoryId() != null)
+                        .max(Comparator.comparing(Purchase::purchaseDate))
+                        .map(Purchase::categoryId))
+                .orElse(null);
     }
 
     private boolean looksLikeSubscription(Purchase purchase, BillEntry entry) {
