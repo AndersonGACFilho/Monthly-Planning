@@ -52,7 +52,9 @@
   "validation": {
     "required": "Required.",
     "invalid": "Invalid value.",
-    "day": "Day from 1 to 31."
+    "day": "Day from 1 to 31.",
+    "period": "Use the yyyy-mm format.",
+    "interval": "Every N months needs N from 2 to 24."
   },
   "language": {
     "pt-BR": "Portuguese (Brazil)",
@@ -225,7 +227,10 @@
     "applyToSelected": "Apply to selected",
     "validateSelected": "Validate selected",
     "empty": "Nothing pending. All validated!",
-    "keyboardHint": "Enter validates and moves on; Tab goes through the fields; Esc skips without validating."
+    "keyboardHint": "Enter validates and moves on; Tab goes through the fields; Esc skips without validating.",
+    "pendingLinks": "Card-paid fixed expenses with more than one possible entry",
+    "chooseLink": "Choose the entry",
+    "linkCandidate": "{{date}} · {{description}} · {{amount}}"
   },
   "settings": {
     "general": "General",
@@ -235,5 +240,144 @@
     "alertDanger": "Red alert (% of income)",
     "horizon": "Months of projected subscriptions",
     "autoValidate": "Validate items with a complete alias automatically"
+  },
+  "recurrence": {
+    "description": "Description",
+    "member": "Member",
+    "amount": "Amount",
+    "defaultAmount": "Default amount",
+    "recurrence": "Recurrence",
+    "recurrences": {
+      "MONTHLY": "Monthly",
+      "ONCE": "Once",
+      "EVERY_N_MONTHS": "Every N months"
+    },
+    "everyN": "Every {{count}} months",
+    "intervalMonths": "N (months)",
+    "expectedDay": "Expected day",
+    "dueDay": "Due day",
+    "validFrom": "Start (yyyy-mm)",
+    "validUntil": "End (optional)",
+    "category": "Category",
+    "incomeType": "Type",
+    "incomeTypes": {
+      "SALARY": "Salary",
+      "FREELANCE": "Freelance",
+      "SCHOLARSHIP": "Scholarship",
+      "RENT": "Rent received",
+      "OTHER": "Other"
+    },
+    "paymentMethod": "Payment method",
+    "paymentMethods": {
+      "BOLETO": "Bank slip",
+      "DEBIT": "Debit",
+      "PIX": "PIX",
+      "CASH": "Cash",
+      "CARD": "Card"
+    },
+    "rules": "Rules",
+    "showRules": "Show rules",
+    "hideRules": "Hide rules",
+    "status": "Status",
+    "day": "Day",
+    "date": "Date",
+    "changedThisMonth": "Amount changed for this month only (default {{amount}})",
+    "editAmount": "Change this month only",
+    "noneThisPeriod": "Nothing expected in this billing period.",
+    "total": "Total",
+    "linkedEntry": "Linked to the card entry",
+    "waitingChoice": "More than one possible entry: choose it in the review queue",
+    "notLinked": "No card entry yet",
+    "inBill": "in the bill"
+  },
+  "income": {
+    "title": "Incomes",
+    "new": "New income",
+    "oneOff": "One-off income",
+    "form": "Income",
+    "received": "Received",
+    "expected": "Expected",
+    "markReceived": "Mark as received",
+    "markExpected": "Mark as expected"
+  },
+  "fixedExpense": {
+    "title": "Fixed expenses",
+    "new": "New fixed expense",
+    "form": "Fixed expense",
+    "paid": "Paid",
+    "pending": "Pending",
+    "markPaid": "Mark as paid",
+    "markPending": "Mark as pending",
+    "cardNote": "Card-paid ones are not added to the total: the bill already has them."
+  },
+  "variableExpense": {
+    "title": "Variable expenses",
+    "new": "New expense",
+    "form": "Variable expense",
+    "date": "Date",
+    "billingPeriod": "Billing period (optional)",
+    "filterTotal": "Filter total",
+    "allMembers": "All members",
+    "allCategories": "All categories"
+  },
+  "cardBill": {
+    "title": "Cards",
+    "closing": "Closes on {{date}}",
+    "due": "Due on {{date}}",
+    "status": {
+      "OPEN": "Open",
+      "CLOSED": "Closed",
+      "PAID": "Paid"
+    },
+    "partial": "partial",
+    "single": "Single",
+    "installments": "Installments",
+    "subscriptions": "Subscriptions",
+    "committed": "Committed in future installments",
+    "unconfirmed_one": "{{count}} unconfirmed left out of the total",
+    "unconfirmed_other": "{{count}} unconfirmed left out of the total",
+    "markPaid": "Mark bill as paid",
+    "import": "Import bill",
+    "open": "Show entries of {{card}}",
+    "fileTotal": "File total {{amount}}"
+  },
+  "overview": {
+    "income": "Total income",
+    "expense": "Total expense",
+    "balance": "Remaining balance",
+    "percentSpent": "% of income spent",
+    "incomeHint": "{{main}} incomes + {{reimbursements}} reimbursements",
+    "expenseHint": "Fixed {{fixed}} · Variable {{variable}} · Cards {{card}}",
+    "noIncome": "no income",
+    "alertWarning": "Warning: spending above {{percent}}% of income.",
+    "alertDanger": "Spending above {{percent}}% of income.",
+    "byCategory": "By category",
+    "byMember": "By member",
+    "byCard": "By card",
+    "category": "Category",
+    "share": "% of total",
+    "variation": "vs. previous month",
+    "unclassified": "Not classified",
+    "member": "Member",
+    "income_short": "Income",
+    "fixed": "Fixed",
+    "variable": "Variable",
+    "card": "Card",
+    "expense_short": "Expense",
+    "balance_short": "Balance",
+    "spent": "% spent",
+    "committedNext": "Committed in the next months",
+    "settlements": "Who owes whom",
+    "owes": "{{from}} owes {{amount}} to {{to}}",
+    "noSettlements": "Nobody owes anything.",
+    "pending_one": "{{count}} entry pending review adds up to {{amount}}",
+    "pending_other": "{{count}} entries pending review add up to {{amount}}",
+    "reviewNow": "Review now",
+    "unconfirmed_one": "{{count}} unconfirmed entry is left out of the totals",
+    "unconfirmed_other": "{{count}} unconfirmed entries are left out of the totals",
+    "memberFilter": "Show only member",
+    "everyone": "All members",
+    "chart": "Expense by category chart",
+    "totalsByMember": "Total expense by member"
   }
 }

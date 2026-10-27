@@ -52,7 +52,9 @@
   "validation": {
     "required": "Obrigatório.",
     "invalid": "Valor inválido.",
-    "day": "Dia de 1 a 31."
+    "day": "Dia de 1 a 31.",
+    "period": "Use o formato aaaa-mm.",
+    "interval": "A cada N meses exige N de 2 a 24."
   },
   "language": {
     "pt-BR": "Português (Brasil)",
@@ -225,7 +227,10 @@
     "applyToSelected": "Aplicar aos selecionados",
     "validateSelected": "Validar selecionados",
     "empty": "Nada pendente. Tudo validado!",
-    "keyboardHint": "Enter valida e vai para o próximo; Tab passa pelos campos; Esc pula sem validar."
+    "keyboardHint": "Enter valida e vai para o próximo; Tab passa pelos campos; Esc pula sem validar.",
+    "pendingLinks": "Despesas fixas no cartão com mais de um lançamento possível",
+    "chooseLink": "Escolha o lançamento",
+    "linkCandidate": "{{date}} · {{description}} · {{amount}}"
   },
   "settings": {
     "general": "Geral",
@@ -235,5 +240,144 @@
     "alertDanger": "Alerta vermelho (% da renda)",
     "horizon": "Meses de assinaturas projetadas",
     "autoValidate": "Validar automaticamente itens com alias completo"
+  },
+  "recurrence": {
+    "description": "Descrição",
+    "member": "Conta",
+    "amount": "Valor",
+    "defaultAmount": "Valor padrão",
+    "recurrence": "Recorrência",
+    "recurrences": {
+      "MONTHLY": "Mensal",
+      "ONCE": "Única",
+      "EVERY_N_MONTHS": "A cada N meses"
+    },
+    "everyN": "A cada {{count}} meses",
+    "intervalMonths": "N (meses)",
+    "expectedDay": "Dia previsto",
+    "dueDay": "Dia de vencimento",
+    "validFrom": "Início (aaaa-mm)",
+    "validUntil": "Fim (opcional)",
+    "category": "Categoria",
+    "incomeType": "Tipo",
+    "incomeTypes": {
+      "SALARY": "Salário",
+      "FREELANCE": "Freelance",
+      "SCHOLARSHIP": "Bolsa",
+      "RENT": "Aluguel recebido",
+      "OTHER": "Outro"
+    },
+    "paymentMethod": "Forma de pagamento",
+    "paymentMethods": {
+      "BOLETO": "Boleto",
+      "DEBIT": "Débito",
+      "PIX": "PIX",
+      "CASH": "Dinheiro",
+      "CARD": "Cartão"
+    },
+    "rules": "Cadastro",
+    "showRules": "Ver cadastro",
+    "hideRules": "Ocultar cadastro",
+    "status": "Situação",
+    "day": "Dia",
+    "date": "Data",
+    "changedThisMonth": "Valor alterado só neste mês (padrão {{amount}})",
+    "editAmount": "Alterar valor só deste mês",
+    "noneThisPeriod": "Nada previsto nesta competência.",
+    "total": "Total",
+    "linkedEntry": "Vinculada ao lançamento do cartão",
+    "waitingChoice": "Mais de um lançamento possível: escolha na fila de validação",
+    "notLinked": "Ainda sem lançamento no cartão",
+    "inBill": "na fatura"
+  },
+  "income": {
+    "title": "Rendas",
+    "new": "Nova renda",
+    "oneOff": "Renda avulsa",
+    "form": "Renda",
+    "received": "Recebida",
+    "expected": "Prevista",
+    "markReceived": "Marcar como recebida",
+    "markExpected": "Voltar para prevista"
+  },
+  "fixedExpense": {
+    "title": "Despesas fixas",
+    "new": "Nova despesa fixa",
+    "form": "Despesa fixa",
+    "paid": "Paga",
+    "pending": "Pendente",
+    "markPaid": "Marcar como paga",
+    "markPending": "Voltar para pendente",
+    "cardNote": "Pagas no cartão não somam no total: já estão na fatura."
+  },
+  "variableExpense": {
+    "title": "Despesas dinâmicas",
+    "new": "Nova despesa",
+    "form": "Despesa dinâmica",
+    "date": "Data",
+    "billingPeriod": "Competência (opcional)",
+    "filterTotal": "Total do filtro",
+    "allMembers": "Todas as contas",
+    "allCategories": "Todas as categorias"
+  },
+  "cardBill": {
+    "title": "Cartões",
+    "closing": "Fecha em {{date}}",
+    "due": "Vence em {{date}}",
+    "status": {
+      "OPEN": "Aberta",
+      "CLOSED": "Fechada",
+      "PAID": "Paga"
+    },
+    "partial": "parcial",
+    "single": "À vista",
+    "installments": "Parcelas",
+    "subscriptions": "Assinaturas",
+    "committed": "Comprometido em parcelas futuras",
+    "unconfirmed_one": "{{count}} não confirmado fora do total",
+    "unconfirmed_other": "{{count}} não confirmados fora do total",
+    "markPaid": "Marcar fatura como paga",
+    "import": "Importar fatura",
+    "open": "Ver lançamentos de {{card}}",
+    "fileTotal": "Total do arquivo {{amount}}"
+  },
+  "overview": {
+    "income": "Renda total",
+    "expense": "Despesa total",
+    "balance": "Saldo restante",
+    "percentSpent": "% da renda gasta",
+    "incomeHint": "{{main}} de rendas + {{reimbursements}} de reembolsos",
+    "expenseHint": "Fixas {{fixed}} · Dinâmicas {{variable}} · Cartões {{card}}",
+    "noIncome": "sem renda",
+    "alertWarning": "Atenção: gastos acima de {{percent}}% da renda.",
+    "alertDanger": "Gastos acima de {{percent}}% da renda.",
+    "byCategory": "Por categoria",
+    "byMember": "Por conta",
+    "byCard": "Por cartão",
+    "category": "Categoria",
+    "share": "% do total",
+    "variation": "vs. mês anterior",
+    "unclassified": "Não classificado",
+    "member": "Conta",
+    "income_short": "Renda",
+    "fixed": "Fixas",
+    "variable": "Dinâmicas",
+    "card": "Cartão",
+    "expense_short": "Despesa",
+    "balance_short": "Saldo",
+    "spent": "% gasto",
+    "committedNext": "Comprometido nos próximos meses",
+    "settlements": "Quem deve a quem",
+    "owes": "{{from}} deve {{amount}} a {{to}}",
+    "noSettlements": "Ninguém deve nada a ninguém.",
+    "pending_one": "{{count}} lançamento pendente de validação soma {{amount}}",
+    "pending_other": "{{count}} lançamentos pendentes de validação somam {{amount}}",
+    "reviewNow": "Validar agora",
+    "unconfirmed_one": "{{count}} lançamento não confirmado fica fora dos totais",
+    "unconfirmed_other": "{{count}} lançamentos não confirmados ficam fora dos totais",
+    "memberFilter": "Ver só a conta",
+    "everyone": "Todas as contas",
+    "chart": "Gráfico de despesas por categoria",
+    "totalsByMember": "Despesa total por conta"
   }
 }

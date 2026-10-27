@@ -1,7 +1,9 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { EntriesPage } from '../features/entries/EntriesPage';
+import { ExpensesPage } from '../features/expenses/ExpensesPage';
 import { ImportPage } from '../features/import/ImportPage';
 import { IncomesPage } from '../features/members/IncomesPage';
+import { OverviewPage } from '../features/overview/OverviewPage';
 import { ReviewQueuePage } from '../features/review/ReviewQueuePage';
 import { SettingsPage } from '../features/settings/SettingsPage';
 import { PlaceholderPage } from '../shared/components/PlaceholderPage';
@@ -11,7 +13,9 @@ import { EXTRA_SCREENS, MAIN_TABS } from './navigation';
 
 /** Real pages by path; the rest are placeholders until their milestone. */
 const PAGES: Record<string, ReactElement> = {
+  '/': <OverviewPage />,
   '/incomes': <IncomesPage />,
+  '/expenses': <ExpensesPage />,
   '/entries': <EntriesPage />,
   '/import': <ImportPage />,
   '/review-queue': <ReviewQueuePage />,

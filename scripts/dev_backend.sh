@@ -28,4 +28,7 @@ B1=$(curl -s -H "$H" -F "file=@$FIX/itau-closed-bill-2026-10.pdf" -F cardId=$CAR
 curl -s -H "$H" -X POST "$U/api/imports/$B1/confirmation" >/dev/null
 B2=$(curl -s -H "$H" -F "file=@$FIX/itau-open-bill-2026-11.xlsx" -F cardId=$CARD -F billingPeriod=2026-11 "$U/api/imports" | id)
 curl -s -H "$H" -X POST "$U/api/imports/$B2/confirmation" >/dev/null
+json -d "{\"description\":\"Salário\",\"memberId\":$MAIN,\"incomeType\":\"SALARY\",\"defaultAmount\":12000,\"recurrence\":\"MONTHLY\",\"day\":5,\"validFrom\":\"2026-09\"}" "$U/api/recurrence-rules?kind=INCOME" >/dev/null
+json -d "{\"description\":\"Aluguel\",\"memberId\":$MAIN,\"paymentMethod\":\"BOLETO\",\"defaultAmount\":2500,\"recurrence\":\"MONTHLY\",\"day\":10,\"validFrom\":\"2026-09\"}" "$U/api/recurrence-rules?kind=FIXED_EXPENSE" >/dev/null
+json -d "{\"expenseDate\":\"2026-11-03\",\"description\":\"Feira\",\"memberId\":$MAIN,\"amount\":320.5,\"paymentMethod\":\"PIX\"}" "$U/api/variable-expenses" >/dev/null
 echo "Dev backend on $U (token dev), data in $HOME_DIR"

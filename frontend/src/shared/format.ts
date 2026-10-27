@@ -100,3 +100,15 @@ export function shiftPeriod(period: string, months: number): string {
   const index = year! * 12 + (month! - 1) + months;
   return `${Math.floor(index / 12)}-${String((index % 12) + 1).padStart(2, '0')}`;
 }
+
+/**
+ * Formats a percentage with one decimal place in the interface language.
+ *
+ * @param value - percentage such as `72.5`, or nothing
+ * @param language - BCP 47 language; the interface language by default
+ * @returns text such as `72,5%`, or `—` when there is no value
+ */
+export function formatPercent(value: number | null | undefined, language: string = i18n.language): string {
+  if (value === null || value === undefined) return '—';
+  return `${new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)}%`;
+}

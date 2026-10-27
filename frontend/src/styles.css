@@ -104,4 +104,39 @@ body {
     padding: 1rem;
     background: var(--color-surface);
   }
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .table th,
+  .table td {
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.375rem 0.5rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+  .table th.text-right,
+  .table td.text-right {
+    text-align: right;
+  }
+  .table thead th {
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+  .badge {
+    display: inline-block;
+    border-radius: 9999px;
+    padding: 0.0625rem 0.5rem;
+    font-size: 0.75rem;
+    background: var(--color-surface-muted);
+  }
+  .badge-success {
+    background: color-mix(in srgb, #059669 18%, transparent);
+    color: #047857;
+  }
+  .badge-warning {
+    background: color-mix(in srgb, #d97706 18%, transparent);
+    color: #b45309;
+  }
 }

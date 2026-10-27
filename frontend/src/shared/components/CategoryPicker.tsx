@@ -13,6 +13,8 @@ export interface CategoryPickerProps {
   id?: string;
   /** Offer an empty option. */
   allowEmpty?: boolean;
+  /** Text of the empty option, such as "All members" in a filter; "— none —" by default. */
+  emptyLabel?: string;
   /** Only top-level categories, for choosing a parent. */
   topLevelOnly?: boolean;
   /** Accessible label. */
@@ -26,7 +28,7 @@ export interface CategoryPickerProps {
  * @param props - {@link CategoryPickerProps}
  * @returns a select of categories
  */
-export function CategoryPicker({ value, onChange, id, allowEmpty, topLevelOnly, ...rest }: CategoryPickerProps) {
+export function CategoryPicker({ value, onChange, id, allowEmpty, emptyLabel, topLevelOnly, ...rest }: CategoryPickerProps) {
   const { t } = useTranslation();
   const { data } = useCategories({ size: 500, sort: ['name,asc'] });
   const all = embedded<CategoryModel>(data, 'categories');
@@ -39,7 +41,7 @@ export function CategoryPicker({ value, onChange, id, allowEmpty, topLevelOnly, 
       aria-label={rest['aria-label']}
       onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
     >
-      {(allowEmpty || value == null) && <option value="">{t('common.none')}</option>}
+      {(allowEmpty || value == null) && <option value="">{emptyLabel ?? t('common.none')}</option>}
       {parents.map((parent) => [
         <option key={parent.id} value={parent.id}>
           {parent.name}

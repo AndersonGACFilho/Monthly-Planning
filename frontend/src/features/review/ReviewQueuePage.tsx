@@ -17,6 +17,7 @@ import { MoneyText } from '../../shared/components/MoneyText';
 import { embedded, linkOf } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { fromCents, toCents } from '../../shared/format';
+import { PendingLinks } from './PendingLinks';
 import { ReviewRow } from './ReviewRow';
 
 /**
@@ -119,6 +120,8 @@ export function ReviewQueuePage() {
           )}
         </div>
       )}
+
+      <PendingLinks />
 
       {items.length === 0 ? (
         <p className="panel text-(--color-text-muted)">{t('review.empty')}</p>

@@ -13,6 +13,8 @@ export interface MemberPickerProps {
   id?: string;
   /** Offer an empty option. */
   allowEmpty?: boolean;
+  /** Text of the empty option, such as "All members" in a filter; "— none —" by default. */
+  emptyLabel?: string;
   /** Show inactive members too. */
   includeInactive?: boolean;
   /** Accessible label. */
@@ -25,7 +27,7 @@ export interface MemberPickerProps {
  * @param props - {@link MemberPickerProps}
  * @returns a select listing members by code and name
  */
-export function MemberPicker({ value, onChange, id, allowEmpty, includeInactive, ...rest }: MemberPickerProps) {
+export function MemberPicker({ value, onChange, id, allowEmpty, emptyLabel, includeInactive, ...rest }: MemberPickerProps) {
   const { t } = useTranslation();
   const { data } = useMembers({ size: 200, sort: ['code,asc'] });
   const members = embedded<MemberModel>(data, 'members').filter((m) => includeInactive || m.active || m.id === value);
@@ -37,7 +39,7 @@ export function MemberPicker({ value, onChange, id, allowEmpty, includeInactive,
       aria-label={rest['aria-label']}
       onChange={(event) => onChange(event.target.value ? Number(event.target.value) : null)}
     >
-      {(allowEmpty || value == null) && <option value="">{t('common.none')}</option>}
+      {(allowEmpty || value == null) && <option value="">{emptyLabel ?? t('common.none')}</option>}
       {members.map((member) => (
         <option key={member.id} value={member.id}>
           {member.code} — {member.name}
