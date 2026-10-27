@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 34/52 · M7 0/22 (total 252/297)
+Progress: M0 53/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 0/22 (total 270/297)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -285,24 +285,24 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] RF-79b — Exporting a member statement with pending items warns and lists them; validate first or send anyway · statement · accept: RF-79b · SendStatementUseCaseTest · after: RF-91, RF-74 · done (c5b614f, d8a28dc)
 - [x] IMP-37 — `SendStatementUseCase` orchestration (build → render → generate → send → record) and statement resource links `pdf`, `png`, `xlsx`, `send-email`, `send-whatsapp` (only with phone) (origin §16, §12) · statement · accept: links per state · SendStatementUseCaseTest, StatementControllerIT · after: RF-91 · done (c5b614f)
 - [x] IMP-38 — Flyway migrations for template, template_version, statement_delivery, smtp settings (origin AGT-02) · infra · accept: FlywayMigrationIT passes · FlywayMigrationIT · after: IMP-35 · done (c5b614f; V9 + app_setting)
-- [ ] XLS-13 — Spreadsheet look from a model `.xlsx` in `data/templates/`; app copies it and fills data with Apache POI · statement · accept: XLS-13 · WorkbookTemplateTest · after: IMP-21 · (blocked: Q10)
-- [ ] XLS-14 — User can replace the model if named sheets/tables are kept; validated with a list of what is missing · statement · accept: XLS-14 · WorkbookTemplateTest · after: XLS-13
-- [ ] XLS-16 — `MonthlyWorkbookExporter`, `WorkbookTemplate`, one `SheetWriter` per sheet, `FormulaDialect` (`Excel365Dialect`, `CompatibleDialect`) · statement · accept: XLS-16 · MonthlyWorkbookExporterTest · after: XLS-13
-- [ ] XLS-01 — Export from the period selector; file name `AAAA - MM - <MÊS> <suffix>.xlsx` with configurable suffix · statement · accept: XLS-01 · MonthlyWorkbookExporterTest · after: XLS-16
-- [ ] XLS-02 — Cards sheet columns: due day, member code, `-`/`*`/`NN/NN`, displayed description · statement · accept: XLS-02 · CardsSheetWriterTest · after: XLS-16
-- [ ] XLS-03 — Grouped by card in configured order with blank row; boleto/debit expenses with member go to "Boletos" group · statement · accept: XLS-03 · CardsSheetWriterTest · after: XLS-02
-- [ ] XLS-04 — Members have code and kind MAIN/THIRD_PARTY; third-party totals enter monthly income as reimbursement by formula; overview follows the same rule · statement/summary · accept: XLS-04 · IncomeSheetWriterTest, MonthlySummaryServiceTest · after: XLS-16, RF-10 · (blocked: Q8)
-- [ ] XLS-05 — Category filled for MAIN member, empty for third parties · statement · accept: XLS-05 · CardsSheetWriterTest · after: XLS-02
-- [ ] XLS-06 — One sheet per member marked in settings, with neighboring months (default 2 before, current, 1 after) and block totals · statement · accept: XLS-06 · MemberSheetWriterTest · after: XLS-16, IMP-10
-- [ ] XLS-07 — Pending entries highlighted yellow; warning before export · statement · accept: XLS-07 · CardsSheetWriterTest · after: XLS-02, RF-79b
-- [ ] XLS-08 — Totals as formulas (`SUM`, `SUMIF`, % spent, balance), defined names `TotalMensaldeRenda`, `TotalMensaldeDespesas`, tables `Receita`, `Despesas`, `CARTÕES`, `Categorias` · statement · accept: XLS-08 · MonthlyWorkbookExporterTest · after: XLS-16
-- [ ] XLS-09 — Two formula modes (Excel 365 / Compatible); default by OS, changeable in settings or per export · statement · accept: XLS-09 · MonthlyWorkbookExporterTest · after: XLS-08 · (blocked: Q11 for the pivot table)
-- [ ] XLS-10 — Switching mode changes only formulas and the categories table; preview shows the mode · statement · accept: XLS-10 · MonthlyWorkbookExporterTest · after: XLS-09
-- [ ] XLS-11 — Drop-down lists for Category (table `Categorias`) and Member code · statement · accept: XLS-11 · ListsSheetWriterTest · after: XLS-16
-- [ ] XLS-12 — Fix model issues: year/title from the period, generated month names, no `#REF!` names, no "DetalhesN" sheets · statement · accept: XLS-12 (fixture has all these defects) · WorkbookTemplateTest · after: XLS-13
-- [ ] XLS-15 — pt-BR follows the model literally; en-US translates sheet names, titles, headers and months · statement · accept: XLS-15 · MonthlyWorkbookExporterTest · after: XLS-16, I18N-06
-- [ ] XLS-17 — Summary resource gets `export-xlsx` link (`/api/summaries/{billingPeriod}/workbook`) · api · accept: XLS-17 · MonthlySummaryControllerIT · after: XLS-01, IMP-32
-- [ ] XLS-18 — `MonthlyWorkbookExporterTest`: both modes; Compatible recalculated with headless LibreOffice and checked against app totals; Excel 365 checks formulas, tables, pivot · statement · accept: XLS-18 · MonthlyWorkbookExporterTest · after: XLS-09, XLS-15
+- [x] XLS-13 — Spreadsheet look from a model `.xlsx` in `data/templates/`; app copies it and fills data with Apache POI · statement · accept: XLS-13 · WorkbookTemplateTest · after: IMP-21 · done (034cac3; Q10 adopted)
+- [x] XLS-14 — User can replace the model if named sheets/tables are kept; validated with a list of what is missing · statement · accept: XLS-14 · WorkbookTemplateTest · after: XLS-13 · done (034cac3)
+- [x] XLS-16 — `MonthlyWorkbookExporter`, `WorkbookTemplate`, one `SheetWriter` per sheet, `FormulaDialect` (`Excel365Dialect`, `CompatibleDialect`) · statement · accept: XLS-16 · MonthlyWorkbookExporterTest · after: XLS-13 · done (034cac3)
+- [x] XLS-01 — Export from the period selector; file name `AAAA - MM - <MÊS> <suffix>.xlsx` with configurable suffix · statement · accept: XLS-01 · MonthlyWorkbookExporterTest · after: XLS-16 · done (034cac3)
+- [x] XLS-02 — Cards sheet columns: due day, member code, `-`/`*`/`NN/NN`, displayed description · statement · accept: XLS-02 · CardsSheetWriterTest · after: XLS-16 · done (034cac3)
+- [x] XLS-03 — Grouped by card in configured order with blank row; boleto/debit expenses with member go to "Boletos" group · statement · accept: XLS-03 · CardsSheetWriterTest · after: XLS-02 · done (034cac3)
+- [x] XLS-04 — Members have code and kind MAIN/THIRD_PARTY; third-party totals enter monthly income as reimbursement by formula; overview follows the same rule · statement/summary · accept: XLS-04 · IncomeSheetWriterTest, MonthlySummaryServiceTest · after: XLS-16, RF-10 · done (aa99832, 034cac3)
+- [x] XLS-05 — Category filled for MAIN member, empty for third parties · statement · accept: XLS-05 · CardsSheetWriterTest · after: XLS-02 · done (034cac3)
+- [x] XLS-06 — One sheet per member marked in settings, with neighboring months (default 2 before, current, 1 after) and block totals · statement · accept: XLS-06 · MemberSheetWriterTest · after: XLS-16, IMP-10 · done (034cac3)
+- [x] XLS-07 — Pending entries highlighted yellow; warning before export · statement · accept: XLS-07 · CardsSheetWriterTest · after: XLS-02, RF-79b · done (034cac3)
+- [x] XLS-08 — Totals as formulas (`SUM`, `SUMIF`, % spent, balance), defined names `TotalMensaldeRenda`, `TotalMensaldeDespesas`, tables `Receita`, `Despesas`, `CARTÕES`, `Categorias` · statement · accept: XLS-08 · MonthlyWorkbookExporterTest · after: XLS-16 · done (034cac3)
+- [x] XLS-09 — Two formula modes (Excel 365 / Compatible); default by OS, changeable in settings or per export · statement · accept: XLS-09 · MonthlyWorkbookExporterTest · after: XLS-08 · done (034cac3; Q11 adopted)
+- [x] XLS-10 — Switching mode changes only formulas and the categories table; preview shows the mode · statement · accept: XLS-10 · MonthlyWorkbookExporterTest · after: XLS-09 · done (034cac3)
+- [x] XLS-11 — Drop-down lists for Category (table `Categorias`) and Member code · statement · accept: XLS-11 · ListsSheetWriterTest · after: XLS-16 · done (034cac3)
+- [x] XLS-12 — Fix model issues: year/title from the period, generated month names, no `#REF!` names, no "DetalhesN" sheets · statement · accept: XLS-12 (fixture has all these defects) · WorkbookTemplateTest · after: XLS-13 · done (034cac3)
+- [x] XLS-15 — pt-BR follows the model literally; en-US translates sheet names, titles, headers and months · statement · accept: XLS-15 · MonthlyWorkbookExporterTest · after: XLS-16, I18N-06 · done (034cac3)
+- [x] XLS-17 — Summary resource gets `export-xlsx` link (`/api/summaries/{billingPeriod}/workbook`) · api · accept: XLS-17 · MonthlySummaryControllerIT · after: XLS-01, IMP-32 · done (034cac3)
+- [x] XLS-18 — `MonthlyWorkbookExporterTest`: both modes; Compatible recalculated with headless LibreOffice and checked against app totals; Excel 365 checks formulas, tables, pivot · statement · accept: XLS-18 · MonthlyWorkbookExporterTest · after: XLS-09, XLS-15 · done (034cac3; LibreOffice test skips when soffice is missing)
 
 ## M7 — Languages, final packaging and end-to-end tests
 
@@ -395,6 +395,10 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27: RF-94: sending through the WhatsApp Business API is out of v1 (needs a Meta Business account and costs per message); only the `wa.me` link exists.
 - 2026-10-27: Statement fonts are Noto Sans, Noto Serif and Liberation Sans (SIL OFL 1.1, licences bundled), copied to `data/templates/fonts/` on first use (POR-05). OpenHTMLtoPDF fork `io.github.openhtmltopdf` 1.1.97 runs on PDFBox 3.0.8.
 - 2026-10-27: File downloads (statement PDF/PNG/XLSX/CSV/HTML, workbook) are left out of the generated Orval client (input transformer) and fetched through their HAL links; CORS exposes `Content-Disposition` for the file name.
+- 2026-10-27: Monthly spreadsheet (XLS-13, Q10): the bundled model `workbook/monthly-workbook-model.xlsx` is built from the masked fixture by `WorkbookTemplateTest` with `-Dworkbook.model.update=true` (tables keep one styled empty row, unused shared strings dropped) and copied to `data/templates/` on first use. Every model, bundled or replaced, is cleaned when opened: pivot tables, calc chain and document-library parts removed at package level; `DetalhesN` sheets, `#REF!` and sheet-local names, and all formulas of the fixed sheets dropped (the writers write every formula again).
+- 2026-10-27: XLS-03: fixed (not card) and variable expenses of third-party members go to the "Boletos" group of the cards sheet with their code (fixed `*`, variable `-`), so they count in that member's SUMIF total; those of MAIN members go to "Despesas mensais". Incomes of third parties are not listed; each third party gets a "Reembolso" line pointing to their total on the side table, which points to the cards sheet (XLS-04).
+- 2026-10-27: XLS-09/Q11: Excel 365 mode writes the model's `SORT(UNIQUE(FILTER(...)))` card list as a dynamic array and builds a new POI pivot table (report filter Cota, rows Categoria, sum of Valor, sorted by value descending, refreshed on open; no member preselected). Compatible mode writes a sorted card list with one `SUMIF` per row, a `SUMIFS` table with the member in a drop-down (H1, MAIN member by default) and defines the totals with plain ranges instead of structured references. The summary's year goes to D1 and the title to B2 (C2 left empty).
+- 2026-10-27: XLS-06: member sheets are named after the member in capitals and lay out one block per month (default 2 before, current, 1 after) alternating left and right columns; future months show projected installments.
 - Proposed, pending approval: Q4 (exact key + tolerant match), Q7 (undo only the latest batch, else 409), Q13 (Windows x64 + Linux x86_64 only), Q16 (new entities/fields).
 
 ## Iteration log
@@ -408,3 +412,4 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - 2026-10-27 — M2 done (dc53a3f): Itaú PDF and XLSX parsers verified against the masked fixtures (79 + 16 future lines, totals match; 88 XLSX lines). M3 done (d00a988, 5aa24ce): preview/confirm/undo, projections, refunds, reconciliation, review queue, audit; found and fixed date persistence with a round-trip test after a manual run; added Q18 (RN-16 8-character minimum vs the nuuvem example).
 - 2026-10-27 — M4 done: aliases, entries API and tab (bac8c4c and the entries tab commit). Manual check with the fixtures: November shows 89 entries; BMB 01/02 (PDF, October) and 02/02 (XLSX, November) both confirmed.
 - 2026-10-27 — M5 done: incomes, fixed and variable expenses API (6c35a4d), overview and card totals (aa99832), screens (ecef157). Checked by hand against the dev backend with the masked fixtures: November totals match the XLSX file total plus one projected installment (Q6), mark-paid and card → entries navigation work. Playwright specs named in M5 items run in M7.
+- 2026-10-27 — M6 done: statements, templates and delivery (c5b614f, d8a28dc), monthly spreadsheet (034cac3). Checked by hand: statement PDF from the masked bills (embedded fonts, pending highlight), deliveries and template screens in the browser, spreadsheet rendered through LibreOffice (model look kept, totals recalculated, pending rows yellow); found and fixed a title clipped by a value in the next cell.
