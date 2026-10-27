@@ -2,6 +2,7 @@ package com.planejamentomensal.shared.api;
 
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.DomainException;
+import com.planejamentomensal.shared.domain.InvalidInputException;
 import com.planejamentomensal.shared.domain.NotFoundException;
 import com.planejamentomensal.shared.domain.StaleVersionException;
 import java.net.URI;
@@ -92,6 +93,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = e.updateAndGetBody(messages, locale);
         problem.setProperty("errors", errors);
         return handleExceptionInternal(e, problem, headers, status, request);
+    }
+
+    /**
+     * Maps input that cannot be processed to 400.
+     *
+     * @param e      exception
+     * @param locale locale resolved from {@code Accept-Language}
+     * @return problem with status 400
+     */
+    @ExceptionHandler(InvalidInputException.class)
+    public ProblemDetail handleInvalidInput(InvalidInputException e, Locale locale) {
+        return problem(HttpStatus.BAD_REQUEST, e, locale);
     }
 
     /**

@@ -347,6 +347,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - Q14: the §12 architecture diagram did not survive the Markdown export ("embedded content"). Is there anything in it not covered by the text?
 - Q15 (blocks IMP-05, IMP-25, IMP-39): review queue, settings, templates and delivery history are extra sidebar entries besides the 5 tabs?
 - Q17 (blocks XLS-01): XLS-01 names the spreadsheet `2026 - 11 - NOVEMBRO CJ.xlsx` (spaces, upper case), but POR-04 allows only letters, digits, `-` and `_` in generated names. Which wins? Proposal: XLS-01 keeps its name for the file the user saves; POR-04 applies to files the app keeps in `data/`.
+- Q18 (RN-16 vs RN-19 example): the SPEC table shows `nuuvem *N 02/02` (PDF) matching `Nuuvem *Nuuvemrio De Janeirbra` (XLSX), but the normalized `NUUVEMN` has 7 characters, below the RN-16 minimum of 8. The rule is kept as written: such pairs show up as Divergent for the user to decide. Should the minimum be lower, or should card + date ±1 + amount + installment be enough when the prefix is short?
 - Q16 (data model gaps, proposed): add `AuditEntry` (RNF-05), `ImportBatch.status` PREVIEW/CONFIRMED/CANCELLED (API links), persisted `ImportPreviewLine` (RNF-04 forbids keeping the file between preview and confirmation) and `AppSetting` (RF-16, RF-79d, XLS-06, XLS-09, I18N-03, SMTP).
 
 ## Decisions
