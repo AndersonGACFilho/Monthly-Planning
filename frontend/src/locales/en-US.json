@@ -602,6 +602,29 @@
     "exportCsv": "Export all data (CSV)",
     "eject": "Close the app before removing the drive, so no write is left half done."
   },
+  "update": {
+    "title": "Updates",
+    "installed": "Installed version: {{version}}",
+    "check": "Check for updates",
+    "checking": "Looking for a new version…",
+    "upToDate": "The app is up to date.",
+    "checkFailed": "GitHub could not be reached right now. Try again later.",
+    "available": "New version {{version}} available.",
+    "install": "Update",
+    "installVersion": "Update to version {{version}}",
+    "downloading": "Downloading version {{version}}… {{percent}}%",
+    "progress": "Download progress",
+    "downloadFailed": "The update was not downloaded: {{error}}",
+    "retry": "Try again",
+    "ready": "Version {{version}} is ready. It is installed when the app restarts.",
+    "restart": "Restart now",
+    "restartFailed": "The app could not restart ({{error}}). Close and open it to install.",
+    "notes": "What's new",
+    "notesTitle": "What's new in version {{version}}",
+    "later": "Later",
+    "seeNotice": "Follow the download in the notice at the top of the window.",
+    "howItWorks": "The app looks for new versions when it opens. Updates are verified before installing, the previous version comes back if the new one does not open, and the data/ folder is not changed."
+  },
   "shortcuts": {
     "title": "Shortcuts",
     "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period"

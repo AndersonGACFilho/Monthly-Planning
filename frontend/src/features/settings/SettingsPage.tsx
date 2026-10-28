@@ -2,10 +2,11 @@ import { useTranslation } from 'react-i18next';
 import { BackupSettings } from './BackupSettings';
 import { GeneralSettings } from './GeneralSettings';
 import { SmtpSettings } from './SmtpSettings';
+import { UpdateSettings } from '../update/UpdateSettings';
 import { WorkbookSettings } from './WorkbookSettings';
 
 /**
- * Settings screen: general options, e-mail, spreadsheet and backups; registries live in their own screen
+ * Settings screen: general options, e-mail, spreadsheet, backups and updates; registries live in their own screen
  * (Q15, IMP-39).
  *
  * @returns the page
@@ -19,6 +20,7 @@ export function SettingsPage() {
       <SmtpSettings />
       <WorkbookSettings />
       <BackupSettings />
+      <UpdateSettings />
     </div>
   );
 }

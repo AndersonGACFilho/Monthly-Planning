@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet } from 'react-router';
 import { useReviewSummary } from '../api/generated/endpoints/review-queue-controller/review-queue-controller';
 import { useShortcuts } from './useShortcuts';
+import { UpdateBanner } from '../features/update/UpdateBanner';
 import { WorkbookExportButton } from '../features/workbook/WorkbookExportButton';
 import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
 import { ThemeToggle } from '../shared/components/ThemeToggle';
@@ -10,7 +11,8 @@ import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
 import { useStartup } from './useStartup';
 
 /**
- * Window frame: sidebar with the tabs, header with the global billing period, main area and notices.
+ * Window frame: sidebar with the tabs, header with the global billing period, the update notice (POR-16), main
+ * area and notices.
  *
  * The sidebar shows icons only from 800 to 1199 px and icons with labels from 1200 px (SPEC section 14,
  * RNF-06); the billing period selector stays at the top (UI-02).
@@ -47,6 +49,7 @@ export function AppLayout() {
             <WorkbookExportButton />
           </span>
         </header>
+        <UpdateBanner />
         <main className="relative min-h-0 min-w-0 flex-1 overflow-auto p-4">
           <Outlet />
         </main>

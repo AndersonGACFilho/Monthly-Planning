@@ -602,6 +602,29 @@
     "exportCsv": "Exportar todos os dados (CSV)",
     "eject": "Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade."
   },
+  "update": {
+    "title": "Atualizações",
+    "installed": "Versão instalada: {{version}}",
+    "check": "Procurar atualizações",
+    "checking": "Procurando uma versão nova…",
+    "upToDate": "O app já está na versão mais recente.",
+    "checkFailed": "Não foi possível falar com o GitHub agora. Tente de novo mais tarde.",
+    "available": "Nova versão {{version}} disponível.",
+    "install": "Atualizar",
+    "installVersion": "Atualizar para a versão {{version}}",
+    "downloading": "Baixando a versão {{version}}… {{percent}}%",
+    "progress": "Progresso do download",
+    "downloadFailed": "A atualização não foi baixada: {{error}}",
+    "retry": "Tentar de novo",
+    "ready": "A versão {{version}} está pronta. Ela é instalada quando o app reiniciar.",
+    "restart": "Reiniciar agora",
+    "restartFailed": "Não foi possível reiniciar ({{error}}). Feche e abra o app para instalar.",
+    "notes": "Novidades",
+    "notesTitle": "Novidades da versão {{version}}",
+    "later": "Depois",
+    "seeNotice": "Acompanhe o download no aviso do topo da janela.",
+    "howItWorks": "O app procura versões novas ao abrir. A atualização é conferida antes de instalar, a versão anterior volta se a nova não abrir, e a pasta data/ não é alterada."
+  },
   "shortcuts": {
     "title": "Atalhos",
     "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência"
