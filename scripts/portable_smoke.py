@@ -40,10 +40,12 @@ def call(port: int, method: str, path: str, token: str | None = None) -> int:
 
 
 def main(source: Path, os_name: str, in_place: bool = False, java_override: Path | None = None) -> None:
-    with tempfile.TemporaryDirectory() as work:
+    # ignore_cleanup_errors: a failed run must report its own error, not a file Windows still holds
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as work:
         home = source.resolve() if in_place else Path(work) / "copied" / "PlanejamentoMensal"
         if not in_place:
-            shutil.copytree(source, home)
+            # the package as shipped: a data/ folder left by a local run (with its lock) is not part of it
+            shutil.copytree(source, home, ignore=lambda folder, names: ["data"] if Path(folder) == source else [])
         sentinel = Path(work) / "outside"
         sentinel.mkdir()
         env = {k: v for k, v in os.environ.items() if k in ("PATH", "SYSTEMROOT", "WINDIR", "LANG")}
@@ -55,16 +57,28 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
         port = free_port()
         java = java_override or home / "backend" / f"runtime-{os_name}" / "bin" / ("java.exe" if os_name == "windows" else "java")
         (home / "data" / "tmp").mkdir(parents=True, exist_ok=True)
+        # The log goes to a file, never to a pipe nobody reads: a full pipe (small on Windows) blocks the JVM
+        log_path = Path(work) / "backend.log"
+        log = log_path.open("w", encoding="utf-8")
         backend = subprocess.Popen(
             [str(java), f"-Djava.io.tmpdir={home / 'data' / 'tmp'}",
              "-jar", str(home / "backend" / "app.jar"), f"--app.home={home}", f"--server.port={port}",
              f"--app.parent-pid={os.getpid()}"],
-            env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            env=env, stdout=log, stderr=subprocess.STDOUT,
         )
-        deadline = time.time() + 120
+
+        def fail(message: str) -> None:
+            if backend.poll() is None:
+                backend.kill()
+                backend.wait(timeout=30)
+            log.close()
+            print(log_path.read_text(encoding="utf-8", errors="replace"))
+            sys.exit(message)
+
+        deadline = time.time() + 180
         while time.time() < deadline:
             if backend.poll() is not None:
-                sys.exit(f"backend ended during startup:\n{backend.stdout.read()}")
+                fail("backend ended during startup")
             try:
                 if call(port, "GET", "/actuator/health") == 200:
                     break
@@ -72,15 +86,18 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
                 pass
             time.sleep(0.5)
         else:
-            backend.kill()
-            sys.exit("backend did not become healthy")
+            fail("backend did not become healthy")
 
         checks = {
             "API without token is refused": call(port, "GET", "/api") == 401,
             "API with token answers": call(port, "GET", "/api", token) == 200,
             "shutdown accepted": call(port, "POST", "/actuator/shutdown", token) == 200,
         }
-        code = backend.wait(timeout=60)
+        try:
+            code = backend.wait(timeout=60)
+        except subprocess.TimeoutExpired:
+            fail("backend did not stop after shutdown")
+        log.close()
         data = home / "data"
         checks |= {
             "backend exit code is 0": code == 0,
@@ -100,7 +117,7 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
         for name, ok in checks.items():
             print(f"{'OK  ' if ok else 'FAIL'} {name}")
         if not all(checks.values()):
-            print(backend.stdout.read())
+            print(log_path.read_text(encoding="utf-8", errors="replace"))
             leaked = [str(p.relative_to(sentinel)) for p in sentinel.rglob("*")]
             if leaked:
                 print("Written outside:", leaked)

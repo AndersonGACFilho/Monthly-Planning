@@ -81,6 +81,8 @@ impl Backend {
             .arg(format!("--server.port={port}"))
             // the backend stops itself if this shell dies without stopping it
             .arg(format!("--app.parent-pid={}", std::process::id()))
+            // relative paths resolve inside the app folder, not inside the AppImage mount or a system folder
+            .current_dir(home)
             .env("APP_SESSION_TOKEN", &token)
             .stdin(Stdio::null())
             .stdout(Stdio::from(log.try_clone()?))

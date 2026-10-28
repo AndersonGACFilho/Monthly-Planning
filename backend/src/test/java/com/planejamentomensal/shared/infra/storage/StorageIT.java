@@ -42,6 +42,18 @@ class StorageIT {
     }
 
     @Test
+    @DisplayName("POR-02, POR-08: health measures free space on the app folder's drive, not the working directory")
+    void diskSpaceHealthWatchesTheAppFolder() {
+        try (ConfigurableApplicationContext context = start()) {
+            // Given the AppImage starts the backend inside a read-only mount with no free space
+            // When the disk-space check is configured
+            String path = context.getEnvironment().getProperty("management.health.diskspace.path");
+            // Then it looks at the app folder
+            assertThat(Path.of(path)).isEqualTo(home);
+        }
+    }
+
+    @Test
     @DisplayName("POR-11: connections use WAL, synchronous FULL and foreign keys")
     void connectionsUseDurableSettings() {
         try (ConfigurableApplicationContext context = start()) {

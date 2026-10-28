@@ -49,6 +49,11 @@ springdoc:
   default-produces-media-type: application/hal+json
 
 management:
+  health:
+    diskspace:
+      # Measure the drive holding the app folder, never the working directory: inside an AppImage that is a
+      # read-only mount with no free space, which kept health DOWN and the window waiting forever
+      path: ${app.home}
   endpoints:
     web:
       exposure:
