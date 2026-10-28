@@ -31,6 +31,11 @@ pub fn data_dir(home: &Path) -> PathBuf {
     home.join("data")
 }
 
+/// Folder where an update is downloaded, staged and kept for rollback until the new version starts (POR-16).
+pub fn update_dir(home: &Path) -> PathBuf {
+    home.join("update")
+}
+
 /// Name of the JRE folder for the current operating system (POR-01).
 pub fn runtime_dir_name() -> &'static str {
     if cfg!(windows) {
