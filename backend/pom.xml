@@ -13,7 +13,7 @@
 
     <groupId>com.planejamentomensal</groupId>
     <artifactId>planejamento-mensal-backend</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>Planejamento Mensal backend</name>
     <description>Local REST API (HAL) for the Planejamento Mensal desktop app</description>
 

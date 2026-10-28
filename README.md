@@ -61,6 +61,16 @@ python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 The Windows half is built the same way on Windows (`--os windows`, `PlanejamentoMensal.exe`); CI assembles both
 into one zip. Users find start, backup, ejecting and update instructions in `LEIA-ME.md` inside the folder.
 
+## Releases
+
+Add the version's notes to `CHANGELOG.md` under `## v<version> — <date>`, then push a tag:
+
+```bash
+git tag -a v0.1.0 -m "Planejamento Mensal v0.1.0" && git push origin v0.1.0
+```
+
+CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes.
+
 ## Real bills
 
 Real Itaú bills and spreadsheets never enter this repository. Tests use the masked copies in `backend/src/test/resources/fixtures/itau` (see its README). The `.gitignore` rejects any other `.pdf`, `.xlsx` or `.csv`.

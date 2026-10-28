@@ -226,8 +226,32 @@ jobs:
       - name: Same data folder opened on Linux after Windows (IMP-50, POR-01)
         run: python3 repo/scripts/portable_smoke.py crossos/PlanejamentoMensal --os linux --in-place --expect-marker windows
       - name: Zip
-        run: zip -r -9 "PlanejamentoMensal-${GITHUB_SHA::7}.zip" PlanejamentoMensal
+        # A version tag names the zip after the version (POR-15); other pushes after the commit
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then NAME="$GITHUB_REF_NAME"; else NAME="${GITHUB_SHA::7}"; fi
+          zip -r -9 "PlanejamentoMensal-$NAME.zip" PlanejamentoMensal
       - uses: actions/upload-artifact@v5
         with:
           name: PlanejamentoMensal-zip
           path: PlanejamentoMensal-*.zip
+
+  release:
+    name: GitHub release (IMP-47)
+    needs: bundle
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: PlanejamentoMensal-zip
+      - name: Publish the zip with the notes of this version from CHANGELOG.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v tag="$GITHUB_REF_NAME" '$0 ~ "^## " tag " " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "CHANGELOG.md has no section for $GITHUB_REF_NAME"; exit 1; }
+          gh release create "$GITHUB_REF_NAME" "PlanejamentoMensal-$GITHUB_REF_NAME.zip" \
+            --title "Planejamento Mensal $GITHUB_REF_NAME" --notes-file notes.md
