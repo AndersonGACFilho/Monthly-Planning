@@ -7,6 +7,19 @@ import { useCategoryMap } from '../../shared/hooks/useLookups';
 /** Colour of expenses without a category. */
 export const UNCLASSIFIED_COLOR = '#9aa4af';
 
+/** Chart height in pixels: a base for the ring plus a step per slice, within these bounds. */
+const HEIGHT = { min: 224, max: 420, base: 160, perSlice: 28 } as const;
+
+/**
+ * Height of the doughnut for a number of slices, so it keeps pace with the category table beside it.
+ *
+ * @param slices - number of categories drawn
+ * @returns height in pixels
+ */
+export function chartHeight(slices: number): number {
+  return Math.min(HEIGHT.max, Math.max(HEIGHT.min, HEIGHT.base + slices * HEIGHT.perSlice));
+}
+
 /** Props of {@link CategoryChart}. */
 export interface CategoryChartProps {
   /** Category rows of the overview. */
@@ -36,7 +49,7 @@ export function CategoryChart({ rows, onSelect }: CategoryChartProps) {
       };
     });
   return (
-    <figure className="h-64 w-full" aria-label={t('overview.chart')}>
+    <figure className="w-full" style={{ height: chartHeight(data.length) }} aria-label={t('overview.chart')}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
