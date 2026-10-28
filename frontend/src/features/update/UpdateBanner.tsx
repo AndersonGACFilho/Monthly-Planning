@@ -19,7 +19,8 @@ export function UpdateBanner() {
   const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
-    void check();
+    // once per start: the layout can mount more than once, the store outlives it
+    if (useUpdateStore.getState().phase === 'idle') void check();
   }, [check]);
 
   if (!info || dismissed || !SHOWN.has(phase)) return null;

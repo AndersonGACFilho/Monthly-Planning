@@ -47,6 +47,16 @@ describe('UpdateBanner', () => {
     expect(restartToUpdate).toHaveBeenCalledOnce();
   });
 
+  it('POR-16: looks once per start even when the layout mounts again', async () => {
+    vi.mocked(checkForUpdate).mockResolvedValue(release);
+    const { unmount } = render(<UpdateBanner />);
+    await screen.findByText('Nova versão 0.2.0 disponível.');
+    unmount();
+    render(<UpdateBanner />);
+    expect(screen.getByText('Nova versão 0.2.0 disponível.')).toBeInTheDocument();
+    expect(checkForUpdate).toHaveBeenCalledOnce();
+  });
+
   it('POR-16: never forced, the notice can be left for later', async () => {
     vi.mocked(checkForUpdate).mockResolvedValue(release);
     render(<UpdateBanner />);
