@@ -27,10 +27,26 @@ avisa que não consegue gravar; reconecte e abra de novo.
 
 ## Atualizar
 
-1. Feche o app.
-2. Substitua os executáveis (`PlanejamentoMensal.exe`, `PlanejamentoMensal.AppImage`, `start-linux.sh`) e a pasta
-   `backend/` pelos da versão nova. **Não apague `data/`.**
-3. Abra o app: ele faz uma cópia do banco e atualiza a estrutura sozinho.
+O app procura uma versão nova toda vez que abre (sem internet, ele só segue sem avisar). Quando há uma, aparece um
+aviso no topo da janela:
+
+1. **Novidades** mostra o que mudou. **Atualizar** baixa a versão nova e confere se o arquivo chegou inteiro.
+2. **Reiniciar agora** fecha o app, troca os programas e abre a versão nova. Se preferir, feche o app normalmente: a
+   troca acontece na próxima vez que ele abrir.
+3. Ao abrir, o app faz uma cópia do banco em `data/backups/` e atualiza a estrutura sozinho.
+
+Nada é obrigatório: o **X** esconde o aviso até a próxima abertura, e **Ajustes → Atualizações** mostra a versão
+instalada e procura de novo. A pasta `update/` guarda o download e, durante a troca, a versão anterior; ela some
+quando a versão nova abre. **`data/` nunca é alterado pela atualização.**
+
+Se a versão nova não abrir, o app avisa e volta sozinho para a anterior. Se nem isso der certo, feche o app, copie de
+volta para esta pasta o que estiver em `update/previous/` e abra de novo; seus dados estão em `data/` e há cópias em
+`data/backups/`.
+
+**Atualizar à mão** (sem internet, ou vindo da versão 0.1.0, que ainda não se atualiza sozinha): feche o app,
+substitua os executáveis (`PlanejamentoMensal.exe`, `PlanejamentoMensal`, `PlanejamentoMensal.AppImage`,
+`start-linux.sh`) e a pasta `backend/` pelos do zip da versão nova, em
+<https://github.com/AndersonGACFilho/Monthly-Planning/releases>. **Não apague `data/`.**
 
 ---
 
@@ -44,5 +60,9 @@ Windows and Linux.
 - **Backups:** one copy per start in `data/backups/` (latest 10 kept); more in *Settings → Backups and data*. To restore,
   close the app and replace `data/planejamento-mensal.db` with a copy.
 - **Removing the drive:** close the app first.
-- **Updating:** close the app, replace the executables and `backend/`, keep `data/`, open the app again; it backs up and
-  migrates the database by itself.
+- **Updating:** when a new version exists the app shows a notice at the top of the window. *Update* downloads it and
+  checks it; *Restart now* (or simply the next start) installs it, backs up and migrates the database, and goes back
+  to the previous version if the new one does not open. It is never forced, and `data/` is never changed. The
+  `update/` folder holds the download and, during the swap, the previous version (`update/previous/`). By hand
+  (offline, or coming from 0.1.0): close the app, replace the executables and `backend/` with those of the new zip,
+  keep `data/`.

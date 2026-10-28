@@ -63,13 +63,23 @@ into one zip. Users find start, backup, ejecting and update instructions in `LEI
 
 ## Releases
 
-Add the version's notes to `CHANGELOG.md` under `## v<version> — <date>`, then push a tag:
+Set the new version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `frontend/package.json` (the release
+job refuses a tag that differs, see `scripts/check_version.py`), add the version's notes to `CHANGELOG.md` under
+`## v<version> — <date>`, then push a tag:
 
 ```bash
-git tag -a v0.1.0 -m "Planejamento Mensal v0.1.0" && git push origin v0.1.0
+git tag -a v0.2.0 -m "Planejamento Mensal v0.2.0" && git push origin v0.2.0
 ```
 
-CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes.
+CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes and a
+`PlanejamentoMensal-v<version>.zip.sha256` file.
+
+Installed apps find it by themselves (POR-16): at start the shell reads the
+[releases API](https://api.github.com/repos/AndersonGACFilho/Monthly-Planning/releases), offers the newest final
+(not draft, not pre-release) version above its own, downloads the zip into `update/` in the app folder, checks the
+SHA-256 and swaps the files at the next start, rolling back if the new backend does not start. Drafts and
+pre-releases are never offered, so a release can be tested by marking it as a pre-release first. `PM_UPDATE_URL`
+points the shell at another release list (local tests). Development builds check but never install.
 
 ## Real bills
 

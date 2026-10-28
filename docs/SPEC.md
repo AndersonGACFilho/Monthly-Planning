@@ -488,6 +488,7 @@ PlanejamentoMensal/
 
 - POR-14: Atualizar = substituir executáveis e `backend/`; `data/` fica intacto e o Flyway migra o banco ao abrir, com backup antes.
 - POR-15: O CI compila o `app.jar` uma vez e roda em matriz `windows-latest` e `ubuntu-22.04` (a distro mais antiga suportada, para o AppImage funcionar nas mais novas): `jlink` e `tauri build` em cada sistema, juntando tudo num único `PlanejamentoMensal-<version>.zip`.
+- POR-16: O app procura uma versão nova nos releases do GitHub ao abrir (em silêncio se estiver sem internet) e mostra um aviso com as novidades, sem nunca obrigar. Ao aceitar, baixa o zip, confere o SHA-256 publicado com ele e prepara os arquivos em `update/`, dentro da pasta do app; ao reiniciar, troca executáveis, scripts e `backend/` e volta para a versão anterior se a nova não abrir. `data/` não é alterado (o backup do POR-12 e a migração do POR-14 seguem iguais), e o `start-linux.sh` reinicia o app depois da troca.
 
 ## 13. DRY e SRP na prática
 

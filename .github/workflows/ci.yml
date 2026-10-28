@@ -96,11 +96,17 @@ jobs:
           path: frontend/test-results
 
   shell:
-    name: Shell unit tests
-    runs-on: ubuntu-22.04
+    # POR-16: the update moves a running executable and whole folders; Windows locks files differently than Linux
+    name: Shell unit tests (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-22.04, windows-latest]
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
       - name: Linux libraries for Tauri
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev
@@ -226,14 +232,16 @@ jobs:
       - name: Same data folder opened on Linux after Windows (IMP-50, POR-01)
         run: python3 repo/scripts/portable_smoke.py crossos/PlanejamentoMensal --os linux --in-place --expect-marker windows
       - name: Zip
-        # A version tag names the zip after the version (POR-15); other pushes after the commit
+        # A version tag names the zip after the version (POR-15); other pushes after the commit. The SHA-256 file is
+        # what the app checks the download against before installing it (POR-16).
         run: |
           if [ "$GITHUB_REF_TYPE" = tag ]; then NAME="$GITHUB_REF_NAME"; else NAME="${GITHUB_SHA::7}"; fi
           zip -r -9 "PlanejamentoMensal-$NAME.zip" PlanejamentoMensal
+          sha256sum "PlanejamentoMensal-$NAME.zip" > "PlanejamentoMensal-$NAME.zip.sha256"
       - uses: actions/upload-artifact@v5
         with:
           name: PlanejamentoMensal-zip
-          path: PlanejamentoMensal-*.zip
+          path: PlanejamentoMensal-*.zip*
 
   release:
     name: GitHub release (IMP-47)
@@ -247,11 +255,14 @@ jobs:
       - uses: actions/download-artifact@v5
         with:
           name: PlanejamentoMensal-zip
-      - name: Publish the zip with the notes of this version from CHANGELOG.md
+      - name: Tag matches the version built into the app (POR-16)
+        run: python3 scripts/check_version.py "$GITHUB_REF_NAME"
+      - name: Publish the zip and its SHA-256 with the notes of this version from CHANGELOG.md
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           awk -v tag="$GITHUB_REF_NAME" '$0 ~ "^## " tag " " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
           test -s notes.md || { echo "CHANGELOG.md has no section for $GITHUB_REF_NAME"; exit 1; }
           gh release create "$GITHUB_REF_NAME" "PlanejamentoMensal-$GITHUB_REF_NAME.zip" \
+            "PlanejamentoMensal-$GITHUB_REF_NAME.zip.sha256" \
             --title "Planejamento Mensal $GITHUB_REF_NAME" --notes-file notes.md
