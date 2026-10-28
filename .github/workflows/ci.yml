@@ -183,6 +183,17 @@ jobs:
           JRE=$(mktemp -d) && cp -r /media/ssd/PlanejamentoMensal/backend/runtime-linux/. "$JRE"
           python scripts/portable_smoke.py /media/ssd/PlanejamentoMensal --os linux --in-place --java "$JRE/bin/java"
           sudo umount /media/ssd
+      - name: Data folder written on Windows for the Linux run (IMP-50, POR-01)
+        if: matrix.os == 'windows'
+        shell: bash
+        run: |
+          mkdir -p crossos && cp -r dist/PlanejamentoMensal crossos/
+          python scripts/portable_smoke.py crossos/PlanejamentoMensal --os windows --in-place --write-marker windows
+      - uses: actions/upload-artifact@v5
+        if: matrix.os == 'windows'
+        with:
+          name: data-windows
+          path: crossos/PlanejamentoMensal/data
       - uses: actions/upload-artifact@v5
         with:
           name: portable-${{ matrix.os }}
@@ -193,6 +204,9 @@ jobs:
     needs: package
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v5
+        with:
+          path: repo
       - uses: actions/download-artifact@v5
         with:
           name: portable-linux
@@ -203,6 +217,14 @@ jobs:
           path: PlanejamentoMensal
       - name: Restore execute bits lost by artifacts
         run: chmod +x PlanejamentoMensal/PlanejamentoMensal PlanejamentoMensal/backend/runtime-linux/bin/*
+      - name: Copy for the cross-OS data check
+        run: mkdir -p crossos && cp -r PlanejamentoMensal crossos/
+      - uses: actions/download-artifact@v5
+        with:
+          name: data-windows
+          path: crossos/PlanejamentoMensal/data
+      - name: Same data folder opened on Linux after Windows (IMP-50, POR-01)
+        run: python3 repo/scripts/portable_smoke.py crossos/PlanejamentoMensal --os linux --in-place --expect-marker windows
       - name: Zip
         run: zip -r -9 "PlanejamentoMensal-${GITHUB_SHA::7}.zip" PlanejamentoMensal
       - uses: actions/upload-artifact@v5

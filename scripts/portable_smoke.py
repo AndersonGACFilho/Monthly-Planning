@@ -9,8 +9,11 @@ Usage: python scripts/portable_smoke.py <portable folder> [--os linux|windows] [
 
 --in-place runs the folder where it is (such as an exFAT drive mounted noexec, POR-02) instead of a copy;
 --java runs the backend with another java, as start-linux.sh does with its temporary copy (POR-09).
+--write-marker <text> saves <text> in the data/ folder (a setting) and --expect-marker <text> checks it is there:
+with --in-place they show that the same data/ opens on Windows and then on Linux (IMP-50, POR-01).
 """
 import os
+import json
 import secrets
 import shutil
 import socket
@@ -39,7 +42,20 @@ def call(port: int, method: str, path: str, token: str | None = None) -> int:
         return e.code
 
 
-def main(source: Path, os_name: str, in_place: bool = False, java_override: Path | None = None) -> None:
+MARKER_SETTING = "workbook-suffix"
+
+
+def call_json(port: int, method: str, path: str, token: str, body: dict | None = None) -> dict:
+    data = json.dumps(body).encode() if body is not None else None
+    request = urllib.request.Request(f"http://127.0.0.1:{port}{path}", data=data, method=method)
+    request.add_header("X-Session-Token", token)
+    request.add_header("Content-Type", "application/json")
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return json.loads(response.read())
+
+
+def main(source: Path, os_name: str, in_place: bool = False, java_override: Path | None = None,
+         write_marker: str | None = None, expect_marker: str | None = None) -> None:
     # ignore_cleanup_errors: a failed run must report its own error, not a file Windows still holds
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as work:
         home = source.resolve() if in_place else Path(work) / "copied" / "PlanejamentoMensal"
@@ -98,6 +114,14 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
         checks = {
             "API without token is refused": call(port, "GET", "/api") == 401,
             "API with token answers": call(port, "GET", "/api", token) == 200,
+        }
+        if expect_marker is not None:
+            found = call_json(port, "GET", "/api/settings", token).get(MARKER_SETTING)
+            checks[f"data written on the other OS is read (found {found!r})"] = found == expect_marker
+        if write_marker is not None:
+            saved = call_json(port, "PATCH", "/api/settings", token, {MARKER_SETTING: write_marker}).get(MARKER_SETTING)
+            checks["marker saved in data/"] = saved == write_marker
+        checks |= {
             "shutdown accepted": call(port, "POST", "/actuator/shutdown", token) == 200,
         }
         try:
@@ -134,4 +158,5 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
 if __name__ == "__main__":
     os_arg = sys.argv[sys.argv.index("--os") + 1] if "--os" in sys.argv else ("windows" if os.name == "nt" else "linux")
     java_arg = Path(sys.argv[sys.argv.index("--java") + 1]) if "--java" in sys.argv else None
-    main(Path(sys.argv[1]), os_arg, "--in-place" in sys.argv, java_arg)
+    option = lambda name: sys.argv[sys.argv.index(name) + 1] if name in sys.argv else None
+    main(Path(sys.argv[1]), os_arg, "--in-place" in sys.argv, java_arg, option("--write-marker"), option("--expect-marker"))
