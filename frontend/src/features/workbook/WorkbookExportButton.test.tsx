@@ -25,7 +25,7 @@ describe('WorkbookExportButton', () => {
       http.get(`${base}/api/summaries/2026-11/workbook-options`, () => HttpResponse.json({ defaultMode: 'COMPATIBLE' })),
       http.get(`${base}/api/summaries/2026-11/workbook`, ({ request }) => {
         query = new URL(request.url).searchParams;
-        return new HttpResponse(new Blob(['xlsx']), {
+        return new HttpResponse('xlsx', {
           headers: { 'Content-Disposition': "attachment; filename*=UTF-8''2026%20-%2011%20-%20NOVEMBRO.xlsx" },
         });
       }),

@@ -61,7 +61,7 @@ describe('SettingsPage', () => {
       }),
       http.get(`${base}/api/data-export`, ({ request }) => {
         exported = new URL(request.url).searchParams.get('format') ?? '';
-        return new HttpResponse(new Blob(['{}']), { headers: { 'Content-Disposition': 'attachment; filename="dados.json"' } });
+        return new HttpResponse('{}', { headers: { 'Content-Disposition': 'attachment; filename="dados.json"' } });
       }),
     );
     globalThis.URL.createObjectURL = () => 'blob:x';

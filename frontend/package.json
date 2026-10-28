@@ -20,7 +20,8 @@
     "pretypecheck": "npm run api:generate",
     "pretest": "npm run api:generate",
     "i18n:build": "node scripts/build-locales.mjs",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "pree2e": "npm run api:generate"
   },
   "dependencies": {
     "@hookform/resolvers": "6.0.0",
