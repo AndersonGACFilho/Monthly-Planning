@@ -126,6 +126,7 @@ export function ReviewQueuePage() {
       {items.length === 0 ? (
         <p className="panel text-(--color-text-muted)">{t('review.empty')}</p>
       ) : (
+        <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">{t('review.keyboardHint')}</caption>
           <thead>
@@ -144,8 +145,7 @@ export function ReviewQueuePage() {
               <th className="px-2 py-1 text-right">{t('entry.amount')}</th>
               <th className="px-2 py-1">{t('review.member')}</th>
               <th className="px-2 py-1">{t('review.category')}</th>
-              <th className="hidden px-2 py-1 wide:table-cell">{t('review.note')}</th>
-              <th className="px-2 py-1" aria-label={t('common.actions')} />
+              <th className="sticky right-0 bg-(--color-surface) px-2 py-1" aria-label={t('common.actions')} />
             </tr>
           </thead>
           <tbody>
@@ -170,6 +170,7 @@ export function ReviewQueuePage() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
       <p className="text-xs text-(--color-text-muted)">{t('review.keyboardHint')}</p>
     </div>

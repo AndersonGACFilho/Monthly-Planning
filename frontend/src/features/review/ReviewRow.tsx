@@ -101,6 +101,13 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
         </span>
         {item.unknownFinal && <span className="block text-xs text-amber-600">{t('import.unknownFinal')}</span>}
         {item.refundOfPurchaseId && <span className="block text-xs text-emerald-600">{t('review.refund')}</span>}
+        <input
+          className="input mt-1 w-full max-w-64 py-0.5 text-xs"
+          aria-label={t('review.note')}
+          placeholder={t('review.note')}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
         {item.subscriptionSuggested && (
           <label className="mt-1 flex items-center gap-1 text-xs text-(--color-accent)">
             <input type="checkbox" checked={subscription} onChange={(e) => setSubscription(e.target.checked)} />
@@ -112,16 +119,14 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
       <td className="px-2 py-2 text-right">
         <MoneyText value={item.amount} />
       </td>
-      <td className="px-2 py-2">
+      <td className="px-2 py-2 [&_select]:max-w-36">
         <SplitEditor idPrefix={`review-${item.purchaseId}`} value={splits} onChange={setSplits} memberPicker={MemberPickerWithAdd} />
       </td>
-      <td className="px-2 py-2">
+      <td className="px-2 py-2 [&_select]:max-w-36">
         <CategoryPickerWithAdd aria-label={t('review.category')} allowEmpty value={categoryId} onChange={setCategoryId} />
       </td>
-      <td className="hidden px-2 py-2 wide:table-cell">
-        <input className="input w-full" aria-label={t('review.note')} value={note} onChange={(e) => setNote(e.target.value)} />
-      </td>
-      <td className="px-2 py-2">
+      {/* Kept in view at the right edge even when the table scrolls sideways */}
+      <td className="sticky right-0 bg-(--color-surface) px-2 py-2 shadow-[-6px_0_6px_-6px_rgba(0,0,0,0.25)]">
         <button type="button" className="button button-primary" onClick={() => void validate()}>
           {t('review.validate')}
         </button>

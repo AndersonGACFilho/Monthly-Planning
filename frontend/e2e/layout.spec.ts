@@ -44,3 +44,13 @@ for (const path of ['/deliveries', '/entries', '/review-queue', '/registry']) {
     expect(Math.round(box.navBottom)).toBe(box.height);
   });
 }
+
+test('RF-76, IMP-45: the validate button of the review queue is never cut at the right edge', async ({ page }, info) => {
+  const t = texts(info);
+  await page.goto('/review-queue');
+  const button = page.locator('main tbody tr').first().getByRole('button', { name: t('review.validate'), exact: true });
+  await expect(button).toBeVisible();
+  const right = await button.evaluate((el) => el.getBoundingClientRect().right);
+  const mainRight = await page.locator('main').evaluate((el) => el.getBoundingClientRect().right);
+  expect(right).toBeLessThanOrEqual(mainRight);
+});
