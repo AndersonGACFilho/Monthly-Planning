@@ -167,7 +167,18 @@ jobs:
           sudo apt-get install -y exfatprogs
           truncate -s 1G exfat.img && mkfs.exfat exfat.img
           sudo mkdir -p /media/ssd
-          sudo mount -o loop,noexec,uid=$(id -u),gid=$(id -g) exfat.img /media/ssd
+          # Runner kernels may ship exFAT as a module, in the extra modules package or not at all: use the kernel
+          # driver when it loads, else the FUSE driver. Both mount with noexec, which is what this step checks.
+          sudo modprobe exfat || { sudo apt-get install -y "linux-modules-extra-$(uname -r)" && sudo modprobe exfat; } || true
+          if grep -qw exfat /proc/filesystems; then
+            sudo mount -o loop,noexec,uid=$(id -u),gid=$(id -g) exfat.img /media/ssd
+          else
+            sudo apt-get install -y exfat-fuse
+            sudo mount.exfat-fuse -o noexec,uid=$(id -u),gid=$(id -g),allow_other "$(sudo losetup --show -f exfat.img)" /media/ssd
+          fi
+          findmnt /media/ssd
+          ! cp /bin/true /media/ssd/probe 2>/dev/null || ! /media/ssd/probe || { echo "/media/ssd is not noexec"; exit 1; }
+          rm -f /media/ssd/probe
           cp -r dist/PlanejamentoMensal /media/ssd/
           JRE=$(mktemp -d) && cp -r /media/ssd/PlanejamentoMensal/backend/runtime-linux/. "$JRE"
           python scripts/portable_smoke.py /media/ssd/PlanejamentoMensal --os linux --in-place --java "$JRE/bin/java"
