@@ -25,3 +25,22 @@ test('IMP-45, UI-04: the entry details panel only opens on wide windows', async 
     await expect(details).toBeHidden();
   }
 });
+
+for (const path of ['/deliveries', '/entries', '/review-queue', '/registry']) {
+  test(`RNF-06, IMP-45: ${path} scrolls only the content; the menu reaches the bottom of the window`, async ({ page }) => {
+    await page.goto(path);
+    await page.waitForLoadState('networkidle');
+    const box = await page.evaluate(() => {
+      window.scrollTo(0, 1000);
+      return {
+        scrolled: window.scrollY,
+        overflow: document.documentElement.scrollHeight - document.documentElement.clientHeight,
+        navBottom: document.querySelector('nav')!.getBoundingClientRect().bottom,
+        height: window.innerHeight,
+      };
+    });
+    expect(box.scrolled).toBe(0);
+    expect(box.overflow).toBeLessThanOrEqual(0);
+    expect(Math.round(box.navBottom)).toBe(box.height);
+  });
+}

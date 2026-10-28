@@ -21,10 +21,12 @@ export function AppLayout() {
   const { t } = useTranslation();
   useStartup();
   return (
-    <div className="flex h-full">
+    // The frame has the window height and never scrolls; only the content (and, in very short windows, the menu)
+    // scrolls, so the menu always reaches the bottom of the window
+    <div className="flex h-full overflow-hidden">
       <nav
         aria-label={t('app.menu')}
-        className="flex w-14 shrink-0 flex-col gap-1 border-r border-(--color-border) bg-(--color-surface-muted) p-2 wide:w-60"
+        className="flex w-14 shrink-0 flex-col gap-1 overflow-y-auto border-r border-(--color-border) bg-(--color-surface-muted) p-2 wide:w-60"
       >
         <span className="mb-3 hidden px-2 text-sm font-semibold wide:block">{t('app.name')}</span>
         {MAIN_TABS.map((item) => (
@@ -35,7 +37,7 @@ export function AppLayout() {
           <SidebarLink key={item.path} item={item} />
         ))}
       </nav>
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-(--color-border) px-4 py-2">
           <span />
           <BillingPeriodSelector />
@@ -43,7 +45,7 @@ export function AppLayout() {
             <WorkbookExportButton />
           </span>
         </header>
-        <main className="min-w-0 flex-1 overflow-auto p-4">
+        <main className="relative min-h-0 min-w-0 flex-1 overflow-auto p-4">
           <Outlet />
         </main>
       </div>
