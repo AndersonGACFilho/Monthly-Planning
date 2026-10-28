@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 22/23 (total 296/298)
+Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 22/24 (total 296/299)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -327,7 +327,8 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] IMP-48 — Recharts/TanStack Virtual/Tailwind accessibility pass on main screens (keyboard flow of UI section) (origin §14) · frontend · accept: keyboard-only flows work · a11y spec · after: IMP-33, UI-04 · done (2e65218; axe + keyboard)
 - [x] IMP-49 — Performance check of the whole import → preview → confirm path on 300 lines (origin RNF-03) · test · accept: < 5 s end-to-end · ImportPerformanceIT · after: RF-72 · done (bc79b07; about 3.6 s)
 - [x] IMP-50 — Data folder smoke on second OS: same `data/` opened on Windows then Linux (origin POR-01) · test · accept: identical data · portable smoke workflow · after: IMP-42 · done (CI run 40694893300 (v0.1.0): marker written on Windows read back on Linux)
-- [ ] POR-16 — In-app update: check GitHub releases at start, notice with notes, download + SHA-256 check into `update/staged/`, swap on restart with journal and rollback, `start-linux.sh` restart loop · shell/frontend/ci · accept: POR-16 · update::* unit tests, flow_tests.rs, UpdateBanner.test.tsx, UpdateSettings.test.tsx, portable_smoke.py launcher restart · after: POR-14, POR-15, POR-09 · (in progress: implemented and tested locally; needs the Windows shell tests in CI and a first release with a `.sha256` asset)
+- [ ] POR-16 — In-app update: check GitHub releases at start, notice with notes, download + SHA-256 check into `update/staged/`, swap on restart with journal and rollback, `start-linux.sh` restart loop · shell/frontend/ci · accept: POR-16 · update::* unit tests, flow_tests.rs, UpdateBanner.test.tsx, UpdateSettings.test.tsx, portable_smoke.py launcher restart · after: POR-14, POR-15, POR-09 · (in progress: implemented and tested locally; needs the Windows shell tests in CI and a first release with a `.sha256` asset, which POR-17 publishes on the first green commit on main)
+- [ ] POR-17 — Release for every green commit on main: `VERSION` + commit count, `version.py` injects it into the build, `release_notes.py` lists commits since the previous tag, release job tags once per version · ci · accept: POR-17 · test_release_scripts.py · after: POR-16, IMP-47 · (in progress: scripts tested locally; needs a push to main)
 - [x] IMP-51 — Documentation for users: README in the portable folder (start, backup, eject, update) (origin POR-09, POR-13, POR-14) · docs · accept: README shipped in zip · review · after: IMP-42 · done (47ae76a)
 
 ## Open questions
@@ -400,6 +401,7 @@ Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11
 - 2026-10-27: XLS-09/Q11: Excel 365 mode writes the model's `SORT(UNIQUE(FILTER(...)))` card list as a dynamic array and builds a new POI pivot table (report filter Cota, rows Categoria, sum of Valor, sorted by value descending, refreshed on open; no member preselected). Compatible mode writes a sorted card list with one `SUMIF` per row, a `SUMIFS` table with the member in a drop-down (H1, MAIN member by default) and defines the totals with plain ranges instead of structured references. The summary's year goes to D1 and the title to B2 (C2 left empty).
 - 2026-10-27: XLS-06: member sheets are named after the member in capitals and lay out one block per month (default 2 before, current, 1 after) alternating left and right columns; future months show projected installments.
 - 2026-10-28: In-app updates (POR-16) are a custom updater in the shell, not `tauri-plugin-updater`: that plugin replaces only the shell binary, while a portable update must also swap `backend/app.jar`, both JREs and the scripts, and the folder is shared by Windows and Linux, so the whole release zip is installed for both systems. Integrity is the SHA-256 published next to the zip, checked over HTTPS (user choice; no signing key to manage). The swap runs at the next start, before the window and the backend, with only renames inside the app folder; `update/state.json` makes an interrupted swap roll back, and a new version whose backend does not start is rolled back too. Development builds check but never install.
+- 2026-10-28: Releases (POR-17) are cut by CI for every green commit on main. The version is `<VERSION>.<first-parent commits since VERSION changed>` (user choice over "previous tag + 1", which needs queued runs and can skip commits): one version per commit, stable across re-runs, no commit back to main. The repository keeps `0.0.0` in the build files; `scripts/version.py apply` writes the computed version in CI. Release notes are the commit subjects since the previous tag; the CHANGELOG gate is gone.
 
 ## Iteration log
 

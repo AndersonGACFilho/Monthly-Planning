@@ -1,6 +1,6 @@
 [package]
 name = "planejamento-mensal"
-version = "0.1.0"
+version = "0.0.0" # set by CI from VERSION, see scripts/version.py
 description = "Planejamento Mensal desktop shell"
 edition = "2021"
 rust-version = "1.80"

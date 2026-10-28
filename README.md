@@ -63,16 +63,20 @@ into one zip. Users find start, backup, ejecting and update instructions in `LEI
 
 ## Releases
 
-Set the new version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `frontend/package.json` (the release
-job refuses a tag that differs, see `scripts/check_version.py`), add the version's notes to `CHANGELOG.md` under
-`## v<version> — <date>`, then push a tag:
+Every commit pushed to `main` is a release once all CI jobs pass on it (POR-17). Its version is
+`<VERSION>.<patch>`: `VERSION` holds the major and minor, and the patch counts the commits on `main` since `VERSION`
+last changed, so each commit has exactly one version and a re-run neither changes nor duplicates it. To start a
+new minor or major, change `VERSION` (for example to `0.3`); that commit is `v0.3.0`.
 
-```bash
-git tag -a v0.2.0 -m "Planejamento Mensal v0.2.0" && git push origin v0.2.0
-```
+`scripts/version.py compute` gives the version and `scripts/version.py apply <version>` writes it into
+`tauri.conf.json`, `Cargo.toml`, `package.json`, `package-lock.json` and `pom.xml` in the CI working tree; the
+repository keeps `0.0.0` there and nothing is committed back. Branches and pull requests build
+`<version>-dev.<commit>`, a pre-release the app never offers.
 
-CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes and a
-`PlanejamentoMensal-v<version>.zip.sha256` file.
+CI builds the portable zip on Windows and Linux, tags the commit `v<version>` and publishes the zip with a
+`PlanejamentoMensal-v<version>.zip.sha256` file. The release notes are the subjects of the commits since the
+previous release (`scripts/release_notes.py`), and the app shows them in its update notice, so write commit
+subjects for the people who use the app.
 
 Installed apps find it by themselves (POR-16): at start the shell reads the
 [releases API](https://api.github.com/repos/AndersonGACFilho/Monthly-Planning/releases), offers the newest final

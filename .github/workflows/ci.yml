@@ -1,5 +1,6 @@
 # TST-07: tests, Javadoc and coverage on every push; PRs merge only when green.
 # POR-15: app.jar built once; jlink + tauri build per OS; one portable zip for Windows and Linux.
+# POR-17: every green commit on main is released as v<VERSION>.<commits since VERSION changed>.
 name: CI
 
 on:
@@ -10,18 +11,36 @@ permissions:
   contents: read
 
 jobs:
+  version:
+    name: Version (POR-17)
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.compute.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - id: compute
+        # Only main is released; other refs build a pre-release the app never offers
+        run: |
+          if [ "$GITHUB_REF" = refs/heads/main ]; then FLAG=; else FLAG=--dev; fi
+          echo "version=$(python3 scripts/version.py compute $FLAG)" >> "$GITHUB_OUTPUT"
+
   plan:
-    name: Plan coverage (AGT-08)
+    name: Plan coverage and release scripts (AGT-08, POR-17)
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
       - run: python3 scripts/check_plan_coverage.py
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
   backend:
     name: Backend (tests, Javadoc, coverage)
+    needs: version
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
+      - run: python3 scripts/version.py apply ${{ needs.version.outputs.version }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -119,7 +138,7 @@ jobs:
 
   package:
     name: Portable package (${{ matrix.os }})
-    needs: [backend, frontend, shell]
+    needs: [version, backend, frontend, shell]
     strategy:
       fail-fast: false
       matrix:
@@ -133,6 +152,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v5
+      - run: python scripts/version.py apply ${{ needs.version.outputs.version }}
       - uses: actions/download-artifact@v5
         with:
           name: app-jar
@@ -207,7 +227,7 @@ jobs:
 
   bundle:
     name: Single zip for Windows and Linux (POR-15)
-    needs: package
+    needs: [version, package]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
@@ -232,37 +252,40 @@ jobs:
       - name: Same data folder opened on Linux after Windows (IMP-50, POR-01)
         run: python3 repo/scripts/portable_smoke.py crossos/PlanejamentoMensal --os linux --in-place --expect-marker windows
       - name: Zip
-        # A version tag names the zip after the version (POR-15); other pushes after the commit. The SHA-256 file is
-        # what the app checks the download against before installing it (POR-16).
+        # Named after the version (POR-15, POR-17). The SHA-256 file is what the app checks the download against
+        # before installing it (POR-16).
+        env:
+          NAME: PlanejamentoMensal-v${{ needs.version.outputs.version }}.zip
         run: |
-          if [ "$GITHUB_REF_TYPE" = tag ]; then NAME="$GITHUB_REF_NAME"; else NAME="${GITHUB_SHA::7}"; fi
-          zip -r -9 "PlanejamentoMensal-$NAME.zip" PlanejamentoMensal
-          sha256sum "PlanejamentoMensal-$NAME.zip" > "PlanejamentoMensal-$NAME.zip.sha256"
+          zip -r -9 "$NAME" PlanejamentoMensal
+          sha256sum "$NAME" > "$NAME.sha256"
       - uses: actions/upload-artifact@v5
         with:
           name: PlanejamentoMensal-zip
           path: PlanejamentoMensal-*.zip*
 
   release:
-    name: GitHub release (IMP-47)
-    needs: bundle
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Tags only a commit on main whose every check passed; a re-run finds the release and leaves it as it is
+    name: GitHub release (IMP-47, POR-17)
+    needs: [version, plan, e2e, bundle]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency: release-${{ github.sha }}
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    env:
+      TAG: v${{ needs.version.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/download-artifact@v5
         with:
           name: PlanejamentoMensal-zip
-      - name: Tag matches the version built into the app (POR-16)
-        run: python3 scripts/check_version.py "$GITHUB_REF_NAME"
-      - name: Publish the zip and its SHA-256 with the notes of this version from CHANGELOG.md
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Publish the zip and its SHA-256 with the commits since the previous release
         run: |
-          awk -v tag="$GITHUB_REF_NAME" '$0 ~ "^## " tag " " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
-          test -s notes.md || { echo "CHANGELOG.md has no section for $GITHUB_REF_NAME"; exit 1; }
-          gh release create "$GITHUB_REF_NAME" "PlanejamentoMensal-$GITHUB_REF_NAME.zip" \
-            "PlanejamentoMensal-$GITHUB_REF_NAME.zip.sha256" \
-            --title "Planejamento Mensal $GITHUB_REF_NAME" --notes-file notes.md
+          if gh release view "$TAG" > /dev/null 2>&1; then echo "$TAG is already released"; exit 0; fi
+          python3 scripts/release_notes.py > notes.md
+          gh release create "$TAG" "PlanejamentoMensal-$TAG.zip" "PlanejamentoMensal-$TAG.zip.sha256" \
+            --target "$GITHUB_SHA" --title "Planejamento Mensal $TAG" --notes-file notes.md

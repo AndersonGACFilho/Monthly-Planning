@@ -1,7 +1,8 @@
 # Changelog
 
-Versions follow the `v<major>.<minor>.<patch>` tags. Pushing a tag builds the portable zip in CI and publishes it as
-a GitHub release with the notes of that version below (IMP-47).
+Versions follow the `v<major>.<minor>.<patch>` tags. Since in-app updates, every green commit on `main` is released
+with the commits since the previous release as notes (POR-17, see README "Releases"); this file keeps the
+milestones.
 
 ## Unreleased
 
@@ -9,6 +10,8 @@ a GitHub release with the notes of that version below (IMP-47).
   request it downloads the release, checks its SHA-256, and installs it when the app restarts, going back to the
   previous version if the new one does not open. `data/` is kept as it is. This is the last update installed by
   hand: replace the files once as described in `LEIA-ME.md`, and the next ones come from inside the app.
+- **A release for every commit on main**: versions `v0.2.<n>` are computed from `VERSION` and the commit count, and
+  each green commit is tagged and published with its commit list as notes.
 
 ## v0.1.0 — 2026-10-28
 
