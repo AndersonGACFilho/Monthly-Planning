@@ -154,12 +154,12 @@ class BillEntryControllerIT {
     }
 
     @Test
-    @DisplayName("RF-44, RF-45: replacing a manual purchase moves its installments and keeps the member split")
+    @DisplayName("RF-44, RF-45: replacing a manual purchase moves its installments and keeps the split and the note")
     void replaceManualEntry() throws Exception {
         String self = createManual("Geladeira", 4);
         mockMvc.perform(authorized(patch(self)).contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"splits\":[{\"memberId\":%d,\"percentage\":50},{\"memberId\":%d,\"percentage\":50}]}"
-                                .formatted(f.main, f.thirdParty)))
+                        .content(("{\"splits\":[{\"memberId\":%d,\"percentage\":50},{\"memberId\":%d,\"percentage\":50}],"
+                                + "\"note\":\"Entrega em casa\"}").formatted(f.main, f.thirdParty)))
                 .andExpect(status().isOk());
         var entry = mockMvc.perform(authorized(get(self))).andReturn();
         mockMvc.perform(authorized(put(self + "/purchase")).contentType(MediaType.APPLICATION_JSON)
@@ -171,7 +171,8 @@ class BillEntryControllerIT {
                 .andExpect(jsonPath("$.billingPeriod").value("2026-12"))
                 .andExpect(jsonPath("$.installment").value("01/02"))
                 .andExpect(jsonPath("$.amount").value(500.00))
-                .andExpect(jsonPath("$.splits.length()").value(2));
+                .andExpect(jsonPath("$.splits.length()").value(2))
+                .andExpect(jsonPath("$.note").value("Entrega em casa"));
         mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2026-11&q=Geladeira")))
                 .andExpect(jsonPath("$.page.totalElements").value(0));
         mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2027-01&q=Geladeira")))

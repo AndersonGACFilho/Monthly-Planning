@@ -84,7 +84,7 @@ public class ManualEntryUseCase {
 
     /**
      * Replaces the purchase of a manual entry, moving its installments to the bills the new data gives; without a
-     * member the current split is kept.
+     * member the current split is kept, and without a note the current note.
      *
      * @param entryId         any entry of the purchase
      * @param purchase        new data
@@ -95,8 +95,9 @@ public class ManualEntryUseCase {
         Purchase current = editable(entryId, expectedVersion);
         List<PurchaseSplit> splits = current.splits().stream()
                 .map(s -> new PurchaseSplit(s.memberId(), s.percentage(), s.amount())).toList();
+        String note = purchase.note() != null ? purchase.note() : current.note();
         remove(current);
-        EntryRow created = create(purchase);
+        EntryRow created = create(purchase.withNote(note));
         if (purchase.memberId() == null) {
             Purchase replaced = queries.entry(created.entryId()).purchase();
             replaced.classify(replaced.categoryId(), splits, replaced.note(), true);

@@ -20,4 +20,15 @@ import java.time.LocalDate;
  */
 public record ManualPurchase(long cardId, LocalDate purchaseDate, String description, Money installmentAmount,
         int installmentCount, Long memberId, Long categoryId, String note, BillingPeriod billingPeriod) {
+
+    /**
+     * Returns the same purchase with another note.
+     *
+     * @param newNote note, or {@code null}
+     * @return the purchase
+     */
+    public ManualPurchase withNote(String newNote) {
+        return new ManualPurchase(cardId, purchaseDate, description, installmentAmount, installmentCount, memberId,
+                categoryId, newNote, billingPeriod);
+    }
 }
