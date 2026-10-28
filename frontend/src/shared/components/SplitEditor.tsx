@@ -61,9 +61,12 @@ export function SplitEditor({ value, onChange, total, idPrefix, memberPicker: Pi
                   <span aria-hidden>%</span>
                 </>
               ) : (
-                <span className="w-28">
-                  <MoneyInput aria-label={t('review.shareAmount')} value={share.value} onChange={(amount) => update(index, { value: amount ?? 0 })} />
-                </span>
+                <MoneyInput
+                  className="w-24"
+                  aria-label={t('review.shareAmount')}
+                  value={share.value}
+                  onChange={(amount) => update(index, { value: amount ?? 0 })}
+                />
               )}
               <button
                 type="button"

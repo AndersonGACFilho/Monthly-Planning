@@ -14,6 +14,8 @@ export interface MoneyInputProps {
   id?: string;
   /** Allow negative amounts (credits). */
   allowNegative?: boolean;
+  /** Extra classes, such as a width. */
+  className?: string;
 }
 
 /**
@@ -23,7 +25,7 @@ export interface MoneyInputProps {
  * @param props - {@link MoneyInputProps}
  * @returns the input
  */
-export function MoneyInput({ value, onChange, id, allowNegative = false, ...rest }: MoneyInputProps) {
+export function MoneyInput({ value, onChange, id, allowNegative = false, className = '', ...rest }: MoneyInputProps) {
   const { i18n } = useTranslation();
   const [draft, setDraft] = useState<string | null>(null);
   const formatted =
@@ -35,7 +37,7 @@ export function MoneyInput({ value, onChange, id, allowNegative = false, ...rest
     <input
       id={id}
       inputMode="decimal"
-      className="input text-right tabular-nums"
+      className={`input text-right tabular-nums ${className}`}
       value={draft ?? formatted}
       aria-label={rest['aria-label']}
       onFocus={() => setDraft(formatted)}
