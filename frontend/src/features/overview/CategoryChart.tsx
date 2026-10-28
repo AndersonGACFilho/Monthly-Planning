@@ -66,7 +66,7 @@ export function CategoryChart({ rows, onSelect }: CategoryChartProps) {
             }}
           >
             {data.map((slice) => (
-              <Cell key={slice.name} fill={slice.color} />
+              <Cell key={slice.row.categoryId ?? 'none'} fill={slice.color} />
             ))}
           </Pie>
           <Tooltip formatter={(value) => formatMoney(Number(value))} />
