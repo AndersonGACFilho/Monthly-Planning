@@ -203,4 +203,29 @@ describe('EntriesPage', () => {
     await waitFor(() => expect(deleted).toBe(true));
     confirm.mockRestore();
   });
+
+  it('RF-26, RF-43: the details panel splits the purchase by amount and saves it', async () => {
+    let patched: { body: unknown; ifMatch: string | null } | undefined;
+    server.use(
+      http.get(`${base}/api/members`, () =>
+        HttpResponse.json({
+          _embedded: { members: [{ id: 1, code: 'AB', name: 'Casa', active: true }, { id: 2, code: 'M', name: 'Mãe', active: true }] },
+        }),
+      ),
+      http.patch(`${base}/api/bill-entries/1`, async ({ request }) => {
+        patched = { body: await request.json(), ifMatch: request.headers.get('If-Match') };
+        return HttpResponse.json(entry(1, 'PADARIA', 12.5));
+      }),
+    );
+    renderWithProviders(<EntriesPage />);
+    fireEvent.click(within((await screen.findByText('PADARIA')).closest('tr')!).getByText('-'));
+    const split = within(screen.getByRole('region', { name: 'Rateio' }));
+    fireEvent.click(split.getByRole('button', { name: /Dividir$/ }));
+    await split.findAllByRole('option', { name: 'M — Mãe' });
+    fireEvent.change(split.getAllByLabelText('Conta')[1]!, { target: { value: '2' } });
+    fireEvent.click(split.getByRole('button', { name: 'Dividir por valor' }));
+    fireEvent.click(split.getByRole('button', { name: 'Salvar rateio' }));
+    await waitFor(() => expect(patched?.ifMatch).toBe('"0"'));
+    expect(patched?.body).toMatchObject({ splits: [{ memberId: 1, amount: 6.25 }, { memberId: 2, amount: 6.25 }] });
+  });
 });

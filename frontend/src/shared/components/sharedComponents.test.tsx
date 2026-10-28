@@ -13,7 +13,8 @@ import { MemberPicker } from './MemberPicker';
 import { MoneyText } from './MoneyText';
 import { PlaceholderPage } from './PlaceholderPage';
 import { ActiveToggle, DeleteButton } from './ResourceActions';
-import { type SplitShare, SplitEditor } from './SplitEditor';
+import type { Split } from '../split';
+import { SplitEditor } from './SplitEditor';
 import { SummaryCard } from './SummaryCard';
 import { NOTICE_TIMEOUT, Toaster } from './Toaster';
 
@@ -82,17 +83,37 @@ describe('shared components', () => {
 
   it('RF-26, IMP-41: SplitEditor splits evenly and warns when shares do not add up to 100%', async () => {
     function Harness() {
-      const [value, setValue] = useState<SplitShare[]>([{ memberId: 1, percentage: 100 }]);
-      return <SplitEditor value={value} onChange={setValue} idPrefix="s" />;
+      const [value, setValue] = useState<Split>({ mode: 'percentage', shares: [{ memberId: 1, value: 100 }] });
+      return <SplitEditor value={value} onChange={setValue} total={100} idPrefix="s" />;
     }
     renderWithProviders(<Harness />);
-    fireEvent.click(screen.getByRole('button', { name: /Dividir/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Dividir$/ }));
     const inputs = await screen.findAllByLabelText('Percentual');
     expect(inputs.map((i) => (i as HTMLInputElement).value)).toEqual(['50', '50']);
     fireEvent.change(inputs[0]!, { target: { value: '30' } });
-    expect(screen.getByRole('alert')).toHaveTextContent('80%');
+    expect(screen.getByRole('alert')).toHaveTextContent('Faltam 20,0% no rateio');
     fireEvent.click(screen.getAllByRole('button', { name: 'Remover conta do rateio' })[1]!);
     expect(screen.queryByLabelText('Percentual')).not.toBeInTheDocument();
+  });
+
+  it('RF-26: SplitEditor switches to amounts, keeping each part, and says what is over', async () => {
+    let last: Split | undefined;
+    function Harness() {
+      const [value, setValue] = useState<Split>({
+        mode: 'percentage',
+        shares: [{ memberId: 1, value: 30 }, { memberId: 2, value: 70 }],
+      });
+      last = value;
+      return <SplitEditor value={value} onChange={setValue} total={200} idPrefix="s" />;
+    }
+    renderWithProviders(<Harness />);
+    expect(screen.getByRole('button', { name: 'Dividir por percentual' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Dividir por valor' }));
+    expect(last).toEqual({ mode: 'amount', shares: [{ memberId: 1, value: 60 }, { memberId: 2, value: 140 }] });
+    const amounts = screen.getAllByLabelText('Valor da conta');
+    fireEvent.focus(amounts[1]!);
+    fireEvent.change(amounts[1]!, { target: { value: '150,00' } });
+    expect(screen.getByRole('alert').textContent?.replace(/\u00a0/g, ' ')).toBe('O rateio passa R$ 10,00 do total');
   });
 
   it('API-09, IMP-41: action buttons appear only with their links and call them', async () => {

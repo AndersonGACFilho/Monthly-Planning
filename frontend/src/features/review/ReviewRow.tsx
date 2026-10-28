@@ -6,8 +6,9 @@ import type { BillEntryModel, ReviewItemModel } from '../../api/generated/model'
 import { ifMatch } from '../../api/requestOptions';
 import { reportError } from '../../app/queryClient';
 import { MoneyText } from '../../shared/components/MoneyText';
-import { SplitEditor, type SplitShare } from '../../shared/components/SplitEditor';
+import { SplitEditor } from '../../shared/components/SplitEditor';
 import { formatDate } from '../../shared/format';
+import { type Split, sharesOf, splitOf } from '../../shared/split';
 import { DescriptionCell } from '../entries/EntryCells';
 import { CategoryPickerWithAdd, MemberPickerWithAdd } from '../registry/QuickAddPickers';
 
@@ -47,9 +48,7 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
       ? { 'restore-original': { href: `/api/bill-entries/${item.entryId}/alias` } }
       : {},
   } as BillEntryModel;
-  const [splits, setSplits] = useState<SplitShare[]>(
-    (item.splits ?? []).map((s) => ({ memberId: s.memberId ?? null, percentage: Number(s.percentage ?? 100) })),
-  );
+  const [split, setSplit] = useState<Split>(() => splitOf(item.splits ?? []));
   const [categoryId, setCategoryId] = useState<number | null>(item.categoryId ?? null);
   const [note, setNote] = useState(item.note ?? '');
   const [subscription, setSubscription] = useState(false);
@@ -59,7 +58,7 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
       await validateItem(
         item.purchaseId!,
         {
-          splits: splits.filter((s) => s.memberId != null).map((s) => ({ memberId: s.memberId!, percentage: s.percentage })),
+          splits: sharesOf(split),
           categoryId: categoryId ?? undefined,
           clearCategory: categoryId == null,
           note,
@@ -120,7 +119,13 @@ export const ReviewRow = forwardRef<HTMLTableRowElement, ReviewRowProps>(functio
         <MoneyText value={item.amount} />
       </td>
       <td className="px-2 py-2 [&_select]:max-w-36">
-        <SplitEditor idPrefix={`review-${item.purchaseId}`} value={splits} onChange={setSplits} memberPicker={MemberPickerWithAdd} />
+        <SplitEditor
+          idPrefix={`review-${item.purchaseId}`}
+          value={split}
+          onChange={setSplit}
+          total={item.amount ?? 0}
+          memberPicker={MemberPickerWithAdd}
+        />
       </td>
       <td className="px-2 py-2 [&_select]:max-w-36">
         <CategoryPickerWithAdd aria-label={t('review.category')} allowEmpty value={categoryId} onChange={setCategoryId} />

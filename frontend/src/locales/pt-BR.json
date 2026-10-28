@@ -188,6 +188,8 @@
     "selected_other": "{{count}} selecionados"
   },
   "entries": {
+    "split": "Rateio",
+    "saveSplit": "Salvar rateio",
     "editManual": "Editar lançamento manual",
     "billingPeriod": "Fatura (competência)",
     "noCards": "Cadastre um cartão em Ajustes antes de lançar uma compra.",
@@ -230,7 +232,13 @@
     "percentage": "Percentual",
     "removeShare": "Remover conta do rateio",
     "split": "Dividir",
-    "splitTotal": "Rateio soma {{total}}%",
+    "splitBy": "Dividir por",
+    "byPercentage": "Dividir por percentual",
+    "byAmount": "Dividir por valor",
+    "currencySymbol": "R$",
+    "shareAmount": "Valor da conta",
+    "splitMissing": "Faltam {{amount}} no rateio",
+    "splitOver": "O rateio passa {{amount}} do total",
     "category": "Categoria",
     "note": "Observação",
     "validate": "Validar",

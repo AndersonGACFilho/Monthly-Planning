@@ -116,4 +116,29 @@ describe('ReviewQueuePage', () => {
     fireEvent.click(screen.getByRole('button', { name: i18n.t('action.save') }));
     await waitFor(() => expect(body).toEqual({ displayName: 'Padaria do Zé', scope: 'ALL' }));
   });
+
+  it('RF-26, RF-76: a split saved by amount comes back as amounts and is validated as amounts', async () => {
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.get(`${base}/api/members`, () =>
+        HttpResponse.json({
+          _embedded: { members: [{ id: 1, code: 'AB', name: 'Casa', active: true }, { id: 2, code: 'M', name: 'Mãe', active: true }] },
+        }),
+      ),
+      http.get(`${base}/api/review-queue`, () =>
+        HttpResponse.json({
+          _embedded: { items: [item(1, 'PADARIA', { splits: [{ memberId: 1, amount: 2.5 }, { memberId: 2, amount: 10 }] })] },
+        }),
+      ),
+      http.post(`${base}/api/review-queue/1/validation`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(item(1, 'PADARIA'));
+      }),
+    );
+    renderWithProviders(<ReviewQueuePage />);
+    expect(await screen.findByRole('button', { name: 'Dividir por valor' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Validar' }));
+    await waitFor(() => expect(body).toMatchObject({ splits: [{ memberId: 1, amount: 2.5 }, { memberId: 2, amount: 10 }] }));
+  });
 });

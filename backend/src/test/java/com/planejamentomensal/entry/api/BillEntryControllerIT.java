@@ -181,6 +181,23 @@ class BillEntryControllerIT {
     }
 
     @Test
+    @DisplayName("RF-26, RF-43: an inline split by amount must cover the installment amount")
+    void inlineSplitByAmount() throws Exception {
+        String self = createManual("Mercado", 1);
+        String split = "{\"splits\":[{\"memberId\":%d,\"amount\":%s},{\"memberId\":%d,\"amount\":%s}]}";
+        mockMvc.perform(authorized(patch(self)).contentType(MediaType.APPLICATION_JSON)
+                        .content(split.formatted(f.main, "100.00", f.thirdParty, "100.00")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("review-split-incomplete"));
+        mockMvc.perform(authorized(patch(self)).contentType(MediaType.APPLICATION_JSON)
+                        .content(split.formatted(f.main, "100.00", f.thirdParty, "150.00")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.splits[0].amount").value(100.00))
+                .andExpect(jsonPath("$.splits[1].amount").value(150.00))
+                .andExpect(jsonPath("$.splits[1].percentage").doesNotExist());
+    }
+
+    @Test
     @DisplayName("RF-44: deleting a manual purchase removes every installment")
     void deleteManualEntry() throws Exception {
         String self = createManual("Sofá", 3);

@@ -5,6 +5,7 @@ import com.planejamentomensal.entry.domain.BillEntry;
 import com.planejamentomensal.entry.domain.EntryStatus;
 import com.planejamentomensal.entry.domain.Purchase;
 import com.planejamentomensal.entry.domain.PurchaseSplit;
+import com.planejamentomensal.entry.domain.SplitPolicy;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.Versions;
 import java.util.List;
@@ -52,7 +53,7 @@ public class EntryCommands {
 
     /**
      * Changes category, member split or note of an entry's purchase; reimports never overwrite it (RF-43,
-     * RN-08, RN-14).
+     * RN-08, RN-14). A new split must assign the whole installment amount (RF-26).
      *
      * @param entryId         entry
      * @param categoryId      category, or {@code null} to keep
@@ -70,6 +71,9 @@ public class EntryCommands {
         List<PurchaseSplit> newSplits = splits == null
                 ? purchase.splits().stream().map(s -> new PurchaseSplit(s.memberId(), s.percentage(), s.amount())).toList()
                 : splits.stream().map(s -> new PurchaseSplit(s.memberId(), s.percentage(), s.amount())).toList();
+        if (splits != null && !SplitPolicy.isComplete(purchase.installmentAmount(), newSplits)) {
+            throw new BusinessRuleException("review-split-incomplete", purchase.originalDescription());
+        }
         purchase.classify(clearCategory ? null : categoryId != null ? categoryId : purchase.categoryId(), newSplits,
                 note != null ? (note.isBlank() ? null : note.strip()) : purchase.note(), true);
         purchases.save(purchase);

@@ -8,6 +8,7 @@ import { DeleteButton } from '../../shared/components/ResourceActions';
 import { formatDate } from '../../shared/format';
 import { embedded, linkOf } from '../../shared/hal';
 import { useAction } from '../../shared/hooks/useAction';
+import { EntrySplit } from './EntrySplit';
 
 /** Props of {@link EntryDetails}. */
 export interface EntryDetailsProps {
@@ -19,7 +20,7 @@ export interface EntryDetailsProps {
 
 /**
  * Details panel of the selected entry, shown on wide windows: original description, purchase installments,
- * status and note (SPEC section 14, UI-05); a manual entry can be edited or deleted (RF-44).
+ * status, note and member split (SPEC section 14, UI-05, RF-26); a manual entry can be edited or deleted (RF-44).
  *
  * @param props - {@link EntryDetailsProps}
  * @returns the panel
@@ -71,6 +72,7 @@ export function EntryDetails({ entry, onEdit }: EntryDetailsProps) {
           </>
         )}
       </dl>
+      <EntrySplit entry={entry} />
       {installments.length > 1 && (
         <>
           <h3 className="mt-2 font-medium">{t('entries.installments')}</h3>

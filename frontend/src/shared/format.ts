@@ -113,13 +113,14 @@ export function shiftPeriod(period: string, months: number): string {
 }
 
 /**
- * Formats a percentage with one decimal place in the interface language.
+ * Formats a percentage in the interface language, with one decimal place unless more are asked for.
  *
  * @param value - percentage such as `72.5`, or nothing
  * @param language - BCP 47 language; the interface language by default
+ * @param maxDecimals - most decimal places shown, at least one
  * @returns text such as `72,5%`, or `—` when there is no value
  */
-export function formatPercent(value: number | null | undefined, language: string = i18n.language): string {
+export function formatPercent(value: number | null | undefined, language: string = i18n.language, maxDecimals = 1): string {
   if (value === null || value === undefined) return '—';
-  return `${new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)}%`;
+  return `${new Intl.NumberFormat(language, { minimumFractionDigits: 1, maximumFractionDigits: Math.max(1, maxDecimals) }).format(value)}%`;
 }
