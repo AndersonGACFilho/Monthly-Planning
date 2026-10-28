@@ -10,8 +10,7 @@ import com.planejamentomensal.summary.domain.CategoryTotalsCalculator;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator.FutureInstallment;
 import com.planejamentomensal.summary.domain.ExpenseLine;
-import com.planejamentomensal.summary.domain.ExpenseSource;
-import com.planejamentomensal.summary.domain.IncomeLine;
+import com.planejamentomensal.summary.domain.HouseholdTotals;
 import com.planejamentomensal.summary.domain.Indicators;
 import com.planejamentomensal.summary.domain.MemberKindInfo;
 import com.planejamentomensal.summary.domain.MemberTotalsCalculator;
@@ -71,17 +70,9 @@ public class MonthlySummaryService {
         List<EntryRow> future = data.futureInstallments(period);
 
         Predicate<ExpenseLine> lineFilter = l -> memberId == null || l.memberId() == memberId;
-        List<ExpenseLine> lines = current.expenses().stream().filter(lineFilter).toList();
-        List<IncomeLine> incomes = current.incomes().stream()
-                .filter(i -> memberId == null ? !thirdParties.contains(i.memberId()) : i.memberId() == memberId)
-                .toList();
-        Money mainIncome = sum(incomes.stream().map(IncomeLine::amount).toList());
-        Money reimbursements = memberId != null ? Money.ZERO
-                : sum(lines.stream().filter(l -> thirdParties.contains(l.memberId())).map(ExpenseLine::amount).toList());
-        Money fixed = sum(lines, ExpenseSource.FIXED);
-        Money variable = sum(lines, ExpenseSource.VARIABLE);
-        Money card = sum(lines, ExpenseSource.CARD);
-        Indicators indicators = Indicators.of(mainIncome.plus(reimbursements), fixed.plus(variable).plus(card),
+        HouseholdTotals totals = HouseholdTotals.of(current.incomes(), current.expenses(), thirdParties, memberId);
+        List<ExpenseLine> lines = totals.lines();
+        Indicators indicators = Indicators.of(totals.income(), totals.expense(),
                 settings.getInt(Setting.ALERT_WARNING_PERCENT), settings.getInt(Setting.ALERT_DANGER_PERCENT));
 
         Predicate<EntryRow> entryFilter = r -> memberId == null || r.splits().isEmpty() && data.payerOf(r.cardId()) == memberId
@@ -91,7 +82,8 @@ public class MonthlySummaryService {
                 .filter(r -> "PENDING_REVIEW".equals(r.reviewStatus()) && !PeriodData.UNCONFIRMED.equals(r.status())).toList();
         List<MemberKindInfo> shownMembers = memberId == null ? all : all.stream().filter(m -> m.id() == memberId).toList();
 
-        return new MonthlySummary(period, memberId, indicators, mainIncome, reimbursements, fixed, variable, card,
+        return new MonthlySummary(period, memberId, indicators, totals.mainIncome(), totals.reimbursements(), totals.fixed(),
+                totals.variable(), totals.card(),
                 CategoryTotalsCalculator.calculate(lines, previous.expenses().stream().filter(lineFilter).toList()),
                 MemberTotalsCalculator.calculate(shownMembers, current.incomes(), current.expenses()),
                 cards.build(period, current.entries(), future, entryFilter),
@@ -100,10 +92,6 @@ public class MonthlySummaryService {
                 SettlementCalculator.calculate(current.expenses()),
                 pending.size(), sum(pending.stream().map(EntryRow::amount).toList()),
                 (int) visible.stream().filter(r -> PeriodData.UNCONFIRMED.equals(r.status())).count());
-    }
-
-    private static Money sum(List<ExpenseLine> lines, ExpenseSource source) {
-        return sum(lines.stream().filter(l -> l.source() == source).map(ExpenseLine::amount).toList());
     }
 
     private static Money sum(List<Money> amounts) {

@@ -1,6 +1,7 @@
 import {
   ArrowDownUp,
   BookUser,
+  ChartColumn,
   CheckSquare,
   CreditCard,
   FileUp,
@@ -22,9 +23,10 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
-/** The five tabs of SPEC section 1, in order. */
+/** The five tabs of SPEC section 1, in order, with the history of past months after the overview. */
 export const MAIN_TABS: readonly NavItem[] = [
   { path: '/', labelKey: 'nav.overview', icon: LayoutDashboard },
+  { path: '/history', labelKey: 'nav.history', icon: ChartColumn },
   { path: '/incomes', labelKey: 'nav.incomes', icon: Wallet },
   { path: '/expenses', labelKey: 'nav.expenses', icon: ArrowDownUp },
   { path: '/entries', labelKey: 'nav.entries', icon: CreditCard },

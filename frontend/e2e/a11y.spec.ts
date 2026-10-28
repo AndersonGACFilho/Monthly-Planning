@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { texts } from './support';
 
-for (const path of ['/', '/incomes', '/expenses', '/entries', '/import', '/review-queue', '/deliveries', '/templates', '/registry', '/settings']) {
+for (const path of ['/', '/history', '/incomes', '/expenses', '/entries', '/import', '/review-queue', '/deliveries', '/templates', '/registry', '/settings']) {
   test(`IMP-48: ${path} has no serious accessibility violations`, async ({ page }) => {
     await page.goto(path);
     await page.waitForLoadState('networkidle');

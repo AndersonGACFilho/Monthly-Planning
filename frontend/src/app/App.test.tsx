@@ -36,13 +36,14 @@ describe('App shell', () => {
     expect(await screen.findByRole('heading', { name: 'Visão geral' })).toBeInTheDocument();
   });
 
-  it('IMP-05: sidebar lists the five tabs in order, then the extra screens', async () => {
+  it('IMP-05: sidebar lists the five tabs in order (history after the overview), then the extra screens', async () => {
     await i18n.changeLanguage('en-US');
     renderAt('/entries');
     const nav = await screen.findByRole('navigation', { name: 'Main menu' });
     const labels = within(nav).getAllByRole('link').map((link) => link.getAttribute('title'));
     expect(labels).toEqual([
       'Overview',
+      'History',
       'Incomes and members',
       'Expenses',
       'Card entries',

@@ -77,6 +77,9 @@
   }, {
     "description" : "HAL profile that documents the custom link relations of the API (API-10).",
     "name" : "profile-controller"
+  }, {
+    "description" : "History of past months: income, expense and balance per month, by member and by category, for charts by month,\n quarter, semester or year.",
+    "name" : "history-controller"
   } ],
   "paths" : {
     "/api" : {
@@ -1159,6 +1162,61 @@
         },
         "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
         "tags" : [ "backup-controller" ]
+      }
+    },
+    "/api/history" : {
+      "get" : {
+        "description" : "Returns the months of a range, by default the last twelve up to the current one.",
+        "operationId" : "history",
+        "parameters" : [ {
+          "description" : "first period, <code>yyyy-MM</code>, optional",
+          "in" : "query",
+          "name" : "from",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "last period, <code>yyyy-MM</code>, optional",
+          "in" : "query",
+          "name" : "to",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member filter, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "category filter with its subcategories, optional",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/HistoryModel"
+                }
+              }
+            },
+            "description" : "the history"
+          }
+        },
+        "summary" : "Returns the months of a range, by default the last twelve up to the current one.",
+        "tags" : [ "history-controller" ]
       }
     },
     "/api/imports" : {
@@ -4807,6 +4865,96 @@
             "items" : {
               "$ref" : "#/components/schemas/ShareRequest"
             }
+          }
+        }
+      },
+      "HistoryModel" : {
+        "type" : "object",
+        "description" : "Month-by-month history of incomes and expenses for the history tab.",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "categoryId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Category filter, or <code>null</code>."
+          },
+          "from" : {
+            "type" : "string",
+            "description" : "First period."
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Member filter, or <code>null</code>."
+          },
+          "points" : {
+            "type" : "array",
+            "description" : "Months, oldest first.",
+            "items" : {
+              "$ref" : "#/components/schemas/HistoryMonth"
+            }
+          },
+          "to" : {
+            "type" : "string",
+            "description" : "Last period."
+          }
+        }
+      },
+      "HistoryMonth" : {
+        "type" : "object",
+        "description" : "One month.",
+        "properties" : {
+          "balance" : {
+            "type" : "number",
+            "description" : "income − expense"
+          },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period, <code>yyyy-MM</code>"
+          },
+          "byCategory" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            },
+            "description" : "expense by category id (<code>none</code> for not classified)"
+          },
+          "byMember" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "number"
+            },
+            "description" : "expense by member id"
+          },
+          "card" : {
+            "type" : "number",
+            "description" : "card shares"
+          },
+          "expense" : {
+            "type" : "number",
+            "description" : "expense in the filters"
+          },
+          "fixed" : {
+            "type" : "number",
+            "description" : "fixed expenses not paid by card"
+          },
+          "income" : {
+            "type" : "number",
+            "description" : "income"
+          },
+          "mainIncome" : {
+            "type" : "number",
+            "description" : "incomes of MAIN members (or of the filtered member)"
+          },
+          "reimbursements" : {
+            "type" : "number",
+            "description" : "third-party share of the expenses"
+          },
+          "variable" : {
+            "type" : "number",
+            "description" : "variable expenses"
           }
         }
       },
