@@ -115,6 +115,12 @@
     "parent": "Categoria pai",
     "color": "Cor",
     "icon": "Ícone",
+    "pickIcon": "Escolher ícone (atual: {{icon}})",
+    "pickIconTitle": "Escolher ícone",
+    "searchIcon": "Buscar ícone",
+    "searchIconHint": "Buscar em inglês: car, house, coffee…",
+    "noIcon": "Nenhum ícone encontrado.",
+    "moreIcons": "Mostrando {{shown}} de {{total}} ícones. Refine a busca para ver outros.",
     "system": "Sistema"
   },
   "entry": {

@@ -3,15 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { createCategory, replaceCategory } from '../../api/generated/endpoints/category-controller/category-controller';
 import type { CategoryModel } from '../../api/generated/model';
 import { ifMatch } from '../../api/requestOptions';
-import { CategoryIcon } from '../../shared/components/CategoryIcon';
 import { CategoryPicker } from '../../shared/components/CategoryPicker';
 import { Field } from '../../shared/components/Field';
 import { useSaved } from '../../shared/hooks/useSaved';
-
-const ICONS = [
-  'shopping-cart', 'utensils', 'car', 'heart-pulse', 'party-popper', 'repeat', 'house', 'shirt',
-  'graduation-cap', 'plane', 'paw-print', 'circle-ellipsis', 'baby', 'fuel', 'gift', 'pill', 'wrench', 'zap',
-];
+import { IconPicker } from './IconPicker';
 
 /** Props of {@link CategoryEditor}. */
 export interface CategoryEditorProps {
@@ -61,15 +56,8 @@ export function CategoryEditor({ category, onDone }: CategoryEditorProps) {
         <input id="category-color" type="color" className="input h-9 w-16 p-1" value={color} onChange={(e) => setColor(e.target.value)} />
       </Field>
       <Field label={t('category.icon')} htmlFor="category-icon">
-        <select id="category-icon" className="input" value={icon} onChange={(e) => setIcon(e.target.value)}>
-          {[...new Set([icon, ...ICONS])].map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+        <IconPicker id="category-icon" value={icon} color={color} onChange={setIcon} />
       </Field>
-      <CategoryIcon icon={icon} color={color} />
       <button type="button" className="button" onClick={() => onDone()}>
         {t('action.cancel')}
       </button>

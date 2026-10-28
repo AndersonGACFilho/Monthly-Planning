@@ -115,6 +115,12 @@
     "parent": "Parent category",
     "color": "Colour",
     "icon": "Icon",
+    "pickIcon": "Choose icon (current: {{icon}})",
+    "pickIconTitle": "Choose icon",
+    "searchIcon": "Search icon",
+    "searchIconHint": "Search: car, house, coffee…",
+    "noIcon": "No icon found.",
+    "moreIcons": "Showing {{shown}} of {{total}} icons. Refine the search to see others.",
     "system": "System"
   },
   "entry": {

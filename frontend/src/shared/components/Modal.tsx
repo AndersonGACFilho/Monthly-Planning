@@ -3,6 +3,9 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+/** Open modals, innermost last: Escape closes only the one on top. */
+const openModals: symbol[] = [];
+
 /** Props of {@link Modal}. */
 export interface ModalProps {
   /** Title, also the accessible name. */
@@ -22,17 +25,26 @@ export interface ModalProps {
 export function Modal({ title, onClose, children }: ModalProps) {
   const { t } = useTranslation();
   const box = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
   useEffect(() => {
     box.current?.querySelector<HTMLElement>('input, select, textarea')?.focus();
+    const self = Symbol('modal');
+    openModals.push(self);
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && openModals.at(-1) === self) {
         event.stopPropagation();
-        onClose();
+        close.current();
       }
     };
     window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [onClose]);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      openModals.splice(openModals.indexOf(self), 1);
+    };
+  }, []);
   return createPortal(
     // Key presses stay inside: the modal may be rendered within a row that reacts to Enter (RF-78)
     <div
