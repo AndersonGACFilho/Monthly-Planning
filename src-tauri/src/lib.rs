@@ -3,6 +3,7 @@
 
 mod app_home;
 mod backend;
+mod hex;
 mod http;
 mod messages;
 mod update;
@@ -14,7 +15,7 @@ use std::sync::{Condvar, Mutex};
 use std::thread;
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
-use update::Updater;
+use update::{Installer, Relaunch, Updater};
 
 /// Startup progress of the backend, read by the `backend_config` command.
 enum Status {
@@ -68,7 +69,7 @@ fn start_backend(app: AppHandle) {
         };
         match backend.wait_until_healthy() {
             Ok(()) => {
-                app.state::<Updater>().confirm_started();
+                app.state::<Installer>().confirm_started();
                 shell.set_status(Status::Ready(backend.config()));
                 *shell.backend.lock().unwrap() = Some(backend);
                 return;
@@ -107,7 +108,7 @@ fn fail(app: &AppHandle, reason: &str) {
     let shell = app.state::<Shell>();
     let text = messages::current();
     shell.set_status(Status::Failed(reason.to_string()));
-    if let Some(version) = app.state::<Updater>().undo_failed_start() {
+    if let Some(version) = app.state::<Installer>().undo_failed_start() {
         app.dialog()
             .message(text.update_undone.replace("{version}", &version))
             .title(text.title)
@@ -135,7 +136,7 @@ fn stop_backend(app: &AppHandle) {
 async fn update_restart(app: AppHandle) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || {
         stop_backend(&app);
-        let code = app.state::<Updater>().restart().map_err(|e| e.to_string())?;
+        let code = app.state::<Relaunch>().start().map_err(|e| e.to_string())?;
         app.exit(code);
         Ok(())
     })
@@ -145,13 +146,13 @@ async fn update_restart(app: AppHandle) -> Result<(), String> {
 
 /// Starts the app again and ends this process.
 fn restart(app: &AppHandle) {
-    let code = app.state::<Updater>().restart().unwrap_or(1);
+    let code = app.state::<Relaunch>().start().unwrap_or(1);
     app.exit(code);
 }
 
 /// Shows why a staged update could not be moved in at start, without blocking the startup.
 fn report_update_failure(app: &AppHandle) {
-    if let Some(reason) = app.state::<Updater>().take_start_failure() {
+    if let Some(reason) = app.state::<Installer>().take_failure() {
         let text = messages::current();
         app.dialog()
             .message(format!("{}\n{reason}", text.update_failed))
@@ -164,10 +165,12 @@ fn report_update_failure(app: &AppHandle) {
 /// Entry point of the desktop app.
 pub fn run() {
     let home = app_home::resolve();
-    let updater = Updater::new(&home);
-    if updater.resume() {
+    // captured before an update renames the running file
+    let relaunch = Relaunch::current();
+    let installer = Installer::new(&home);
+    if installer.resume() {
         // the folder now holds another version: run that one instead of this process
-        if let Ok(code) = updater.restart() {
+        if let Ok(code) = relaunch.start() {
             std::process::exit(code);
         }
     }
@@ -182,7 +185,9 @@ pub fn run() {
             ready: Condvar::new(),
             backend: Mutex::new(None),
         })
-        .manage(updater)
+        .manage(installer)
+        .manage(Updater::new(&home))
+        .manage(relaunch)
         .invoke_handler(tauri::generate_handler![
             backend_config,
             update::commands::update_check,

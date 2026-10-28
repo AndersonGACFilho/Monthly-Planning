@@ -94,42 +94,24 @@ fn archive_error(e: zip::result::ZipError) -> UpdateError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
-    use zip::write::SimpleFileOptions;
-    use zip::ZipWriter;
+    use crate::update::test_support::{read, ReleaseZip, REGULAR};
 
-    fn runtime() -> String {
-        format!("PlanejamentoMensal/backend/{}/bin/java", app_home::runtime_dir_name())
-    }
-
-    fn write_zip(path: &Path, build: impl FnOnce(&mut ZipWriter<File>)) {
-        let mut writer = ZipWriter::new(File::create(path).unwrap());
-        build(&mut writer);
-        writer.finish().unwrap();
-    }
-
-    fn add(writer: &mut ZipWriter<File>, name: &str, content: &[u8], mode: u32) {
-        let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored).unix_permissions(mode);
-        writer.start_file(name, options).unwrap();
-        writer.write_all(content).unwrap();
-    }
-
-    fn portable_release(writer: &mut ZipWriter<File>) {
-        add(writer, "PlanejamentoMensal/PlanejamentoMensal", b"shell", 0o755);
-        add(writer, "PlanejamentoMensal/backend/app.jar", b"jar", 0o644);
-        add(writer, &runtime(), b"java", 0o755);
-        add(writer, "PlanejamentoMensal/data/planejamento-mensal.db", b"empty db", 0o644);
+    /// Extracts `zip` into a fresh `staged/` folder and returns the result with that folder.
+    fn extract_zip(zip: ReleaseZip) -> (tempfile::TempDir, Result<(), UpdateError>) {
+        let folder = tempfile::tempdir().unwrap();
+        let path = folder.path().join("release.zip");
+        zip.save(&path);
+        let result = extract(&path, &folder.path().join("staged"));
+        (folder, result)
     }
 
     #[test]
     fn por_16_extracts_release_without_data() {
-        let folder = tempfile::tempdir().unwrap();
-        let zip = folder.path().join("release.zip");
-        write_zip(&zip, portable_release);
+        let (folder, result) = extract_zip(ReleaseZip::portable("jar"));
+        result.unwrap();
         let staged = folder.path().join("staged");
-        extract(&zip, &staged).unwrap();
-        assert_eq!(fs::read(staged.join("backend/app.jar")).unwrap(), b"jar");
-        assert_eq!(fs::read(staged.join("PlanejamentoMensal")).unwrap(), b"shell");
+        assert_eq!(read(&staged.join("backend/app.jar")), "jar");
+        assert_eq!(read(&staged.join("PlanejamentoMensal")), "shell");
         assert!(!staged.join("data").exists());
     }
 
@@ -137,44 +119,29 @@ mod tests {
     #[test]
     fn por_16_keeps_execute_bit() {
         use std::os::unix::fs::PermissionsExt;
-        let folder = tempfile::tempdir().unwrap();
-        let zip = folder.path().join("release.zip");
-        write_zip(&zip, portable_release);
-        let staged = folder.path().join("staged");
-        extract(&zip, &staged).unwrap();
-        let mode = fs::metadata(staged.join("PlanejamentoMensal")).unwrap().permissions().mode();
+        let (folder, result) = extract_zip(ReleaseZip::portable("jar"));
+        result.unwrap();
+        let mode = fs::metadata(folder.path().join("staged/PlanejamentoMensal")).unwrap().permissions().mode();
         assert_eq!(mode & 0o111, 0o111);
     }
 
     #[test]
     fn por_16_refuses_paths_outside_the_folder() {
-        let folder = tempfile::tempdir().unwrap();
-        let zip = folder.path().join("release.zip");
-        write_zip(&zip, |writer| {
-            portable_release(writer);
-            add(writer, "PlanejamentoMensal/../../evil", b"x", 0o644);
-        });
-        assert!(matches!(extract(&zip, &folder.path().join("staged")), Err(UpdateError::Archive(_))));
+        let (folder, result) = extract_zip(ReleaseZip::portable("jar").file("../../evil", "x", REGULAR));
+        assert!(matches!(result, Err(UpdateError::Archive(_))));
         assert!(!folder.path().join("evil").exists());
     }
 
     #[test]
     fn por_02_refuses_symbolic_links() {
-        let folder = tempfile::tempdir().unwrap();
-        let zip = folder.path().join("release.zip");
-        write_zip(&zip, |writer| {
-            portable_release(writer);
-            writer.add_symlink("PlanejamentoMensal/link", "backend/app.jar", SimpleFileOptions::default()).unwrap();
-        });
-        assert!(matches!(extract(&zip, &folder.path().join("staged")), Err(UpdateError::Archive(_))));
+        let (_folder, result) = extract_zip(ReleaseZip::portable("jar").symlink("link", "backend/app.jar"));
+        assert!(matches!(result, Err(UpdateError::Archive(_))));
     }
 
     #[test]
     fn por_16_refuses_zip_that_is_not_a_portable_folder() {
-        let folder = tempfile::tempdir().unwrap();
-        let zip = folder.path().join("release.zip");
-        write_zip(&zip, |writer| add(writer, "PlanejamentoMensal/readme.txt", b"hi", 0o644));
-        assert!(matches!(extract(&zip, &folder.path().join("staged")), Err(UpdateError::Archive(_))));
+        let (_folder, result) = extract_zip(ReleaseZip::empty().file("readme.txt", "hi", REGULAR));
+        assert!(matches!(result, Err(UpdateError::Archive(_))));
     }
 
     #[test]

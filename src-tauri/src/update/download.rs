@@ -3,6 +3,7 @@
 use super::error::UpdateError;
 use super::net;
 use super::release::Asset;
+use crate::hex;
 use sha2::{Digest, Sha256};
 use std::fs::{self, File};
 use std::io::{self, BufWriter, Read, Write};
@@ -10,6 +11,8 @@ use std::path::{Path, PathBuf};
 
 /// Largest checksum file read: one hash and one file name.
 const CHECKSUM_LIMIT: u64 = 4096;
+const COPY_BUFFER_BYTES: usize = 64 * 1024;
+const SHA256_HEX_LENGTH: usize = 64;
 
 /// Called with the bytes written so far and the expected total.
 pub type Progress<'a> = &'a mut dyn FnMut(u64, u64);
@@ -53,7 +56,7 @@ fn part_path(target: &Path) -> PathBuf {
 fn save_hashing(mut reader: impl Read, path: &Path, total: u64, progress: Progress) -> io::Result<(u64, String)> {
     let mut file = BufWriter::new(File::create(path)?);
     let mut hasher = Sha256::new();
-    let mut buffer = vec![0u8; 64 * 1024];
+    let mut buffer = vec![0u8; COPY_BUFFER_BYTES];
     let mut written = 0u64;
     loop {
         let read = reader.read(&mut buffer)?;
@@ -66,7 +69,7 @@ fn save_hashing(mut reader: impl Read, path: &Path, total: u64, progress: Progre
         progress(written, total);
     }
     file.into_inner().map_err(|e| e.into_error())?.sync_all()?;
-    Ok((written, hex(&hasher.finalize())))
+    Ok((written, hex::encode(&hasher.finalize())))
 }
 
 fn verify(package: &Asset, size: u64, hash: &str, expected: &str) -> Result<(), UpdateError> {
@@ -81,11 +84,7 @@ fn verify(package: &Asset, size: u64, hash: &str, expected: &str) -> Result<(), 
 
 fn parse_checksum(text: &str) -> Option<String> {
     let hash = text.split_whitespace().next()?;
-    (hash.len() == 64 && hash.chars().all(|c| c.is_ascii_hexdigit())).then(|| hash.to_ascii_lowercase())
-}
-
-fn hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+    (hash.len() == SHA256_HEX_LENGTH && hash.chars().all(|c| c.is_ascii_hexdigit())).then(|| hash.to_ascii_lowercase())
 }
 
 #[cfg(test)]
@@ -121,7 +120,7 @@ mod tests {
     fn por_16_refuses_wrong_size_or_hash() {
         assert!(verify(&package(5), 5, HELLO_SHA256, HELLO_SHA256).is_ok());
         assert!(matches!(verify(&package(6), 5, HELLO_SHA256, HELLO_SHA256), Err(UpdateError::Integrity(_))));
-        let other = "0".repeat(64);
+        let other = "0".repeat(SHA256_HEX_LENGTH);
         assert!(matches!(verify(&package(5), 5, HELLO_SHA256, &other), Err(UpdateError::Integrity(_))));
     }
 

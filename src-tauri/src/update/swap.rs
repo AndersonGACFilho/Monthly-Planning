@@ -128,6 +128,7 @@ fn exists(path: &Path) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::update::test_support::{read, write};
     use std::path::PathBuf;
 
     struct Fixture {
@@ -158,13 +159,8 @@ mod tests {
         }
 
         fn read(&self, relative: &str) -> String {
-            fs::read_to_string(self.home(relative)).unwrap()
+            read(&self.home(relative))
         }
-    }
-
-    fn write(path: &Path, content: &str) {
-        fs::create_dir_all(path.parent().unwrap()).unwrap();
-        fs::write(path, content).unwrap();
     }
 
     #[test]
@@ -187,7 +183,7 @@ mod tests {
         assert_eq!(fixture.read("backend/app.jar"), "new");
         assert_eq!(fixture.read("NOVIDADES.md"), "new");
         assert_eq!(fixture.read("data/planejamento-mensal.db"), "user data");
-        assert_eq!(fs::read_to_string(fixture.layout.previous().join("backend/app.jar")).unwrap(), "old");
+        assert_eq!(read(&fixture.layout.previous().join("backend/app.jar")), "old");
     }
 
     #[test]

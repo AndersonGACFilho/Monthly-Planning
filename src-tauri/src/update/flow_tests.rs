@@ -1,15 +1,16 @@
 //! The whole update against a local server (POR-16): release list, checksum and zip over HTTP, then the move into
 //! the app folder at the next start.
 
-use super::*;
+use super::test_support::{read, write, ReleaseZip, REGULAR};
+use super::{Installer, UpdateError, Updater};
+use crate::hex;
+use semver::Version;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, Cursor, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::net::TcpListener;
 use std::path::PathBuf;
 use std::thread;
-use zip::write::SimpleFileOptions;
-use zip::ZipWriter;
 
 const TAG: &str = "v0.2.0";
 
@@ -35,29 +36,13 @@ fn serve(listener: TcpListener, routes: HashMap<String, Vec<u8>>) {
     });
 }
 
-fn release_zip() -> Vec<u8> {
-    let mut writer = ZipWriter::new(Cursor::new(Vec::new()));
-    let options = SimpleFileOptions::default();
-    let runtime = format!("PlanejamentoMensal/backend/{}/bin/java", crate::app_home::runtime_dir_name());
-    for (name, content) in [
-        ("PlanejamentoMensal/backend/app.jar", "new"),
-        (runtime.as_str(), "java"),
-        ("PlanejamentoMensal/LEIA-ME.md", "new"),
-        ("PlanejamentoMensal/data/planejamento-mensal.db", "empty"),
-    ] {
-        writer.start_file(name, options).unwrap();
-        writer.write_all(content.as_bytes()).unwrap();
-    }
-    writer.finish().unwrap().into_inner()
-}
-
 /// Starts a server with a release `v0.2.0` whose checksum file holds `published_sha256` (the zip's own hash
 /// when `None`), and returns the URL of the release list.
 fn release_server(published_sha256: Option<String>) -> String {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let base = format!("http://{}", listener.local_addr().unwrap());
-    let zip = release_zip();
-    let sha256 = published_sha256.unwrap_or_else(|| Sha256::digest(&zip).iter().map(|b| format!("{b:02x}")).collect());
+    let zip = ReleaseZip::portable("new").file("LEIA-ME.md", "new", REGULAR).bytes();
+    let sha256 = published_sha256.unwrap_or_else(|| hex::encode(&Sha256::digest(&zip)));
     let package = format!("PlanejamentoMensal-{TAG}.zip");
     let releases = format!(
         r#"[{{"tag_name":"{TAG}","body":"- faster import","draft":false,"prerelease":false,"assets":[
@@ -77,16 +62,10 @@ fn release_server(published_sha256: Option<String>) -> String {
 fn app_folder() -> (tempfile::TempDir, PathBuf) {
     let folder = tempfile::tempdir().unwrap();
     let home = folder.path().join("PlanejamentoMensal");
-    fs::create_dir_all(home.join("backend")).unwrap();
-    fs::create_dir_all(home.join("data")).unwrap();
-    fs::write(home.join("backend/app.jar"), "old").unwrap();
-    fs::write(home.join("LEIA-ME.md"), "old").unwrap();
-    fs::write(home.join("data/planejamento-mensal.db"), "user data").unwrap();
+    write(&home.join("backend/app.jar"), "old");
+    write(&home.join("LEIA-ME.md"), "old");
+    write(&home.join("data/planejamento-mensal.db"), "user data");
     (folder, home)
-}
-
-fn read(home: &Path, relative: &str) -> String {
-    fs::read_to_string(home.join(relative)).unwrap()
 }
 
 fn current() -> Version {
@@ -104,16 +83,15 @@ fn por_16_downloads_verifies_and_installs_a_release() {
     let mut last = (0, 0);
     updater.download(&mut |done, total| last = (done, total)).unwrap();
     assert_eq!(last.0, last.1);
-    assert_eq!(read(&home, "backend/app.jar"), "old", "nothing changes while the app runs");
+    assert_eq!(read(&home.join("backend/app.jar")), "old", "nothing changes while the app runs");
 
-    // next start
-    let restarted = Updater::with_releases_url(&home, String::new());
-    assert!(restarted.resume());
-    assert_eq!(read(&home, "backend/app.jar"), "new");
-    assert_eq!(read(&home, "LEIA-ME.md"), "new");
-    restarted.confirm_started();
+    let next_start = Installer::new(&home);
+    assert!(next_start.resume());
+    assert_eq!(read(&home.join("backend/app.jar")), "new");
+    assert_eq!(read(&home.join("LEIA-ME.md")), "new");
+    next_start.confirm_started();
     assert!(!home.join("update").exists());
-    assert_eq!(read(&home, "data/planejamento-mensal.db"), "user data");
+    assert_eq!(read(&home.join("data/planejamento-mensal.db")), "user data");
 }
 
 #[test]
@@ -122,10 +100,10 @@ fn por_16_download_with_wrong_checksum_is_discarded() {
     let updater = Updater::with_releases_url(&home, release_server(Some("0".repeat(64))));
     updater.check(&current()).unwrap().unwrap();
     assert!(matches!(updater.download(&mut |_, _| {}), Err(UpdateError::Integrity(_))));
-    assert!(!updater.layout.staged().exists());
-    assert!(!updater.layout.download().exists());
-    assert!(!Updater::with_releases_url(&home, String::new()).resume());
-    assert_eq!(read(&home, "backend/app.jar"), "old");
+    assert!(!updater.layout().staged().exists());
+    assert!(!updater.layout().download().exists());
+    assert!(!Installer::new(&home).resume());
+    assert_eq!(read(&home.join("backend/app.jar")), "old");
 }
 
 #[test]
