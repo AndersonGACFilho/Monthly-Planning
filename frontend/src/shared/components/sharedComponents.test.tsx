@@ -15,7 +15,7 @@ import { PlaceholderPage } from './PlaceholderPage';
 import { ActiveToggle, DeleteButton } from './ResourceActions';
 import { type SplitShare, SplitEditor } from './SplitEditor';
 import { SummaryCard } from './SummaryCard';
-import { Toaster } from './Toaster';
+import { NOTICE_TIMEOUT, Toaster } from './Toaster';
 
 const base = 'http://127.0.0.1:9999';
 
@@ -137,5 +137,27 @@ describe('shared components', () => {
     expect(screen.getByText('Falhou')).toBeInTheDocument();
     expect(screen.getByText('disco cheio')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Templates' })).toBeInTheDocument();
+  });
+
+  it('IMP-41: notices close by themselves, but not while hovered', () => {
+    useNotifications.setState({ notices: [] });
+    vi.useFakeTimers();
+    try {
+      render(<Toaster />);
+      act(() => useNotifications.getState().push({ kind: 'success', title: 'Salvo.' }));
+      act(() => useNotifications.getState().push({ kind: 'error', title: 'Falhou' }));
+      act(() => vi.advanceTimersByTime(NOTICE_TIMEOUT.success));
+      expect(screen.queryByText('Salvo.')).not.toBeInTheDocument();
+      expect(screen.getByText('Falhou')).toBeInTheDocument();
+
+      fireEvent.pointerEnter(screen.getByRole('alert'));
+      act(() => vi.advanceTimersByTime(NOTICE_TIMEOUT.error));
+      expect(screen.getByText('Falhou')).toBeInTheDocument();
+      fireEvent.pointerLeave(screen.getByRole('alert'));
+      act(() => vi.advanceTimersByTime(NOTICE_TIMEOUT.error));
+      expect(screen.queryByText('Falhou')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
