@@ -89,6 +89,17 @@ export function periodOf(date: Date = new Date()): string {
 }
 
 /**
+ * Returns a date as `yyyy-MM-dd` in the computer's time zone, unlike `toISOString`, which is UTC and gives the
+ * next day in the Brazilian evening.
+ *
+ * @param date - date; defaults to today
+ * @returns ISO date
+ */
+export function isoDateOf(date: Date = new Date()): string {
+  return `${periodOf(date)}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/**
  * Shifts a billing period by months.
  *
  * @param period - period as `yyyy-MM`

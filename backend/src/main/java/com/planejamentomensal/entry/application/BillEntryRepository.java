@@ -3,8 +3,10 @@ package com.planejamentomensal.entry.application;
 import com.planejamentomensal.entry.domain.BillEntry;
 import com.planejamentomensal.entry.domain.EntryStatus;
 import com.planejamentomensal.shared.domain.BillingPeriod;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Storage port of bill entries (SOL-04).
@@ -61,6 +63,14 @@ public interface BillEntryRepository {
      * @return entries
      */
     List<BillEntry> findByPurchaseIdAndStatus(long purchaseId, EntryStatus status);
+
+    /**
+     * Tells which purchases have an entry recorded or confirmed by an import.
+     *
+     * @param purchaseIds purchases to check
+     * @return those of them seen on an imported bill
+     */
+    Set<Long> findImportedPurchaseIds(Collection<Long> purchaseIds);
 
     /**
      * Stores an entry.

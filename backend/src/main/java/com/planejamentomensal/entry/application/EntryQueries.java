@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -118,17 +119,19 @@ public class EntryQueries {
     private List<EntryRow> rows(List<BillEntry> found) {
         Map<Long, AliasService.Display> display = aliases.display(found.stream()
                 .collect(Collectors.toMap(BillEntry::id, e -> e.purchase().originalDescription(), (a, b) -> a)));
-        return found.stream().map(e -> row(e, display.get(e.id()))).toList();
+        Set<Long> imported = found.isEmpty() ? Set.of()
+                : entries.findImportedPurchaseIds(found.stream().map(e -> e.purchase().id()).collect(Collectors.toSet()));
+        return found.stream().map(e -> row(e, display.get(e.id()), !imported.contains(e.purchase().id()))).toList();
     }
 
-    private static EntryRow row(BillEntry e, AliasService.Display display) {
+    private static EntryRow row(BillEntry e, AliasService.Display display, boolean manual) {
         Purchase p = e.purchase();
         return new EntryRow(e.id(), p.id(), e.cardBill().id(), e.cardBill().cardId(), p.cardLastDigits(),
                 e.cardBill().billingPeriod(), e.entryDate(), p.purchaseDate(), p.originalDescription(), display.text(),
                 display.renamed(), display.aliasId(), e.installmentLabel(), p.type().name(), p.kind().name(), e.amount(),
                 e.status().name(), p.categoryId(),
                 p.splits().stream().map(s -> new ReviewItem.Share(s.memberId(), s.percentage(), s.amount())).toList(),
-                p.reviewStatus().name(), p.refundStatus().name(), p.note(), p.version());
+                p.reviewStatus().name(), p.refundStatus().name(), p.note(), manual, p.version());
     }
 
     private static boolean typeMatches(String type, EntryRow row) {

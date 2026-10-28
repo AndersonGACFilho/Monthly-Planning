@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatMoney, formatPeriod, fromCents, parseMoney, periodOf, shiftPeriod, toCents } from './format';
+import { formatDate, formatMoney, formatPeriod, fromCents, isoDateOf, parseMoney, periodOf, shiftPeriod, toCents } from './format';
 
 const nbsp = (s: string) => s.replace(/\u00a0/g, ' ');
 
@@ -32,5 +32,6 @@ describe('format', () => {
     expect(shiftPeriod('2026-12', 1)).toBe('2027-01');
     expect(shiftPeriod('2027-01', -1)).toBe('2026-12');
     expect(periodOf(new Date(2026, 10, 3))).toBe('2026-11');
+    expect(isoDateOf(new Date(2026, 10, 3, 23, 30))).toBe('2026-11-03');
   });
 });

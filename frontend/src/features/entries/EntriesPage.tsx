@@ -64,11 +64,12 @@ export function EntriesPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [anchor, setAnchor] = useState<number | null>(null);
   const [focused, setFocused] = useState<number | null>(null);
-  const [creating, setCreating] = useState(params.get('new') === '1');
+  // Manual entry form: 'new' to create one, an entry to replace its purchase, null when closed
+  const [editing, setEditing] = useState<BillEntryModel | 'new' | null>(params.get('new') === '1' ? 'new' : null);
   // Ctrl+N opens this tab with ?new=1 (UI-01): show the manual entry form and drop the flag
   useEffect(() => {
     if (params.get('new') !== '1') return;
-    setCreating(true);
+    setEditing('new');
     const next = new URLSearchParams(params);
     next.delete('new');
     setParams(next, { replace: true });
@@ -123,11 +124,22 @@ export function EntriesPage() {
     <div className="flex h-full flex-col gap-3">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">{t('nav.entries')}</h1>
-        <button type="button" className="button" onClick={() => setCreating(true)}>
+        <button type="button" className="button" onClick={() => setEditing('new')}>
           <Plus size={16} aria-hidden /> {t('entries.newEntry')}
         </button>
       </div>
-      {creating && <ManualEntryForm onDone={() => setCreating(false)} />}
+      {editing && (
+        <ManualEntryForm
+          key={editing === 'new' ? 'new' : editing.id}
+          period={period}
+          entry={editing === 'new' ? undefined : editing}
+          onDone={(saved) => {
+            setEditing(null);
+            // The entry may land on another bill: follow it there, so it never seems lost (RF-44)
+            if (saved?.billingPeriod && saved.billingPeriod !== period) setPeriod(saved.billingPeriod);
+          }}
+        />
+      )}
       <div className="flex flex-wrap items-end gap-3" role="search">
         <Field label={t('import.card')} htmlFor="entries-card">
           <select id="entries-card" className="input" value={filter.card ?? ''} onChange={(e) => setFilter('card', e.target.value)}>
@@ -246,7 +258,7 @@ export function EntriesPage() {
             </tbody>
           </table>
         </div>
-        {focusedEntry && <EntryDetails key={focusedEntry.id} entry={focusedEntry} />}
+        {focusedEntry && <EntryDetails key={focusedEntry.id} entry={focusedEntry} onEdit={() => setEditing(focusedEntry)} />}
       </div>
       <QuickTotalBar
         filtered={entries.map((e) => e.amount)}

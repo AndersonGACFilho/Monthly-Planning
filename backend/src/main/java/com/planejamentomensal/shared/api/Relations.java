@@ -23,6 +23,8 @@ public enum Relations implements LinkRelation {
     RENAME("rename", "Rename the displayed description of a bill entry (RF-46 to RF-48)."),
     /** Remove the alias and show the card's original description again. */
     RESTORE_ORIGINAL("restore-original", "Remove the alias and show the original description (RF-50)."),
+    /** Replace a purchase typed by hand. */
+    REPLACE_PURCHASE("replace-purchase", "Replace a manual purchase and its installments; only while no imported bill has seen it (RF-44)."),
     /** Confirm a projected installment or an import preview. */
     CONFIRM("confirm", "Confirm a projected installment or an import preview (RN-06, RF-72)."),
     /** Cancel an import preview. */

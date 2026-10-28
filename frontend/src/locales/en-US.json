@@ -188,6 +188,11 @@
     "selected_other": "{{count}} selected"
   },
   "entries": {
+    "editManual": "Edit manual entry",
+    "billingPeriod": "Bill (billing period)",
+    "noCards": "Add a card in Settings before entering a purchase.",
+    "confirmDeleteInstallments_one": "Delete this purchase? This cannot be undone.",
+    "confirmDeleteInstallments_other": "Delete this purchase and its {{count}} installments? This cannot be undone.",
     "newEntry": "New entry",
     "manual": "Manual entry",
     "type": "Type",

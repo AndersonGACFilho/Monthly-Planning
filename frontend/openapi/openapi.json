@@ -39,7 +39,7 @@
     "description" : "Credit cards with finals, holder, default member and closing/due cycles (RF-02 to RF-05).",
     "name" : "card-controller"
   }, {
-    "description" : "Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries\n (RF-40 to RF-51).",
+    "description" : "Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries that can\n be replaced or deleted (RF-40 to RF-51).",
     "name" : "bill-entry-controller"
   }, {
     "description" : "Sends statements in batch and keeps the delivery history with resend and manual confirmation (RF-86 to RF-93,\n SOL-03).",
@@ -330,7 +330,7 @@
         "tags" : [ "bill-entry-controller" ]
       },
       "post" : {
-        "description" : "Records a purchase that was not imported, already validated; installment purchases project the next\n installments (RF-44, RF-45, RF-79c).",
+        "description" : "Records a purchase that was not imported, already validated, on the chosen bill or the one the card's cycle\n gives; installment purchases project the next installments (RF-44, RF-45, RF-79c).",
         "operationId" : "createEntry",
         "requestBody" : {
           "content" : {
@@ -355,11 +355,40 @@
             "description" : "201 with the first entry"
           }
         },
-        "summary" : "Records a purchase that was not imported, already validated; installment purchases project the next\n installments (RF-44, RF-45, RF-79c).",
+        "summary" : "Records a purchase that was not imported, already validated, on the chosen bill or the one the card's cycle\n gives; installment purchases project the next installments (RF-44, RF-45, RF-79c).",
         "tags" : [ "bill-entry-controller" ]
       }
     },
     "/api/bill-entries/{id}" : {
+      "delete" : {
+        "description" : "Deletes the purchase of a manual entry with all its installments, while no imported bill has seen it.",
+        "operationId" : "removeEntry",
+        "parameters" : [ {
+          "description" : "any entry of the purchase",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "purchase version the client saw",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Deletes the purchase of a manual entry with all its installments, while no imported bill has seen it.",
+        "tags" : [ "bill-entry-controller" ]
+      },
       "get" : {
         "description" : "Returns one entry.",
         "operationId" : "billEntry",
@@ -532,6 +561,55 @@
           }
         },
         "summary" : "Confirms a projected installment by hand.",
+        "tags" : [ "bill-entry-controller" ]
+      }
+    },
+    "/api/bill-entries/{id}/purchase" : {
+      "put" : {
+        "description" : "Replaces the purchase of a manual entry and all its installments, while no imported bill has seen it.",
+        "operationId" : "replaceEntryPurchase",
+        "parameters" : [ {
+          "description" : "any entry of the purchase",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "purchase version being edited",
+          "in" : "header",
+          "name" : "If-Match",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ManualEntryRequest"
+              }
+            }
+          },
+          "description" : "new purchase data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/BillEntryModel"
+                }
+              }
+            },
+            "description" : "the first entry of the replaced purchase"
+          }
+        },
+        "summary" : "Replaces the purchase of a manual entry and all its installments, while no imported bill has seen it.",
         "tags" : [ "bill-entry-controller" ]
       }
     },
@@ -5296,6 +5374,11 @@
             "type" : "number",
             "description" : "amount of each installment; negative for a credit"
           },
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "bill of the first installment, <code>yyyy-MM</code>, optional (follows the card's cycle)",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          },
           "cardId" : {
             "type" : "integer",
             "format" : "int64",
@@ -5322,7 +5405,7 @@
           "memberId" : {
             "type" : "integer",
             "format" : "int64",
-            "description" : "member, optional (card default)"
+            "description" : "member, optional (card default; on a replace, the current split)"
           },
           "note" : {
             "type" : "string",

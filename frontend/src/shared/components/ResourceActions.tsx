@@ -38,10 +38,10 @@ export function ActiveToggle({ resource }: { resource: VersionedResource }) {
 /**
  * Delete button, shown only when the backend offers `delete` (API-09); asks for confirmation.
  *
- * @param props - the resource
+ * @param props - the resource and, optionally, a confirmation that says what else goes with it
  * @returns the button, or nothing
  */
-export function DeleteButton({ resource }: { resource: VersionedResource }) {
+export function DeleteButton({ resource, confirmMessage }: { resource: VersionedResource; confirmMessage?: string }) {
   const { t } = useTranslation();
   const remove = useAction(resource, 'delete');
   if (!remove.available) return null;
@@ -52,7 +52,7 @@ export function DeleteButton({ resource }: { resource: VersionedResource }) {
       title={t('action.delete')}
       aria-label={t('action.delete')}
       onClick={() => {
-        if (window.confirm(t('action.confirmDelete'))) remove.mutate({ method: 'DELETE' });
+        if (window.confirm(confirmMessage ?? t('action.confirmDelete'))) remove.mutate({ method: 'DELETE' });
       }}
     >
       <Trash2 size={16} aria-hidden />

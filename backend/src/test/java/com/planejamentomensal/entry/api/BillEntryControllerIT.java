@@ -138,6 +138,82 @@ class BillEntryControllerIT {
     }
 
     @Test
+    @DisplayName("RF-44, API-09: a manual entry goes to the bill the user chose and offers replace and delete")
+    void manualEntryOnChosenBill() throws Exception {
+        mockMvc.perform(authorized(post("/api/bill-entries")).contentType(MediaType.APPLICATION_JSON).content("""
+                        {"cardId":%d,"purchaseDate":"2026-10-05","description":"Padaria","amount":12.50,"installmentCount":1,
+                         "billingPeriod":"2026-10"}
+                        """.formatted(f.card)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.billingPeriod").value("2026-10"))
+                .andExpect(jsonPath("$._links.replace-purchase.href").exists())
+                .andExpect(jsonPath("$._links.delete.href").exists());
+        mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2026-10&card=" + f.card + "&q=BMB")))
+                .andExpect(jsonPath("$._embedded.billEntries[0]._links.replace-purchase").doesNotExist())
+                .andExpect(jsonPath("$._embedded.billEntries[0]._links.delete").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("RF-44, RF-45: replacing a manual purchase moves its installments and keeps the member split")
+    void replaceManualEntry() throws Exception {
+        String self = createManual("Geladeira", 4);
+        mockMvc.perform(authorized(patch(self)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"splits\":[{\"memberId\":%d,\"percentage\":50},{\"memberId\":%d,\"percentage\":50}]}"
+                                .formatted(f.main, f.thirdParty)))
+                .andExpect(status().isOk());
+        var entry = mockMvc.perform(authorized(get(self))).andReturn();
+        mockMvc.perform(authorized(put(self + "/purchase")).contentType(MediaType.APPLICATION_JSON)
+                        .header("If-Match", "\"" + read(entry, "$.version") + "\"").content("""
+                        {"cardId":%d,"purchaseDate":"2026-11-20","description":"Geladeira nova","amount":500.00,
+                         "installmentCount":2,"billingPeriod":"2026-12"}
+                        """.formatted(f.card)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.billingPeriod").value("2026-12"))
+                .andExpect(jsonPath("$.installment").value("01/02"))
+                .andExpect(jsonPath("$.amount").value(500.00))
+                .andExpect(jsonPath("$.splits.length()").value(2));
+        mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2026-11&q=Geladeira")))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
+        mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2027-01&q=Geladeira")))
+                .andExpect(jsonPath("$._embedded.billEntries[0].installment").value("02/02"));
+        mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2027-02&q=Geladeira")))
+                .andExpect(jsonPath("$.page.totalElements").value(0));
+    }
+
+    @Test
+    @DisplayName("RF-44: deleting a manual purchase removes every installment")
+    void deleteManualEntry() throws Exception {
+        String self = createManual("Sofá", 3);
+        mockMvc.perform(authorized(delete(self))).andExpect(status().isNoContent());
+        for (String period : new String[] {"2026-11", "2026-12", "2027-01"}) {
+            mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=" + period + "&q=Sof")))
+                    .andExpect(jsonPath("$.page.totalElements").value(0));
+        }
+    }
+
+    @Test
+    @DisplayName("RF-44: an imported entry cannot be replaced or deleted")
+    void importedEntryIsNotManual() throws Exception {
+        String self = firstEntry("&q=BMB");
+        mockMvc.perform(authorized(delete(self)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("entry-not-manual"));
+        mockMvc.perform(authorized(put(self + "/purchase")).contentType(MediaType.APPLICATION_JSON).content("""
+                        {"cardId":%d,"purchaseDate":"2026-10-05","description":"X","amount":1.00,"installmentCount":1}
+                        """.formatted(f.card)))
+                .andExpect(status().isConflict());
+        mockMvc.perform(authorized(get(self))).andExpect(status().isOk());
+    }
+
+    private String createManual(String description, int installments) throws Exception {
+        var created = mockMvc.perform(authorized(post("/api/bill-entries")).contentType(MediaType.APPLICATION_JSON).content("""
+                        {"cardId":%d,"purchaseDate":"2026-10-05","description":"%s","amount":250.00,"installmentCount":%d}
+                        """.formatted(f.card, description, installments)))
+                .andExpect(status().isCreated()).andReturn();
+        return read(created, "$._links.self.href");
+    }
+
+    @Test
     @DisplayName("API-09: a projected installment can be confirmed by hand once")
     void confirmProjected() throws Exception {
         var projected = mockMvc.perform(authorized(get("/api/bill-entries?billingPeriod=2026-11&status=PROJECTED&card=" + f.card))).andReturn();

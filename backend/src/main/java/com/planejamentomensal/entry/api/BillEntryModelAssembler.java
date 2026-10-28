@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Builds the entry representation: {@code rename} always, {@code restore-original} only with an alias or
- * override, {@code confirm} only for projected entries (SPEC section 12 resource table, API-09).
+ * override, {@code confirm} only for projected entries, {@code replace-purchase} and {@code delete} only for
+ * manual entries no imported bill has seen (SPEC section 12 resource table, API-09).
  *
  * @since 1.0
  */
@@ -48,6 +49,11 @@ public class BillEntryModelAssembler implements RepresentationModelAssembler<Ent
         }
         if ("PROJECTED".equals(row.status())) {
             model.add(linkTo(methodOn(BillEntryController.class).confirmEntry(row.entryId())).withRel(Relations.CONFIRM));
+        }
+        if (row.manual()) {
+            model.add(linkTo(methodOn(BillEntryController.class).replaceEntryPurchase(row.entryId(), null, null))
+                    .withRel(Relations.REPLACE_PURCHASE));
+            model.add(linkTo(methodOn(BillEntryController.class).billEntry(row.entryId())).withRel(Relations.DELETE));
         }
         return model;
     }

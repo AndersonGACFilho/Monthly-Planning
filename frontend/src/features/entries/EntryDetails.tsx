@@ -1,20 +1,30 @@
 import { useQuery } from '@tanstack/react-query';
+import { Pencil } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiFetch } from '../../api/http';
 import type { BillEntryModel } from '../../api/generated/model';
 import { MoneyText } from '../../shared/components/MoneyText';
+import { DeleteButton } from '../../shared/components/ResourceActions';
 import { formatDate } from '../../shared/format';
 import { embedded, linkOf } from '../../shared/hal';
 import { useAction } from '../../shared/hooks/useAction';
 
+/** Props of {@link EntryDetails}. */
+export interface EntryDetailsProps {
+  /** Selected entry. */
+  entry: BillEntryModel;
+  /** Opens the form that replaces a manual purchase. */
+  onEdit: () => void;
+}
+
 /**
  * Details panel of the selected entry, shown on wide windows: original description, purchase installments,
- * status and note (SPEC section 14, UI-05).
+ * status and note (SPEC section 14, UI-05); a manual entry can be edited or deleted (RF-44).
  *
- * @param props - the entry
+ * @param props - {@link EntryDetailsProps}
  * @returns the panel
  */
-export function EntryDetails({ entry }: { entry: BillEntryModel }) {
+export function EntryDetails({ entry, onEdit }: EntryDetailsProps) {
   const { t } = useTranslation();
   const purchaseHref = linkOf(entry, 'purchase');
   const { data } = useQuery({
@@ -27,7 +37,20 @@ export function EntryDetails({ entry }: { entry: BillEntryModel }) {
 
   return (
     <aside className="panel hidden w-80 shrink-0 flex-col gap-2 self-start text-sm wide:flex" aria-label={t('entries.details')}>
-      <h2 className="font-semibold">{entry.displayDescription}</h2>
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="font-semibold">{entry.displayDescription}</h2>
+        <span className="flex gap-1">
+          {linkOf(entry, 'replace-purchase') && (
+            <button type="button" className="icon-button" title={t('action.edit')} aria-label={t('action.edit')} onClick={onEdit}>
+              <Pencil size={16} aria-hidden />
+            </button>
+          )}
+          <DeleteButton
+            resource={entry}
+            confirmMessage={installments.length > 1 ? t('entries.confirmDeleteInstallments', { count: installments.length }) : undefined}
+          />
+        </span>
+      </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
         <dt className="text-(--color-text-muted)">{t('entries.original')}</dt>
         <dd>{entry.originalDescription}</dd>

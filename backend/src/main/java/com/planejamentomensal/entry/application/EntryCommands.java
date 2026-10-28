@@ -1,30 +1,19 @@
 package com.planejamentomensal.entry.application;
 
 import com.planejamentomensal.alias.application.AliasService;
-import com.planejamentomensal.card.application.CardQueries;
-import com.planejamentomensal.card.application.CardView;
-import com.planejamentomensal.card.application.CycleView;
 import com.planejamentomensal.entry.domain.BillEntry;
-import com.planejamentomensal.entry.domain.BillingPeriodPolicy;
-import com.planejamentomensal.entry.domain.CardBill;
 import com.planejamentomensal.entry.domain.EntryStatus;
 import com.planejamentomensal.entry.domain.Purchase;
 import com.planejamentomensal.entry.domain.PurchaseSplit;
-import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
-import com.planejamentomensal.shared.domain.InvalidInputException;
-import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.shared.domain.Versions;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Changes made by the user on the card entries tab: inline editing, renaming, restoring the original,
- * confirming a projected installment and manual entries (RF-43 to RF-50, RN-08, RN-14).
+ * Changes made by the user on the card entries tab: inline editing, renaming, restoring the original and
+ * confirming a projected installment (RF-43 to RF-50, RN-08, RN-14).
  *
  * @since 1.0
  */
@@ -43,10 +32,7 @@ public class EntryCommands {
     private final EntryQueries queries;
     private final PurchaseRepository purchases;
     private final BillEntryRepository entries;
-    private final CardBillRepository bills;
     private final AliasService aliases;
-    private final EntryLedger ledger;
-    private final CardQueries cards;
 
     /**
      * Creates the commands.
@@ -54,20 +40,14 @@ public class EntryCommands {
      * @param queries   entry queries
      * @param purchases purchase storage
      * @param entries   entry storage
-     * @param bills     bill storage
      * @param aliases   alias service
-     * @param ledger    ledger, for manual purchases
-     * @param cards     card queries, for cycles
      */
     public EntryCommands(EntryQueries queries, PurchaseRepository purchases, BillEntryRepository entries,
-            CardBillRepository bills, AliasService aliases, EntryLedger ledger, CardQueries cards) {
+            AliasService aliases) {
         this.queries = queries;
         this.purchases = purchases;
         this.entries = entries;
-        this.bills = bills;
         this.aliases = aliases;
-        this.ledger = ledger;
-        this.cards = cards;
     }
 
     /**
@@ -141,39 +121,6 @@ public class EntryCommands {
         }
         entry.confirmManually();
         entries.save(entry);
-        return queries.get(entryId);
-    }
-
-    /**
-     * Records a purchase that was not imported, already validated; the billing period follows the card's
-     * cycle and known closing dates, and installment purchases project the next installments (RF-44, RF-45,
-     * RF-79c, RN-01, RN-22).
-     *
-     * @param cardId           card (an additional card resolves to its primary card)
-     * @param purchaseDate     purchase date
-     * @param description      description
-     * @param installmentAmount amount of each installment
-     * @param installmentCount number of installments, 1 for a single purchase
-     * @param memberId         member, or {@code null} for the card's default member
-     * @param categoryId       category, or {@code null}
-     * @param note             note, or {@code null}
-     * @return the first entry
-     */
-    public EntryRow addManual(long cardId, LocalDate purchaseDate, String description, Money installmentAmount,
-            int installmentCount, Long memberId, Long categoryId, String note) {
-        CardView card = cards.find(cardId).orElseThrow(() -> new InvalidInputException("import-card-unknown", cardId));
-        long billingCard = card.billingCardId();
-        BillingPeriod month = BillingPeriod.ofDueDate(purchaseDate);
-        CycleView cycle = cards.cycleFor(billingCard, month).orElseThrow(() -> new InvalidInputException("card-without-cycle", cardId));
-        Map<BillingPeriod, LocalDate> known = bills.findByCardId(billingCard).stream()
-                .filter(b -> b.closingDate() != null)
-                .collect(Collectors.toMap(CardBill::billingPeriod, CardBill::closingDate, (a, b) -> a));
-        BillingPeriod period = BillingPeriodPolicy.firstPeriod(purchaseDate, cycle.closingDay(), cycle.dueDay(), known);
-        boolean installments = installmentCount > 1;
-        long entryId = ledger.recordPurchase(null, new NewPurchase(billingCard, card.lastDigits().getFirst(), false,
-                purchaseDate, description.strip(), installments ? 1 : null, installments ? installmentCount : null,
-                installmentAmount, installmentAmount.isNegative() ? "CREDIT" : "PURCHASE", null, note, period, purchaseDate,
-                1, memberId != null ? memberId : card.defaultMemberId(), categoryId, true));
         return queries.get(entryId);
     }
 }

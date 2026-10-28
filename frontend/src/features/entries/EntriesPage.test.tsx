@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n/i18n';
 import { useBillingPeriodStore } from '../../shared/state/billingPeriod';
 import { renderWithProviders } from '../../test/render';
@@ -129,5 +129,78 @@ describe('EntriesPage', () => {
     fireEvent.click(screen.getByLabelText('Só este lançamento'));
     fireEvent.keyDown(input, { key: 'Enter' });
     await waitFor(() => expect(renamed).toEqual({ displayName: 'Padaria da esquina', scope: 'ONLY_THIS' }));
+  });
+
+  it('RF-44: a manual entry goes to the chosen bill and the page follows it there', async () => {
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.get(`${base}/api/cards`, () => HttpResponse.json({ _embedded: { cards: [{ id: 7, nickname: 'Itaú', active: true }] } })),
+      http.post(`${base}/api/bill-entries`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(entry(9, 'Geladeira', 250, { billingPeriod: '2026-11' }), { status: 201 });
+      }),
+    );
+    renderWithProviders(<EntriesPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /Novo lançamento/ }));
+    const form = screen.getByRole('form', { name: 'Lançamento manual' });
+    await within(form).findByRole('option', { name: 'Itaú' });
+    expect(within(form).getByLabelText('Fatura (competência)')).toHaveValue('2026-10');
+    fireEvent.change(within(form).getByLabelText('Fatura (competência)'), { target: { value: '2026-11' } });
+    fireEvent.change(within(form).getByLabelText('Descrição'), { target: { value: 'Geladeira' } });
+    fireEvent.change(within(form).getByLabelText('Valor da parcela'), { target: { value: '250,00' } });
+    fireEvent.submit(form);
+
+    await waitFor(() => expect(useBillingPeriodStore.getState().period).toBe('2026-11'));
+    expect(body).toMatchObject({ cardId: 7, description: 'Geladeira', amount: 250, installmentCount: 1, billingPeriod: '2026-11' });
+    expect(screen.queryByRole('form', { name: 'Lançamento manual' })).not.toBeInTheDocument();
+  });
+
+  it('RF-44, API-09: a manual entry offers edit and delete; the edit replaces its purchase', async () => {
+    let replaced: { body: unknown; ifMatch: string | null } | undefined;
+    let deleted = false;
+    const manualLinks = (id: number) => ({
+      self: { href: `${base}/api/bill-entries/${id}` },
+      purchase: { href: `${base}/api/purchases/${id}` },
+      rename: { href: `${base}/api/bill-entries/${id}/alias` },
+      'replace-purchase': { href: `${base}/api/bill-entries/${id}/purchase` },
+      delete: { href: `${base}/api/bill-entries/${id}` },
+    });
+    server.use(
+      http.get(`${base}/api/cards`, () => HttpResponse.json({ _embedded: { cards: [{ id: 7, nickname: 'Itaú', active: true }] } })),
+      http.get(`${base}/api/bill-entries`, () =>
+        HttpResponse.json({
+          _embedded: { billEntries: [entry(1, 'PADARIA', 12.5), entry(4, 'Sofá', 300, { version: 3, _links: manualLinks(4) })] },
+        }),
+      ),
+      http.put(`${base}/api/bill-entries/4/purchase`, async ({ request }) => {
+        replaced = { body: await request.json(), ifMatch: request.headers.get('If-Match') };
+        return HttpResponse.json(entry(4, 'Sofá', 350, { _links: manualLinks(4) }));
+      }),
+      http.delete(`${base}/api/bill-entries/4`, () => {
+        deleted = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    renderWithProviders(<EntriesPage />);
+
+    fireEvent.click(within((await screen.findByText('PADARIA')).closest('tr')!).getByText('-'));
+    const imported = screen.getByRole('complementary', { name: 'Detalhes do lançamento' });
+    expect(within(imported).queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
+    expect(within(imported).queryByRole('button', { name: 'Excluir' })).not.toBeInTheDocument();
+
+    fireEvent.click(within(screen.getByText('Sofá').closest('tr')!).getByText('-'));
+    const details = screen.getByRole('complementary', { name: 'Detalhes do lançamento' });
+    fireEvent.click(within(details).getByRole('button', { name: 'Editar' }));
+    const form = screen.getByRole('form', { name: 'Editar lançamento manual' });
+    expect(within(form).getByLabelText('Descrição')).toHaveValue('Sofá');
+    fireEvent.change(within(form).getByLabelText('Valor da parcela'), { target: { value: '350,00' } });
+    fireEvent.submit(form);
+    await waitFor(() => expect(replaced?.ifMatch).toBe('"3"'));
+    expect(replaced?.body).toMatchObject({ cardId: 7, description: 'Sofá', amount: 350, billingPeriod: '2026-10' });
+
+    fireEvent.click(within(details).getByRole('button', { name: 'Excluir' }));
+    await waitFor(() => expect(deleted).toBe(true));
+    confirm.mockRestore();
   });
 });

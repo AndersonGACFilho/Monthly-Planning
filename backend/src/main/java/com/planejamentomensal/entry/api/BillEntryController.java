@@ -4,6 +4,7 @@ import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryFilter;
 import com.planejamentomensal.entry.application.EntryQueries;
 import com.planejamentomensal.entry.application.EntryRow;
+import com.planejamentomensal.entry.application.ManualEntryUseCase;
 import com.planejamentomensal.entry.application.ReviewItem;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
@@ -37,8 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries
- * (RF-40 to RF-51).
+ * Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries that can
+ * be replaced or deleted (RF-40 to RF-51).
  *
  * @since 1.0
  */
@@ -48,6 +49,7 @@ public class BillEntryController {
 
     private final EntryQueries queries;
     private final EntryCommands commands;
+    private final ManualEntryUseCase manual;
     private final BillEntryModelAssembler assembler;
 
     /**
@@ -55,11 +57,14 @@ public class BillEntryController {
      *
      * @param queries   entry queries
      * @param commands  entry commands
+     * @param manual    manual purchases
      * @param assembler HAL assembler
      */
-    public BillEntryController(EntryQueries queries, EntryCommands commands, BillEntryModelAssembler assembler) {
+    public BillEntryController(EntryQueries queries, EntryCommands commands, ManualEntryUseCase manual,
+            BillEntryModelAssembler assembler) {
         this.queries = queries;
         this.commands = commands;
+        this.manual = manual;
         this.assembler = assembler;
     }
 
@@ -159,18 +164,46 @@ public class BillEntryController {
     }
 
     /**
-     * Records a purchase that was not imported, already validated; installment purchases project the next
-     * installments (RF-44, RF-45, RF-79c).
+     * Records a purchase that was not imported, already validated, on the chosen bill or the one the card's cycle
+     * gives; installment purchases project the next installments (RF-44, RF-45, RF-79c).
      *
      * @param request purchase
      * @return 201 with the first entry
      */
     @PostMapping
     public ResponseEntity<BillEntryModel> createEntry(@Valid @RequestBody ManualEntryRequest request) {
-        EntryRow row = commands.addManual(request.cardId(), request.purchaseDate(), request.description(),
-                Money.of(request.amount()), request.installmentCount(), request.memberId(), request.categoryId(), request.note());
-        BillEntryModel model = assembler.toModel(row);
+        BillEntryModel model = assembler.toModel(manual.create(request.toPurchase()));
         return ResponseEntity.created(model.getRequiredLink("self").toUri()).body(model);
+    }
+
+    /**
+     * Replaces the purchase of a manual entry and all its installments, while no imported bill has seen it.
+     *
+     * @param id      any entry of the purchase
+     * @param request new purchase data
+     * @param ifMatch purchase version being edited
+     * @return the first entry of the replaced purchase
+     */
+    @PutMapping("/{id}/purchase")
+    public ResponseEntity<BillEntryModel> replaceEntryPurchase(@PathVariable long id,
+            @Valid @RequestBody ManualEntryRequest request,
+            @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+        EntryRow row = manual.replace(id, request.toPurchase(), ETags.expectedVersion(ifMatch));
+        return ETags.ok(assembler.toModel(row), row.version());
+    }
+
+    /**
+     * Deletes the purchase of a manual entry with all its installments, while no imported bill has seen it.
+     *
+     * @param id      any entry of the purchase
+     * @param ifMatch purchase version the client saw
+     * @return 204
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> removeEntry(@PathVariable long id,
+            @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
+        manual.delete(id, ETags.expectedVersion(ifMatch));
+        return ResponseEntity.noContent().build();
     }
 
     private static Comparator<EntryRow> comparator(Sort sort) {

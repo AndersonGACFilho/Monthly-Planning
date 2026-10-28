@@ -34,6 +34,8 @@ import java.util.Map;
  * @param reviewStatus        pending or reviewed
  * @param refundStatus        none, partial or full
  * @param note                note, or {@code null}
+ * @param manual              {@code true} for a purchase typed by the user that no imported bill has seen yet,
+ *                            so it can still be replaced or deleted
  * @param version             purchase version for {@code If-Match}
  * @since 1.0
  */
@@ -41,7 +43,7 @@ public record EntryRow(long entryId, long purchaseId, long cardBillId, long card
         BillingPeriod billingPeriod, LocalDate entryDate, LocalDate purchaseDate, String originalDescription,
         String displayDescription, boolean renamed, Long aliasId, String installment, String type, String kind,
         Money amount, String status, Long categoryId, List<ReviewItem.Share> splits, String reviewStatus,
-        String refundStatus, String note, long version) {
+        String refundStatus, String note, boolean manual, long version) {
 
     /**
      * Divides the amount between the members of the purchase without losing cents (RF-26).

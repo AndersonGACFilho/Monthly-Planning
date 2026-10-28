@@ -188,6 +188,11 @@
     "selected_other": "{{count}} selecionados"
   },
   "entries": {
+    "editManual": "Editar lançamento manual",
+    "billingPeriod": "Fatura (competência)",
+    "noCards": "Cadastre um cartão em Ajustes antes de lançar uma compra.",
+    "confirmDeleteInstallments_one": "Excluir esta compra? Esta ação não pode ser desfeita.",
+    "confirmDeleteInstallments_other": "Excluir esta compra e suas {{count}} parcelas? Esta ação não pode ser desfeita.",
     "newEntry": "Novo lançamento",
     "manual": "Lançamento manual",
     "type": "Tipo",
