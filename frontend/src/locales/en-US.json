@@ -433,6 +433,7 @@
     "memberFilter": "Show only member",
     "everyone": "All members",
     "chart": "Expense by category chart",
+    "openCategory": "See entries of {{category}}",
     "totalsByMember": "Total expense by member"
   },
   "statements": {

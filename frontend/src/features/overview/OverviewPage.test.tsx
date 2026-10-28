@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
+import { useLocation } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '../../i18n/i18n';
 import { useBillingPeriodStore } from '../../shared/state/billingPeriod';
@@ -8,6 +9,12 @@ import { server, useMockApi } from '../../test/server';
 import { OverviewPage } from './OverviewPage';
 
 const base = 'http://127.0.0.1:9999';
+
+/** Shows where the router is, to check the links of the page. */
+function Where() {
+  const location = useLocation();
+  return <p data-testid="where">{location.pathname + location.search}</p>;
+}
 
 const summary = (extra: Record<string, unknown> = {}) => ({
   billingPeriod: '2026-11',
@@ -56,7 +63,14 @@ describe('OverviewPage', () => {
         }),
       ),
       http.get(`${base}/api/categories`, () =>
-        HttpResponse.json({ _embedded: { categories: [{ id: 5, name: 'Mercado', color: '#16a34a', icon: 'shopping-cart' }] } }),
+        HttpResponse.json({
+          _embedded: {
+            categories: [
+              { id: 5, name: 'Mercado', color: '#16a34a', icon: 'shopping-cart' },
+              { id: 1, name: 'Não classificado', color: '#9aa4af', icon: 'circle-help', system: true },
+            ],
+          },
+        }),
       ),
       http.get(`${base}/api/settings`, () => HttpResponse.json({ 'alert-warning-percent': '80', 'alert-danger-percent': '100' })),
     );
@@ -100,5 +114,19 @@ describe('OverviewPage', () => {
     fireEvent.change(screen.getByLabelText('Ver só a conta'), { target: { value: '2' } });
     await waitFor(() => expect(members).toContain('2'));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('RF-12, RF-38: a category opens its entries, and expenses without one open "not classified"', async () => {
+    server.use(http.get(`${base}/api/summaries/2026-11`, () => HttpResponse.json(summary())));
+    renderWithProviders(
+      <>
+        <OverviewPage />
+        <Where />
+      </>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Mercado' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('/entries?billingPeriod=2026-11&category=5');
+    fireEvent.click(await screen.findByRole('button', { name: 'Não classificado' }));
+    expect(screen.getByTestId('where')).toHaveTextContent('/entries?billingPeriod=2026-11&category=1');
   });
 });

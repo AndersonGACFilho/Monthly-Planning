@@ -433,6 +433,7 @@
     "memberFilter": "Ver só a conta",
     "everyone": "Todas as contas",
     "chart": "Gráfico de despesas por categoria",
+    "openCategory": "Ver lançamentos de {{category}}",
     "totalsByMember": "Despesa total por conta"
   },
   "statements": {

@@ -3,16 +3,15 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useMonthlySummary } from '../../api/generated/endpoints/monthly-summary-controller/monthly-summary-controller';
-import { CategoryIcon } from '../../shared/components/CategoryIcon';
 import { Field } from '../../shared/components/Field';
 import { MemberPicker } from '../../shared/components/MemberPicker';
 import { MoneyText } from '../../shared/components/MoneyText';
 import { SummaryCard } from '../../shared/components/SummaryCard';
 import { formatMoney, formatPercent, formatPeriod } from '../../shared/format';
-import { useCategoryMap, useMemberMap } from '../../shared/hooks/useLookups';
+import { useMemberMap } from '../../shared/hooks/useLookups';
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
 import { useSettingsMap } from '../settings/GeneralSettings';
-import { CategoryChart } from './CategoryChart';
+import { CategoryBreakdown } from './CategoryBreakdown';
 import { MemberTotalsTable } from './MemberTotalsTable';
 
 const TONES = { NONE: 'success', WARNING: 'warning', DANGER: 'danger' } as const;
@@ -31,7 +30,6 @@ export function OverviewPage() {
   const [member, setMember] = useState<number | null>(null);
   const { data: summary } = useMonthlySummary(period, member == null ? undefined : { member });
   const settings = useSettingsMap();
-  const categories = useCategoryMap();
   const members = useMemberMap();
   const alert = (summary?.alert ?? 'NONE') as keyof typeof TONES;
   const threshold = alert === 'DANGER' ? (settings['alert-danger-percent'] ?? '100') : (settings['alert-warning-percent'] ?? '80');
@@ -95,52 +93,7 @@ export function OverviewPage() {
         <p className="text-sm text-(--color-text-muted)">{t('overview.unconfirmed', { count: summary?.unconfirmedCount })}</p>
       )}
 
-      <section className="grid gap-4 wide:grid-cols-2" aria-labelledby="by-category-title">
-        <h2 id="by-category-title" className="text-lg font-semibold wide:col-span-2">
-          {t('overview.byCategory')}
-        </h2>
-        <CategoryChart rows={summary?.categories ?? []} />
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">{t('overview.category')}</th>
-                <th scope="col" className="text-right">
-                  {t('recurrence.amount')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('overview.share')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('overview.variation')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {(summary?.categories ?? []).map((row) => {
-                const category = row.categoryId != null ? categories.get(row.categoryId) : undefined;
-                return (
-                  <tr key={row.categoryId ?? 'none'}>
-                    <th scope="row" className="font-normal">
-                      <span className="inline-flex items-center gap-2">
-                        <CategoryIcon icon={category?.icon} color={category?.color ?? '#9aa4af'} />
-                        {category?.name ?? t('overview.unclassified')}
-                      </span>
-                    </th>
-                    <td className="text-right">
-                      <MoneyText value={row.amount} />
-                    </td>
-                    <td className="text-right">{formatPercent(row.percentOfTotal)}</td>
-                    <td className={`text-right ${(row.variation ?? 0) > 0 ? 'text-red-600' : 'text-emerald-700'}`}>
-                      {row.variation == null ? '—' : `${row.variation > 0 ? '+' : ''}${formatPercent(row.variation)}`}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <CategoryBreakdown rows={summary?.categories ?? []} period={period} member={member} />
 
       <section className="flex flex-col gap-3" aria-labelledby="by-member-title">
         <h2 id="by-member-title" className="text-lg font-semibold">
