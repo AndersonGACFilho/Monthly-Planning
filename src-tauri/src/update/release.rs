@@ -146,6 +146,17 @@ mod tests {
         assert!(matches!(newest_after(&json, &current()), Err(UpdateError::Release(_))));
     }
 
+    /// Reaches the real GitHub API over HTTPS with the bundled certificates: `cargo test -- --ignored`. A release
+    /// published before checksums existed counts as reached.
+    #[test]
+    #[ignore = "needs internet"]
+    fn por_16_reads_real_github_releases() {
+        match fetch_newer(RELEASES_URL, &Version::new(0, 0, 0)) {
+            Ok(_) | Err(UpdateError::Release(_)) => {}
+            Err(e) => panic!("{e}"),
+        }
+    }
+
     #[test]
     fn por_16_unexpected_answer_is_an_error() {
         assert!(matches!(newest_after(r#"{"message":"rate limited"}"#, &current()), Err(UpdateError::Release(_))));

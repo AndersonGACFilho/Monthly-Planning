@@ -129,11 +129,18 @@ fn stop_backend(app: &AppHandle) {
     }
 }
 
-/// Stops the backend and restarts the app, which moves a downloaded update in before opening (POR-16).
+/// Stops the backend and restarts the app, which moves a downloaded update in before opening (POR-16). Off the
+/// main thread, so the window stays responsive while the backend closes.
 #[tauri::command]
-fn update_restart(app: AppHandle) {
-    stop_backend(&app);
-    restart(&app);
+async fn update_restart(app: AppHandle) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        stop_backend(&app);
+        let code = app.state::<Updater>().restart().map_err(|e| e.to_string())?;
+        app.exit(code);
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 /// Starts the app again and ends this process.
