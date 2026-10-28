@@ -1,7 +1,7 @@
 // Single source of interface texts: each leaf is [pt-BR, en-US]. Run `node scripts/build-locales.mjs`
 // to write src/locales/*.json, which keeps both languages with the same keys (I18N-13).
 export default {
-  app: { name: ['Planejamento Mensal', 'Planejamento Mensal'], loading: ['Carregando…', 'Loading…'], menu: ['Menu principal', 'Main menu'] },
+  app: { name: ['Planejamento Mensal', 'Monthly Planner'], loading: ['Carregando…', 'Loading…'], menu: ['Menu principal', 'Main menu'] },
   nav: {
     overview: ['Visão geral', 'Overview'],
     history: ['Histórico', 'History'],
@@ -14,6 +14,13 @@ export default {
     deliveries: ['Envios', 'Deliveries'],
     settings: ['Ajustes', 'Settings'],
     registry: ['Cadastros', 'Registries'],
+  },
+  theme: {
+    system: ['Igual ao sistema', 'Same as the system'],
+    light: ['Claro (diurno)', 'Light (day)'],
+    dark: ['Escuro (noturno)', 'Dark (night)'],
+    toDark: ['Mudar para o modo noturno', 'Switch to night mode'],
+    toLight: ['Mudar para o modo diurno', 'Switch to day mode'],
   },
   page: { comingSoon: ['Esta tela ainda será construída.', 'This screen is not built yet.'] },
   error: {
@@ -224,6 +231,7 @@ export default {
     general: ['Geral', 'General'],
     language: ['Idioma', 'Language'],
     languageSystem: ['Igual ao sistema', 'Same as the system'],
+    theme: ['Tema', 'Theme'],
     alertWarning: ['Alerta amarelo (% da renda)', 'Yellow alert (% of income)'],
     alertDanger: ['Alerta vermelho (% da renda)', 'Red alert (% of income)'],
     horizon: ['Meses de assinaturas projetadas', 'Months of projected subscriptions'],

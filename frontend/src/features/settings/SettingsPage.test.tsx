@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '../../i18n/i18n';
@@ -29,8 +29,26 @@ describe('SettingsPage', () => {
       expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
     }
     expect(screen.getByLabelText('Idioma')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tema')).toHaveValue('');
     expect(screen.getByText(/feche o app/)).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Categorias' })).not.toBeInTheDocument();
+  });
+
+  it('UI-08: the theme chosen in settings is saved and applied', async () => {
+    let saved: Record<string, string> = {};
+    server.use(
+      http.patch(`${base}/api/settings`, async ({ request }) => {
+        saved = (await request.json()) as Record<string, string>;
+        return HttpResponse.json(saved);
+      }),
+    );
+    renderWithProviders(<SettingsPage />);
+    fireEvent.change(await screen.findByLabelText('Tema'), { target: { value: 'dark' } });
+    const general = screen.getByRole('form', { name: 'Geral' });
+    fireEvent.click(within(general).getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(saved.theme).toBe('dark'));
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    delete document.documentElement.dataset.theme;
   });
 
   it('POR-12, RNF-07: back up now writes to data/backups; all data can be exported', async () => {

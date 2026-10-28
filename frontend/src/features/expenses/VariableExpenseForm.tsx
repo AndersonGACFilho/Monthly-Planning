@@ -80,7 +80,7 @@ export function VariableExpenseForm({ expense, period, onDone }: VariableExpense
   });
 
   return (
-    <form onSubmit={submit} className="panel grid grid-cols-2 gap-3 wide:grid-cols-4" aria-label={t('variableExpense.form')}>
+    <form onSubmit={submit} className="panel form-grid" aria-label={t('variableExpense.form')}>
       <Field label={t('variableExpense.date')} htmlFor="expense-date" error={errors.expenseDate && t('validation.required')}>
         <input id="expense-date" type="date" className="input" {...register('expenseDate')} />
       </Field>

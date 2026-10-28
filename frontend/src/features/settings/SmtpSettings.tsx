@@ -27,7 +27,7 @@ export function SmtpSettings() {
 
   return (
     <form
-      className="panel grid grid-cols-2 gap-3 wide:grid-cols-3"
+      className="panel form-grid"
       aria-labelledby="smtp-title"
       onSubmit={async (event) => {
         event.preventDefault();
@@ -68,7 +68,7 @@ export function SmtpSettings() {
           onChange={(e) => setNewPassword(e.target.value)}
         />
       </Field>
-      <label className="flex items-center gap-2 self-end text-sm">
+      <label className="check-field">
         <input type="checkbox" checked={draft['smtp-starttls'] === 'true'} onChange={(e) => set('smtp-starttls', String(e.target.checked))} />
         {t('smtp.starttls')}
       </label>

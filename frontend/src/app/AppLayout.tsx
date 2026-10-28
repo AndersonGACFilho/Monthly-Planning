@@ -4,6 +4,7 @@ import { useReviewSummary } from '../api/generated/endpoints/review-queue-contro
 import { useShortcuts } from './useShortcuts';
 import { WorkbookExportButton } from '../features/workbook/WorkbookExportButton';
 import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
+import { ThemeToggle } from '../shared/components/ThemeToggle';
 import { Toaster } from '../shared/components/Toaster';
 import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
 import { useStartup } from './useStartup';
@@ -41,7 +42,8 @@ export function AppLayout() {
         <header className="grid grid-cols-[1fr_auto_1fr] items-center border-b border-(--color-border) px-4 py-2">
           <span />
           <BillingPeriodSelector />
-          <span className="flex justify-end">
+          <span className="flex items-center justify-end gap-2">
+            <ThemeToggle />
             <WorkbookExportButton />
           </span>
         </header>

@@ -1,3 +1,4 @@
+import { isTauri } from '@tauri-apps/api/core';
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import enUS from '../locales/en-US.json';
@@ -41,5 +42,26 @@ void i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
   returnNull: false,
 });
+
+/**
+ * Keeps the page language, the page title and the window title in the interface language: the app name
+ * is translated too ("Planejamento Mensal", "Monthly Planner").
+ *
+ * @param language - new language
+ */
+function syncDocument(language: string): void {
+  if (typeof document === 'undefined') return;
+  const name = i18n.t('app.name', { lng: language });
+  document.documentElement.lang = language;
+  document.title = name;
+  if (isTauri()) {
+    void import('@tauri-apps/api/window')
+      .then(({ getCurrentWindow }) => getCurrentWindow().setTitle(name))
+      .catch(() => undefined);
+  }
+}
+
+i18n.on('languageChanged', syncDocument);
+if (i18n.isInitialized) syncDocument(i18n.language);
 
 export default i18n;

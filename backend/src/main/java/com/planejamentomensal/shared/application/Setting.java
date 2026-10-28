@@ -13,6 +13,8 @@ public enum Setting {
 
     /** Interface language (I18N-03); empty means "follow the system". */
     LANGUAGE("language", "", v -> v.isEmpty() || v.equals("pt-BR") || v.equals("en-US")),
+    /** Colour theme of the interface (UI-08); empty means "follow the system". */
+    THEME("theme", "", v -> v.isEmpty() || v.equals("light") || v.equals("dark")),
     /** Percentage of income spent that turns the alert yellow (RF-16). */
     ALERT_WARNING_PERCENT("alert-warning-percent", "80", Setting::isPercent),
     /** Percentage of income spent that turns the alert red (RF-16). */

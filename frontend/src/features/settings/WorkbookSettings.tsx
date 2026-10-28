@@ -51,7 +51,7 @@ export function WorkbookSettings() {
 
   return (
     <form
-      className="panel grid grid-cols-2 gap-3 wide:grid-cols-4"
+      className="panel form-grid"
       aria-labelledby="workbook-settings-title"
       onSubmit={async (event) => {
         event.preventDefault();
@@ -67,7 +67,7 @@ export function WorkbookSettings() {
       <h2 id="workbook-settings-title" className="col-span-full text-lg font-semibold">
         {t('workbook.settings')}
       </h2>
-      <fieldset className="col-span-2 flex flex-col gap-1">
+      <fieldset className="col-span-2 flex flex-col gap-1 self-start">
         <legend className="text-sm text-(--color-text-muted)">{t('workbook.memberSheets')}</legend>
         {members.map((m) => (
           <label key={m.id} className="flex items-center gap-2 text-sm">
@@ -82,7 +82,7 @@ export function WorkbookSettings() {
           </label>
         ))}
       </fieldset>
-      <fieldset className="col-span-2 flex flex-col gap-1">
+      <fieldset className="col-span-2 flex flex-col gap-1 self-start">
         <legend className="text-sm text-(--color-text-muted)">{t('workbook.cardOrder')}</legend>
         {orderedCards.map((c, i) => (
           <div key={c.id} className="flex items-center gap-2 text-sm">

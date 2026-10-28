@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { createDefaultCategories } from '../api/generated/endpoints/category-controller/category-controller';
 import { settings as getSettings } from '../api/generated/endpoints/settings-controller/settings-controller';
 import i18n, { detectLanguage, type Language } from '../i18n/i18n';
+import { applyTheme } from '../shared/theme';
 
 let started = false;
 
@@ -14,7 +15,7 @@ export function resetStartup(): void {
 }
 
 /**
- * First steps after the local service answers: apply the saved language (I18N-03) and create the initial
+ * First steps after the local service answers: apply the saved theme (UI-08) and language (I18N-03) and create the initial
  * categories in that language on first use (I18N-07; the backend does nothing when categories exist).
  */
 export function useStartup(): void {
@@ -24,6 +25,7 @@ export function useStartup(): void {
     started = true;
     void (async () => {
       const settings = (await getSettings()) as unknown as Record<string, string>;
+      applyTheme(settings.theme);
       const language = (settings.language || detectLanguage(navigator.languages)) as Language;
       await i18n.changeLanguage(language);
       const created = await createDefaultCategories({ language });

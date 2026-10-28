@@ -59,7 +59,7 @@ export function MemberEditor({ member, onDone }: MemberEditorProps) {
   });
 
   return (
-    <form onSubmit={submit} className="panel grid grid-cols-2 gap-3 wide:grid-cols-4" aria-label={t('member.form')}>
+    <form onSubmit={submit} className="panel form-grid" aria-label={t('member.form')}>
       <Field label={t('member.code')} htmlFor="member-code" error={errors.code && t('member.codeHint')}>
         <input id="member-code" className="input uppercase" maxLength={4} {...register('code', { setValueAs: (v: string) => v.toUpperCase() })} />
       </Field>

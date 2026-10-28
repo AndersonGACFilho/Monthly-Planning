@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Planejamento Mensal",
+    "name": "Monthly Planner",
     "loading": "Loading…",
     "menu": "Main menu"
   },
@@ -16,6 +16,13 @@
     "deliveries": "Deliveries",
     "settings": "Settings",
     "registry": "Registries"
+  },
+  "theme": {
+    "system": "Same as the system",
+    "light": "Light (day)",
+    "dark": "Dark (night)",
+    "toDark": "Switch to night mode",
+    "toLight": "Switch to day mode"
   },
   "page": {
     "comingSoon": "This screen is not built yet."
@@ -238,6 +245,7 @@
     "general": "General",
     "language": "Language",
     "languageSystem": "Same as the system",
+    "theme": "Theme",
     "alertWarning": "Yellow alert (% of income)",
     "alertDanger": "Red alert (% of income)",
     "horizon": "Months of projected subscriptions",

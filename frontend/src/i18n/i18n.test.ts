@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import enUS from '../locales/en-US.json';
 import ptBR from '../locales/pt-BR.json';
-import { detectLanguage } from './i18n';
+import i18n, { detectLanguage } from './i18n';
 
 function keys(object: object, prefix = ''): string[] {
   return Object.entries(object).flatMap(([key, value]) =>
@@ -29,5 +29,13 @@ describe('detectLanguage', () => {
 describe('locales', () => {
   it('I18N-13: pt-BR and en-US have the same keys', () => {
     expect(keys(enUS).sort()).toEqual(keys(ptBR).sort());
+  });
+
+  it('I18N-03: the app name and the page title follow the language', async () => {
+    await i18n.changeLanguage('en-US');
+    expect(document.title).toBe('Monthly Planner');
+    expect(document.documentElement.lang).toBe('en-US');
+    await i18n.changeLanguage('pt-BR');
+    expect(document.title).toBe('Planejamento Mensal');
   });
 });

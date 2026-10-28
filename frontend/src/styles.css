@@ -5,7 +5,8 @@
   --breakpoint-wide: 1200px;
 }
 
-/* Colour tokens, light by default and dark when the system asks for it (UI-08). */
+/* Colour tokens, light by default and dark when the system asks for it or the person picks it (UI-08).
+   `data-theme` on <html> holds the choice: absent follows the system, "light" or "dark" forces one. */
 :root {
   --color-surface: #ffffff;
   --color-surface-muted: #f4f5f7;
@@ -16,14 +17,40 @@
   color-scheme: light dark;
 }
 
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --color-surface: #16191d;
     --color-surface-muted: #1f2328;
     --color-border: #30363d;
     --color-text: #e6e8eb;
     --color-text-muted: #9aa4af;
     --color-accent: #6ea8fe;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-surface: #16191d;
+  --color-surface-muted: #1f2328;
+  --color-border: #30363d;
+  --color-text: #e6e8eb;
+  --color-text-muted: #9aa4af;
+  --color-accent: #6ea8fe;
+  color-scheme: dark;
+}
+
+/* Tailwind `dark:` follows the same choice. */
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]) *) {
+      @slot;
+    }
   }
 }
 
@@ -43,6 +70,21 @@ body {
 
 /* Shared controls, so screens do not repeat long class lists. */
 @layer components {
+  /* Form fields that wrap to the width available and keep their inputs on one line even when a label wraps. */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    align-items: end;
+    gap: 0.75rem;
+  }
+  /* A checkbox with its text, as tall as an input so it lines up with the fields next to it. */
+  .check-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: calc(0.875rem * 1.5 + 0.75rem + 2px);
+    font-size: 0.875rem;
+  }
   .input {
     border: 1px solid var(--color-border);
     border-radius: 0.25rem;

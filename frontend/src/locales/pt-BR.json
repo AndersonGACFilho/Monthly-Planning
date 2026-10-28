@@ -17,6 +17,13 @@
     "settings": "Ajustes",
     "registry": "Cadastros"
   },
+  "theme": {
+    "system": "Igual ao sistema",
+    "light": "Claro (diurno)",
+    "dark": "Escuro (noturno)",
+    "toDark": "Mudar para o modo noturno",
+    "toLight": "Mudar para o modo diurno"
+  },
   "page": {
     "comingSoon": "Esta tela ainda será construída."
   },
@@ -238,6 +245,7 @@
     "general": "Geral",
     "language": "Idioma",
     "languageSystem": "Igual ao sistema",
+    "theme": "Tema",
     "alertWarning": "Alerta amarelo (% da renda)",
     "alertDanger": "Alerta vermelho (% da renda)",
     "horizon": "Meses de assinaturas projetadas",

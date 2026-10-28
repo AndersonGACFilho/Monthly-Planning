@@ -75,7 +75,7 @@ export function CardEditor({ card, onDone }: CardEditorProps) {
   });
 
   return (
-    <form onSubmit={submit} className="panel grid grid-cols-2 gap-3 wide:grid-cols-4" aria-label={t('card.form')}>
+    <form onSubmit={submit} className="panel form-grid" aria-label={t('card.form')}>
       <Field label={t('card.nickname')} htmlFor="card-nickname" error={errors.nickname && t('validation.required')}>
         <input id="card-nickname" className="input" {...register('nickname')} />
       </Field>

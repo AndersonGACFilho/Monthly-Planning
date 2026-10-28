@@ -109,7 +109,7 @@ export function RecurrenceRuleForm({ kind, rule, period, oneOff, onDone }: Recur
   return (
     <form
       onSubmit={submit}
-      className="panel grid grid-cols-2 gap-3 wide:grid-cols-4"
+      className="panel form-grid"
       aria-label={income ? t('income.form') : t('fixedExpense.form')}
     >
       <Field label={t('recurrence.description')} htmlFor={`${prefix}-description`} error={errors.description && t('validation.required')}>
