@@ -60,8 +60,15 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
         # The log goes to a file, never to a pipe nobody reads: a full pipe (small on Windows) blocks the JVM
         log_path = Path(work) / "backend.log"
         log = log_path.open("w", encoding="utf-8")
+        # The same JVM options as the shell (backend.rs): no hsperfdata in the system temp folder, and with
+        # --java (start-linux.sh) native libraries unpacked next to the copied JRE, where programs can run
+        options = [f"-Djava.io.tmpdir={home / 'data' / 'tmp'}", "-Dfile.encoding=UTF-8", "-XX:-UsePerfData"]
+        if java_override:
+            native = Path(work) / "native"
+            native.mkdir()
+            options.append(f"-Dorg.sqlite.tmpdir={native}")
         backend = subprocess.Popen(
-            [str(java), f"-Djava.io.tmpdir={home / 'data' / 'tmp'}",
+            [str(java), *options,
              "-jar", str(home / "backend" / "app.jar"), f"--app.home={home}", f"--server.port={port}",
              f"--app.parent-pid={os.getpid()}"],
             env=env, stdout=log, stderr=subprocess.STDOUT,

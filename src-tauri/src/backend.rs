@@ -3,6 +3,7 @@
 
 use crate::{app_home, http};
 use serde::Serialize;
+use std::env;
 use std::fs::{self, OpenOptions};
 use std::io;
 use std::net::{Ipv4Addr, TcpListener};
@@ -72,9 +73,7 @@ impl Backend {
 
         let mut command = Command::new(app_home::java_executable(home));
         command
-            // POR-03: the JVM temp dir (sqlite native library, uploads) stays inside the app folder
-            .arg(format!("-Djava.io.tmpdir={}", temp.display()))
-            .arg("-Dfile.encoding=UTF-8")
+            .args(jvm_options(&temp, env::var_os("PM_NATIVE_DIR").map(PathBuf::from).as_deref()))
             .arg("-jar")
             .arg(app_home::backend_jar(home))
             .arg(format!("--app.home={}", home.display()))
@@ -165,9 +164,37 @@ fn hide_console(command: &mut Command) {
 #[cfg(not(windows))]
 fn hide_console(_command: &mut Command) {}
 
+/// JVM options of the backend.
+///
+/// POR-03: the JVM temp dir (uploads, Tomcat) stays inside the app folder, and the JVM writes no performance
+/// data file (`hsperfdata_<user>`) to the system temp folder. `native` is where native libraries are unpacked
+/// when the app folder cannot run programs (exFAT mounted `noexec`, POR-09): `start-linux.sh` points it to its
+/// temporary copy through `PM_NATIVE_DIR`.
+fn jvm_options(temp: &Path, native: Option<&Path>) -> Vec<String> {
+    let mut options = vec![
+        format!("-Djava.io.tmpdir={}", temp.display()),
+        "-Dfile.encoding=UTF-8".to_string(),
+        "-XX:-UsePerfData".to_string(),
+    ];
+    if let Some(native) = native {
+        options.push(format!("-Dorg.sqlite.tmpdir={}", native.display()));
+    }
+    options
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn por_03_jvm_writes_nothing_outside_and_unpacks_natives_where_programs_run() {
+        let options = jvm_options(Path::new("/app/data/tmp"), None);
+        assert!(options.contains(&"-Djava.io.tmpdir=/app/data/tmp".to_string()));
+        assert!(options.contains(&"-XX:-UsePerfData".to_string()));
+        assert!(!options.iter().any(|o| o.starts_with("-Dorg.sqlite.tmpdir")));
+        let options = jvm_options(Path::new("/app/data/tmp"), Some(Path::new("/tmp/pm/native")));
+        assert!(options.contains(&"-Dorg.sqlite.tmpdir=/tmp/pm/native".to_string()));
+    }
 
     #[test]
     fn por_08_free_port_is_bindable() {

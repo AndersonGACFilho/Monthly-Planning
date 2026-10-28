@@ -11,6 +11,8 @@ cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT INT TERM
 
 cp -R "$HOME_DIR/backend/runtime-linux" "$TMP/jre"
+# Native libraries (SQLite) are unpacked here too: a noexec drive cannot load them from data/tmp
+mkdir -p "$TMP/native"
 chmod -R u+x "$TMP/jre/bin" "$TMP/jre/lib" 2>/dev/null || true
 
 if [ -f "$HOME_DIR/PlanejamentoMensal.AppImage" ]; then
@@ -26,9 +28,9 @@ fi
 
 if [ -n "${PM_START_DRY_RUN:-}" ]; then
   # Used by the packaging smoke test: everything is prepared, nothing is started
-  echo "would run: PM_APP_HOME=$HOME_DIR PM_JAVA_HOME=$TMP/jre $RUN"
+  echo "would run: PM_APP_HOME=$HOME_DIR PM_JAVA_HOME=$TMP/jre PM_NATIVE_DIR=$TMP/native $RUN"
   "$TMP/jre/bin/java" -version 2>&1 | head -1
   test -x "$RUN"
   exit 0
 fi
-PM_APP_HOME="$HOME_DIR" PM_JAVA_HOME="$TMP/jre" "$RUN" "$@"
+PM_APP_HOME="$HOME_DIR" PM_JAVA_HOME="$TMP/jre" PM_NATIVE_DIR="$TMP/native" "$RUN" "$@"
