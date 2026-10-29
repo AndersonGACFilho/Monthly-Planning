@@ -1,9 +1,10 @@
 //! Journal of an update (POR-16): which step it reached, so a crash or a power loss at any point ends in either
 //! the old or the new version, never in a mix.
 
+use crate::files;
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
-use std::io::{self, Write};
+use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 
 /// A top-level file or folder of the app replaced by the update.
@@ -54,19 +55,12 @@ impl Journal {
 
     /// Records `state`: written to a temporary file, flushed, then renamed over the journal.
     pub fn write(&self, state: &UpdateState) -> io::Result<()> {
-        let temporary = self.path.with_extension("tmp");
-        let mut file = File::create(&temporary)?;
-        file.write_all(&serde_json::to_vec_pretty(state).map_err(io::Error::other)?)?;
-        file.sync_all()?;
-        fs::rename(&temporary, &self.path)
+        files::write_replacing(&self.path, &serde_json::to_vec_pretty(state).map_err(io::Error::other)?)
     }
 
     /// Ends the update: without a journal the app starts as usual.
     pub fn clear(&self) -> io::Result<()> {
-        match fs::remove_file(&self.path) {
-            Err(e) if e.kind() != io::ErrorKind::NotFound => Err(e),
-            _ => Ok(()),
-        }
+        files::remove_file_if_present(&self.path)
     }
 }
 
@@ -86,7 +80,7 @@ mod tests {
         journal.write(&UpdateState::Staged { version: "0.2.0".into() }).unwrap();
         journal.write(&applied).unwrap();
         assert_eq!(journal.read().unwrap(), Some(applied));
-        assert!(!folder.path().join("state.tmp").exists());
+        assert!(!folder.path().join("state.json.tmp").exists());
         journal.clear().unwrap();
         journal.clear().unwrap();
         assert_eq!(journal.read().unwrap(), None);
