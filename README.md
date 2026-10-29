@@ -61,6 +61,11 @@ python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 The Windows half is built the same way on Windows (`--os windows`, `PlanejamentoMensal.exe`); CI assembles both
 into one zip. Users find start, backup, ejecting and update instructions in `LEIA-ME.md` inside the folder.
 
+The folder writes nothing outside itself (POR-03) with two exceptions: the temporary copy of `start-linux.sh`
+(POR-09), and the system menu entry the user may add in Settings (POR-18, `src-tauri/src/menu_shortcut/`): a Start
+Menu `.lnk` on Windows, a `.desktop` file and icon in `~/.local/share/applications/` on Linux. It is never created
+at start, so `portable_smoke.py` still finds nothing outside the folder.
+
 ## Releases
 
 Every commit pushed to `main` is a release once all CI jobs pass on it (POR-17). Its version is

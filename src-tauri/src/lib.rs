@@ -1,15 +1,18 @@
 //! Desktop shell: opens the window, runs the backend sidecar and closes both together (SPEC section 12), and
-//! installs updates of the portable folder (POR-16).
+//! installs updates of the portable folder (POR-16) and, on request, adds the app to the system menu (POR-18).
 
 mod app_home;
 mod backend;
+mod files;
 mod hex;
 mod http;
+mod menu_shortcut;
 mod messages;
 mod update;
 mod window_state;
 
 use backend::{Backend, BackendConfig, StartError, EXIT_LOCK_HELD, EXIT_LOCK_ORPHANED};
+use menu_shortcut::MenuShortcut;
 use std::path::PathBuf;
 use std::sync::{Condvar, Mutex};
 use std::thread;
@@ -167,6 +170,7 @@ pub fn run() {
     let home = app_home::resolve();
     // captured before an update renames the running file
     let relaunch = Relaunch::current();
+    let shortcut = MenuShortcut::current(&home);
     let installer = Installer::new(&home);
     if installer.resume() {
         // the folder now holds another version: run that one instead of this process
@@ -188,11 +192,15 @@ pub fn run() {
         .manage(installer)
         .manage(Updater::new(&home))
         .manage(relaunch)
+        .manage(shortcut)
         .invoke_handler(tauri::generate_handler![
             backend_config,
             update::commands::update_check,
             update::commands::update_download,
-            update_restart
+            update_restart,
+            menu_shortcut::commands::menu_shortcut_status,
+            menu_shortcut::commands::menu_shortcut_add,
+            menu_shortcut::commands::menu_shortcut_remove
         ])
         .setup(move |app| {
             if let Some(window) = app.get_webview_window("main") {
