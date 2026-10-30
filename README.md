@@ -54,7 +54,7 @@ python scripts/build_runtime.py backend/target/app.jar build/runtime
 frontend/node_modules/.bin/tauri build --bundles appimage
 python scripts/assemble_portable.py --os linux --shell src-tauri/target/release/PlanejamentoMensal \
   --jar backend/target/app.jar --runtime build/runtime --out dist/PlanejamentoMensal \
-  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_0.1.0_amd64.AppImage
+  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_*_amd64.AppImage
 python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 ```
 
@@ -71,7 +71,7 @@ at start, so `portable_smoke.py` still finds nothing outside the folder.
 Every commit pushed to `main` is a release once all CI jobs pass on it (POR-17). Its version is
 `<VERSION>.<patch>`: `VERSION` holds the major and minor, and the patch counts the commits on `main` since `VERSION`
 last changed, so each commit has exactly one version and a re-run neither changes nor duplicates it. To start a
-new minor or major, change `VERSION` (for example to `0.3`); that commit is `v0.3.0`.
+new minor or major, change `VERSION` (for example to `0.4`); that commit is `v0.4.0`.
 
 `scripts/version.py compute` gives the version and `scripts/version.py apply <version>` writes it into
 `tauri.conf.json`, `Cargo.toml`, `package.json`, `package-lock.json` and `pom.xml` in the CI working tree; the

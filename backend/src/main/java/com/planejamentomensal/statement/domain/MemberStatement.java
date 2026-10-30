@@ -23,7 +23,9 @@ import java.util.List;
  * @param cardTotal       sum of the card groups
  * @param fixedTotal      sum of the fixed expenses
  * @param variableTotal   sum of the variable expenses
- * @param total           total due: card + fixed + variable
+ * @param previousBalance amount still owed from the previous period, or {@code null} (RF-28)
+ * @param carriedOut      amount carried into the next period, or {@code null} (RF-28)
+ * @param total           total due: card + fixed + variable + previous balance
  * @param dueDate         earliest card due date of the period, or {@code null}
  * @param pixKey          PIX key for the payment, or {@code null}
  * @param pendingItems    descriptions of entries still pending review (RF-79b)
@@ -32,16 +34,25 @@ import java.util.List;
  */
 public record MemberStatement(long memberId, String memberCode, String memberName, boolean main, BillingPeriod billingPeriod,
         LocalDate issuedOn, List<CardGroup> cards, List<ExpenseLine> fixedExpenses, List<ExpenseLine> variableExpenses,
-        List<CommittedPeriod> committed, Money income, Money cardTotal, Money fixedTotal, Money variableTotal, Money total,
-        LocalDate dueDate, String pixKey, List<String> pendingItems, StatementOptions options) {
+        List<CommittedPeriod> committed, Money income, Money cardTotal, Money fixedTotal, Money variableTotal,
+        Carry previousBalance, Carry carriedOut, Money total, LocalDate dueDate, String pixKey, List<String> pendingItems, StatementOptions options) {
 
     /**
-     * Returns the balance of a MAIN member.
+     * Returns the balance: what the member earned or paid minus what they owe, after the carry-over.
      *
-     * @return income − total
+     * @return income − total + carried out
      */
     public Money balance() {
-        return income.minus(total);
+        return income.minus(total).plus(carriedOut == null ? Money.ZERO : carriedOut.amount());
+    }
+
+    /**
+     * Amount carried between this period and a neighbouring one (RF-28).
+     *
+     * @param billingPeriod the other period: where it came from, or where it went
+     * @param amount        positive amount
+     */
+    public record Carry(BillingPeriod billingPeriod, Money amount) {
     }
 
     /**

@@ -13,12 +13,14 @@ import java.util.List;
  * @param cardRows     rows of the cards sheet, grouped by card in the configured order, "Bills" group last
  * @param incomes      incomes of MAIN members
  * @param expenses     fixed (not card) and variable expenses of MAIN members
+ * @param carries      what third parties carried in from the previous period (positive) and out to the next one
+ *                     (negative), beside their reimbursements (RF-28)
  * @param categories   category names for the drop-down list
  * @param memberSheets one sheet per member marked in the settings (XLS-06)
  * @since 1.0
  */
 public record WorkbookData(BillingPeriod period, List<Member> members, List<CardRow> cardRows, List<Line> incomes,
-        List<Line> expenses, List<String> categories, List<MemberSheet> memberSheets) {
+        List<Line> expenses, List<Line> carries, List<String> categories, List<MemberSheet> memberSheets) {
 
     /**
      * A member as the spreadsheet sees it (XLS-04).
@@ -68,9 +70,10 @@ public record WorkbookData(BillingPeriod period, List<Member> members, List<Card
     /**
      * Rows of one member in one month.
      *
-     * @param period billing period
-     * @param rows   rows
+     * @param period     billing period
+     * @param rows       rows, the previous balance included (RF-28)
+     * @param carriedOut amount carried into the next month, shown below the block and out of its sum, or {@code null}
      */
-    public record MonthBlock(BillingPeriod period, List<CardRow> rows) {
+    public record MonthBlock(BillingPeriod period, List<CardRow> rows, Line carriedOut) {
     }
 }

@@ -10,6 +10,8 @@ import com.planejamentomensal.summary.domain.MemberTotalsCalculator.MemberTotal;
 import com.planejamentomensal.summary.domain.SettlementCalculator.Settlement;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +65,8 @@ class SummaryCalculatorsTest {
                 List.of(new MemberKindInfo(1, true), new MemberKindInfo(2, false)),
                 List.of(new IncomeLine(1, m("5000.00"))),
                 List.of(line(ExpenseSource.FIXED, 1, null, "1000.00", 1), line(ExpenseSource.VARIABLE, 1, null, "200.00", 1),
-                        line(ExpenseSource.CARD, 1, null, "300.00", 1), line(ExpenseSource.CARD, 2, null, "400.00", 1)));
+                        line(ExpenseSource.CARD, 1, null, "300.00", 1), line(ExpenseSource.CARD, 2, null, "400.00", 1)),
+                CarryOvers.NONE);
         MemberTotal house = totals.getFirst();
         assertThat(house.expense()).isEqualTo(m("1500.00"));
         assertThat(house.balance()).isEqualTo(m("3500.00"));
@@ -72,6 +75,34 @@ class SummaryCalculatorsTest {
         assertThat(mother.main()).isFalse();
         assertThat(mother.card()).isEqualTo(m("400.00"));
         assertThat(mother.percentSpent()).isNull();
+    }
+
+    @Test
+    @DisplayName("RF-28: a member's carry-overs change what is unpaid and the balance, never the expense")
+    void memberCarryOvers() {
+        CarryOvers carries = new CarryOvers(Map.of(2L, m("50.00")), Map.of(2L, m("250.00")));
+        MemberTotal mother = MemberTotalsCalculator.calculate(List.of(new MemberKindInfo(2, false)),
+                List.of(new IncomeLine(2, m("100.00"))), List.of(line(ExpenseSource.CARD, 2, null, "300.00", 1)), carries)
+                .getFirst();
+        assertThat(mother.expense()).isEqualTo(m("300.00"));
+        assertThat(mother.carriedIn()).isEqualTo(m("50.00"));
+        assertThat(mother.unpaid()).isEqualTo(m("250.00"));
+        assertThat(mother.carriedOut()).isEqualTo(m("250.00"));
+        assertThat(mother.balance()).isEqualTo(Money.ZERO);
+    }
+
+    @Test
+    @DisplayName("RF-28, XLS-04: carry-overs move third-party reimbursements between periods, not the expense")
+    void householdCarryOvers() {
+        List<ExpenseLine> lines = List.of(line(ExpenseSource.CARD, 1, null, "700.00", 1),
+                line(ExpenseSource.CARD, 2, null, "300.00", 1));
+        List<IncomeLine> incomes = List.of(new IncomeLine(1, m("5000.00")), new IncomeLine(2, m("100.00")));
+        CarryOvers carries = new CarryOvers(Map.of(2L, m("40.00")), Map.of(2L, m("240.00")));
+        HouseholdTotals household = HouseholdTotals.of(incomes, lines, Set.of(2L), null, carries);
+        assertThat(household.reimbursements()).isEqualTo(m("100.00"));
+        assertThat(household.income()).isEqualTo(m("5100.00"));
+        assertThat(household.expense()).isEqualTo(m("1000.00"));
+        assertThat(HouseholdTotals.of(incomes, lines, Set.of(2L), 2L, carries).reimbursements()).isEqualTo(Money.ZERO);
     }
 
     @Test

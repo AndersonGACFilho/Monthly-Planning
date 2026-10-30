@@ -3,6 +3,8 @@ package com.planejamentomensal.statement.application.workbook;
 import com.planejamentomensal.card.application.CardQueries;
 import com.planejamentomensal.card.application.CardView;
 import com.planejamentomensal.card.application.CycleView;
+import com.planejamentomensal.carryover.application.CarryOverCommands;
+import com.planejamentomensal.carryover.application.CarryOverView;
 import com.planejamentomensal.category.application.CategoryQueries;
 import com.planejamentomensal.category.application.CategoryView;
 import com.planejamentomensal.entry.application.EntryFilter;
@@ -31,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,10 @@ import org.springframework.transaction.annotation.Transactional;
  * <p>Card entries become one row per member share (UNCONFIRMED left out, Q6). Fixed and variable expenses of a
  * third party go to the "Bills" group of the cards sheet with the member code, so they count in that member's
  * total; those of MAIN members go to the monthly expenses sheet (XLS-03).</p>
+ *
+ * <p>A third party's carry-overs (RF-28) leave the cards sheet alone, so each month keeps its own total: they become
+ * income lines beside the reimbursements and, on the member sheets, a previous-balance row and a note below the
+ * block.</p>
  *
  * @since 1.0
  */
@@ -56,6 +63,7 @@ public class WorkbookDataCollector {
     private final EntryQueries entries;
     private final RecurrenceCommands recurrence;
     private final VariableExpenseCommands expenses;
+    private final CarryOverCommands carryOvers;
     private final Settings settings;
 
     /**
@@ -67,16 +75,19 @@ public class WorkbookDataCollector {
      * @param entries    card entries
      * @param recurrence incomes and fixed expenses
      * @param expenses   variable expenses
+     * @param carryOvers carry-overs
      * @param settings   card order, member sheets and neighbouring months
      */
     public WorkbookDataCollector(MemberQueries members, CardQueries cards, CategoryQueries categories, EntryQueries entries,
-            RecurrenceCommands recurrence, VariableExpenseCommands expenses, Settings settings) {
+            RecurrenceCommands recurrence, VariableExpenseCommands expenses, CarryOverCommands carryOvers,
+            Settings settings) {
         this.members = members;
         this.cards = cards;
         this.categories = categories;
         this.entries = entries;
         this.recurrence = recurrence;
         this.expenses = expenses;
+        this.carryOvers = carryOvers;
         this.settings = settings;
     }
 
@@ -111,7 +122,13 @@ public class WorkbookDataCollector {
         List<String> categoryList = categories.all().stream().map(CategoryView::name)
                 .sorted(String.CASE_INSENSITIVE_ORDER).toList();
         List<Member> memberList = all.stream().map(m -> new Member(m.id(), m.code(), m.name(), m.main())).toList();
-        return new WorkbookData(period, memberList, rows, incomes, monthly, categoryList,
+        List<Line> carries = new ArrayList<>();
+        thirdPartyCarries(carryOvers.incoming(period), byId).forEach(c -> carries.add(new Line(
+                labels.get("previousBalanceOf", label(byId.get(c.memberId())), monthYear(c.fromPeriod(), labels)), c.amount())));
+        thirdPartyCarries(carryOvers.outgoing(period), byId).forEach(c -> carries.add(new Line(
+                labels.get("carriedOutOf", label(byId.get(c.memberId())), monthYear(c.toPeriod(), labels)),
+                c.amount().negate())));
+        return new WorkbookData(period, memberList, rows, incomes, monthly, carries, categoryList,
                 memberSheets(period, orderedCards, byId, categoryNames, labels));
     }
 
@@ -128,12 +145,34 @@ public class WorkbookDataCollector {
             List<MonthBlock> blocks = new ArrayList<>();
             for (int i = -before; i <= after; i++) {
                 BillingPeriod month = period.plusMonths(i);
-                blocks.add(new MonthBlock(month, cardRows(month, orderedCards, byId, categoryNames,
-                        m -> m == memberId.longValue(), labels)));
+                List<CardRow> rows = cardRows(month, orderedCards, byId, categoryNames, m -> m == memberId.longValue(), labels);
+                memberCarry(carryOvers.incoming(month), memberId).ifPresent(c -> rows.add(new CardRow(
+                        labels.get("previousBalance"), 0, member.code(), "-", monthYear(c.fromPeriod(), labels), c.amount(),
+                        null, false)));
+                Line carriedOut = memberCarry(carryOvers.outgoing(month), memberId)
+                        .map(c -> new Line(labels.get("carriedOut", monthYear(c.toPeriod(), labels)), c.amount())).orElse(null);
+                blocks.add(new MonthBlock(month, rows, carriedOut));
             }
             sheets.add(new MemberSheet(sheetName(member.name(), labels.locale()), blocks));
         }
         return sheets;
+    }
+
+    private static List<CarryOverView> thirdPartyCarries(List<CarryOverView> carries, Map<Long, MemberView> byId) {
+        return carries.stream().filter(c -> byId.containsKey(c.memberId()) && !byId.get(c.memberId()).main())
+                .sorted(Comparator.comparing(c -> byId.get(c.memberId()).code())).toList();
+    }
+
+    private static Optional<CarryOverView> memberCarry(List<CarryOverView> carries, long memberId) {
+        return carries.stream().filter(c -> c.memberId() == memberId).findFirst();
+    }
+
+    private static String label(MemberView member) {
+        return member.code() + " — " + member.name();
+    }
+
+    private static String monthYear(BillingPeriod period, WorkbookLabels labels) {
+        return labels.month(period) + " " + period.year();
     }
 
     private List<CardRow> cardRows(BillingPeriod period, List<CardView> orderedCards, Map<Long, MemberView> byId,

@@ -99,7 +99,11 @@ public class MemberSheetWriter implements SheetWriter {
                         }
                     }
                     Cells.text(sheet, r, col, line.group(), styles[0]);
-                    Cells.number(sheet, r, col + 1, line.dueDay(), styles[1]);
+                    if (line.dueDay() > 0) {
+                        Cells.number(sheet, r, col + 1, line.dueDay(), styles[1]);
+                    } else {
+                        Cells.blank(sheet, r, col + 1, styles[1]);
+                    }
                     Cells.text(sheet, r, col + 2, line.installment(), styles[2]);
                     Cells.text(sheet, r, col + 3, line.description(), styles[3]);
                     Cells.number(sheet, r, col + 4, line.amount().amount().doubleValue(), styles[4]);
@@ -108,6 +112,11 @@ public class MemberSheetWriter implements SheetWriter {
                 String amountCol = Cells.col(col + 4);
                 Cells.formula(sheet, top, col + 4, block.rows().isEmpty() ? "0"
                         : "SUM(" + amountCol + (top + 3) + ":" + amountCol + r + ")", total);
+                if (block.carriedOut() != null) {
+                    Cells.text(sheet, r, col + 3, block.carriedOut().item(), row[3]);
+                    Cells.number(sheet, r, col + 4, block.carriedOut().amount().amount().doubleValue(), row[4]);
+                    r++;
+                }
                 nextRow[side] = r + GAP_ROWS;
             }
         }

@@ -54,6 +54,10 @@
       <div th:case="'SUMMARY'">
         <h2 th:text="${labels.summary}">Summary</h2>
         <table class="summary">
+          <tr th:if="${s.previousBalance != null}">
+            <td th:text="${labels.previousBalance} + ' (' + ${f.period(s.previousBalance.billingPeriod)} + ')'">Previous balance</td>
+            <td class="num" th:text="${f.money(s.previousBalance.amount)}">0</td>
+          </tr>
           <tr>
             <td th:text="${labels.totalDue}">Total due</td>
             <td class="num big" th:text="${f.money(s.total)}">0</td>
@@ -62,11 +66,15 @@
             <td th:text="${labels.dueDate}">Due</td>
             <td class="num" th:text="${f.date(s.dueDate)}">date</td>
           </tr>
-          <tr th:if="${s.main or !s.income.isZero()}">
+          <tr th:if="${s.main or !s.income.isZero() or s.carriedOut != null}">
             <td th:text="${labels.income}">Income</td>
             <td class="num" th:text="${f.money(s.income)}">0</td>
           </tr>
-          <tr th:if="${s.main or !s.income.isZero()}">
+          <tr th:if="${s.carriedOut != null}">
+            <td th:text="${labels.carriedOut} + ' ' + ${f.period(s.carriedOut.billingPeriod)}">Carried over</td>
+            <td class="num" th:text="${f.money(s.carriedOut.amount)}">0</td>
+          </tr>
+          <tr th:if="${s.main or !s.income.isZero() or s.carriedOut != null}">
             <td th:text="${labels.balance}">Balance</td>
             <td class="num" th:text="${f.money(s.balance())}">0</td>
           </tr>

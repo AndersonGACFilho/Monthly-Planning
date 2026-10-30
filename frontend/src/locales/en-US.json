@@ -447,7 +447,21 @@
     "everyone": "All members",
     "chart": "Expense by category chart",
     "openCategory": "See entries of {{category}}",
-    "totalsByMember": "Total expense by member"
+    "totalsByMember": "Total expense by member",
+    "previousBalance": "Previous balance",
+    "carriedOut": "Carried over"
+  },
+  "carryOver": {
+    "button": "Carry over unpaid balance",
+    "title": "Carry over unpaid balance to {{period}}",
+    "hint": "What each member still owes after the incomes received this month moves to {{period}} as previous balance. Entries stay in their own period.",
+    "unpaid": "Unpaid {{amount}}",
+    "carried": "Carried over {{amount}}",
+    "outdated": "Changed since it was carried over: tick to update.",
+    "submit": "Carry over",
+    "undo": "Undo carry-over of {{member}}",
+    "confirmUndo": "Undo the carry-over of {{member}}? The amount leaves {{period}}.",
+    "nothing": "No member owes anything this month."
   },
   "statements": {
     "members": "Members",

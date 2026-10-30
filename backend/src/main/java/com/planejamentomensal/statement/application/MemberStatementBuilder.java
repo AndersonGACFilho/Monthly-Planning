@@ -2,6 +2,8 @@ package com.planejamentomensal.statement.application;
 
 import com.planejamentomensal.card.application.CardQueries;
 import com.planejamentomensal.card.application.CardView;
+import com.planejamentomensal.carryover.application.CarryOverCommands;
+import com.planejamentomensal.carryover.application.CarryOverView;
 import com.planejamentomensal.category.application.CategoryQueries;
 import com.planejamentomensal.entry.application.CardBillQueries;
 import com.planejamentomensal.entry.application.EntryFilter;
@@ -21,6 +23,7 @@ import com.planejamentomensal.shared.domain.PaymentMethod;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.MemberStatement.CardGroup;
 import com.planejamentomensal.statement.domain.MemberStatement.CardLine;
+import com.planejamentomensal.statement.domain.MemberStatement.Carry;
 import com.planejamentomensal.statement.domain.MemberStatement.CommittedPeriod;
 import com.planejamentomensal.statement.domain.MemberStatement.ExpenseLine;
 import com.planejamentomensal.statement.domain.StatementOptions;
@@ -36,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,7 +49,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Card entries follow the overview rules: UNCONFIRMED entries are left out (Q6); an entry without shares
  * belongs to the card's default member. The PIX key shown is the one of the card payer when the member is a third
- * party, otherwise the member's own.</p>
+ * party, otherwise the member's own. What the member still owed from the previous period adds to the total due; what
+ * they carried into the next period is shown apart, so the period keeps its own total (RF-28).</p>
  *
  * @since 1.0
  */
@@ -62,6 +67,7 @@ public class MemberStatementBuilder {
     private final EntryQueries entries;
     private final RecurrenceCommands recurrence;
     private final VariableExpenseCommands expenses;
+    private final CarryOverCommands carryOvers;
     private final Clock clock;
 
     /**
@@ -74,11 +80,12 @@ public class MemberStatementBuilder {
      * @param entries    card entries
      * @param recurrence incomes and fixed expenses
      * @param expenses   variable expenses
+     * @param carryOvers carry-overs
      * @param clock      clock for the issue date
      */
     public MemberStatementBuilder(MemberQueries members, CardQueries cards, CardBillQueries bills,
             CategoryQueries categories, EntryQueries entries, RecurrenceCommands recurrence,
-            VariableExpenseCommands expenses, Clock clock) {
+            VariableExpenseCommands expenses, CarryOverCommands carryOvers, Clock clock) {
         this.members = members;
         this.cards = cards;
         this.bills = bills;
@@ -86,6 +93,7 @@ public class MemberStatementBuilder {
         this.entries = entries;
         this.recurrence = recurrence;
         this.expenses = expenses;
+        this.carryOvers = carryOvers;
         this.clock = clock;
     }
 
@@ -154,11 +162,19 @@ public class MemberStatementBuilder {
         Money cardTotal = sum(groups.stream().map(CardGroup::total).toList());
         Money fixedTotal = sum(fixed.stream().map(ExpenseLine::amount).toList());
         Money variableTotal = sum(variable.stream().map(ExpenseLine::amount).toList());
+        Carry previousBalance = carry(carryOvers.incoming(period), memberId, CarryOverView::fromPeriod);
+        Carry carriedOut = carry(carryOvers.outgoing(period), memberId, CarryOverView::toPeriod);
         LocalDate dueDate = groups.stream().map(CardGroup::dueDate).filter(Objects::nonNull).min(LocalDate::compareTo)
                 .orElse(null);
         return new MemberStatement(member.id(), member.code(), member.name(), member.main(), period, LocalDate.now(clock),
-                groups, fixed, variable, committed, income, cardTotal, fixedTotal, variableTotal,
-                cardTotal.plus(fixedTotal).plus(variableTotal), dueDate, pixKey(member, payer), pending, options);
+                groups, fixed, variable, committed, income, cardTotal, fixedTotal, variableTotal, previousBalance, carriedOut,
+                cardTotal.plus(fixedTotal).plus(variableTotal).plus(previousBalance == null ? Money.ZERO
+                        : previousBalance.amount()), dueDate, pixKey(member, payer), pending, options);
+    }
+
+    private static Carry carry(List<CarryOverView> carries, long memberId, Function<CarryOverView, BillingPeriod> other) {
+        return carries.stream().filter(c -> c.memberId() == memberId).findFirst()
+                .map(c -> new Carry(other.apply(c), c.amount())).orElse(null);
     }
 
     private List<CommittedPeriod> committed(long memberId, BillingPeriod period, Map<Long, CardView> cardById) {

@@ -54,7 +54,11 @@ public class StatementModel extends RepresentationModel<StatementModel> {
     public final BigDecimal fixedTotal;
     /** Variable expenses total. */
     public final BigDecimal variableTotal;
-    /** Total due. */
+    /** Amount still owed from the previous period, or {@code null} (RF-28). */
+    public final BigDecimal previousBalance;
+    /** Amount carried into the next period, or {@code null} (RF-28). */
+    public final BigDecimal carriedOut;
+    /** Total due, previous balance included. */
     public final BigDecimal total;
     /** Earliest due date. */
     public final LocalDate dueDate;
@@ -87,6 +91,8 @@ public class StatementModel extends RepresentationModel<StatementModel> {
         this.cardTotal = s.cardTotal().amount();
         this.fixedTotal = s.fixedTotal().amount();
         this.variableTotal = s.variableTotal().amount();
+        this.previousBalance = s.previousBalance() == null ? null : s.previousBalance().amount().amount();
+        this.carriedOut = s.carriedOut() == null ? null : s.carriedOut().amount().amount();
         this.total = s.total().amount();
         this.dueDate = s.dueDate();
         this.pixKey = s.pixKey();

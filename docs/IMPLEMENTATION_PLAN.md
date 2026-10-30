@@ -234,6 +234,7 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] RF-38 — Clicking a card total opens tab 4 filtered by card and period · frontend · accept: RF-38 · expenses.spec.ts · after: RF-36, RF-40 · done (ecef157; E2E in M7)
 - [x] RF-25 — Total per member: income, fixed, variable, card and balance · summary · accept: RF-25 · MemberTotalsCalculatorTest · after: RF-22, RF-31, RF-34, RF-26 · done (aa99832)
 - [x] RF-27 — "Who owes whom" when a member paid expenses assigned to another · summary · accept: RF-27 · SettlementCalculatorTest · after: RF-25 · done (aa99832; payer = card default member (Q8))
+- [x] RF-28 — Carry a third party's unpaid balance into the next period without moving entries · carryover/summary/statement/frontend · accept: RF-28 · CarryOverUseCaseTest, CarryOverControllerIT, StatementPipelineTest, MonthlyWorkbookExporterTest, IncomesPage.test.tsx · after: RF-25, RF-82, XLS-04 · done
 - [x] RF-11 — Total expense = fixed + variable + card bills of the period · summary · accept: RF-11 · MonthlySummaryServiceTest · after: RF-36, RF-31, RF-34 · done (aa99832)
 - [x] RF-10 — Indicators: total income, total expense, balance, % of income spent · summary · accept: RF-10 (with XLS-04 reimbursement rule) · MonthlySummaryServiceTest · after: RF-11 · done (aa99832)
 - [x] SOL-01 — `MonthlySummaryService` only orchestrates `CategoryTotalsCalculator`, `MemberTotalsCalculator`, `CommittedInstallmentsCalculator` · summary · accept: SOL-01 · calculator tests · after: RF-10 · done (aa99832)

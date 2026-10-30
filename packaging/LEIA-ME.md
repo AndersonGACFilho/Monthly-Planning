@@ -62,7 +62,7 @@ Se a versão nova não abrir, o app avisa e volta sozinho para a anterior. Se ne
 volta para esta pasta o que estiver em `update/previous/` e abra de novo; seus dados estão em `data/` e há cópias em
 `data/backups/`.
 
-**Atualizar à mão** (sem internet, ou vindo da versão 0.1.0, que ainda não se atualiza sozinha): feche o app,
+**Atualizar à mão** (sem internet, ou vindo das versões 0.1.0 e 0.2.0, que ainda não se atualizam sozinhas): feche o app,
 substitua os executáveis (`PlanejamentoMensal.exe`, `PlanejamentoMensal`, `PlanejamentoMensal.AppImage`,
 `start-linux.sh`) e a pasta `backend/` pelos do zip da versão nova, em
 <https://github.com/AndersonGACFilho/Monthly-Planning/releases>. **Não apague `data/`.**
@@ -88,5 +88,5 @@ Windows and Linux.
   checks it; *Restart now* (or simply the next start) installs it, backs up and migrates the database, and goes back
   to the previous version if the new one does not open. It is never forced, and `data/` is never changed. The
   `update/` folder holds the download and, during the swap, the previous version (`update/previous/`). By hand
-  (offline, or coming from 0.1.0): close the app, replace the executables and `backend/` with those of the new zip,
+  (offline, or coming from 0.1.0 or 0.2.0): close the app, replace the executables and `backend/` with those of the new zip,
   keep `data/`.
