@@ -28,6 +28,10 @@ zip = { version = "4.6.1", default-features = false, features = ["deflate-flate2
 sha2 = "0.10.9"
 semver = "1.0.28"
 
+# Start Menu shortcut (POR-18), through the shell's own IShellLinkW; the crate already comes with Tauri on Windows
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_System_Com", "Win32_Storage_FileSystem", "Win32_UI_Shell"] }
+
 [profile.release]
 codegen-units = 1
 lto = true

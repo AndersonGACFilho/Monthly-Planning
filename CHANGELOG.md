@@ -10,6 +10,9 @@ milestones.
   request it downloads the release, checks its SHA-256, and installs it when the app restarts, going back to the
   previous version if the new one does not open. `data/` is kept as it is. This is the last update installed by
   hand: replace the files once as described in `LEIA-ME.md`, and the next ones come from inside the app.
+- **Find the app by searching the computer**: *Settings → System menu* adds the app to the Start Menu (Windows) or
+  the app launcher (Linux) of that computer, on request only. It tells when the shortcut points at another drive
+  letter or mount path and fixes it, and removing it deletes everything it wrote.
 - **A release for every commit on main**: versions `v0.3.<n>` are computed from `VERSION` and the commit count, and
   each green commit is tagged and published with its commit list as notes.
 

@@ -631,6 +631,16 @@ export default {
     seeNotice: ['Acompanhe o download no aviso do topo da janela.', 'Follow the download in the notice at the top of the window.'],
     howItWorks: ['O app procura versões novas ao abrir. A atualização é conferida antes de instalar, a versão anterior volta se a nova não abrir, e a pasta data/ não é alterada.', 'The app looks for new versions when it opens. Updates are verified before installing, the previous version comes back if the new one does not open, and the data/ folder is not changed.'],
   },
+  menuShortcut: {
+    title: ['Menu do sistema', 'System menu'],
+    absent: ['A busca deste computador ainda não encontra o app.', 'Searching this computer does not find the app yet.'],
+    current: ['O app aparece na busca deste computador (menu Iniciar no Windows, lista de aplicativos no Linux).', 'The app shows up when searching this computer (Start Menu on Windows, app launcher on Linux).'],
+    elsewhere: ['Este computador tem um atalho que abre o app em {{folder}}, não nesta pasta. Corrija para usar a pasta atual.', 'This computer has a shortcut that opens the app in {{folder}}, not in this folder. Fix it to use the current folder.'],
+    add: ['Adicionar ao menu do sistema', 'Add to the system menu'],
+    fix: ['Corrigir atalho', 'Fix shortcut'],
+    remove: ['Remover do menu do sistema', 'Remove from the system menu'],
+    howItWorks: ['Opcional e só neste computador: o atalho é a única coisa que o app grava fora da pasta dele, e só quando você pede. Com o SSD desconectado o atalho não abre. Remova antes de devolver um computador emprestado.', 'Optional and for this computer only: the shortcut is the one thing the app writes outside its folder, and only when you ask. With the drive unplugged the shortcut does not open. Remove it before giving back a borrowed computer.'],
+  },
   shortcuts: {
     title: ['Atalhos', 'Shortcuts'],
     list: ['Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência', 'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period'],

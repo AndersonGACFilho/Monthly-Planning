@@ -639,6 +639,16 @@
     "seeNotice": "Follow the download in the notice at the top of the window.",
     "howItWorks": "The app looks for new versions when it opens. Updates are verified before installing, the previous version comes back if the new one does not open, and the data/ folder is not changed."
   },
+  "menuShortcut": {
+    "title": "System menu",
+    "absent": "Searching this computer does not find the app yet.",
+    "current": "The app shows up when searching this computer (Start Menu on Windows, app launcher on Linux).",
+    "elsewhere": "This computer has a shortcut that opens the app in {{folder}}, not in this folder. Fix it to use the current folder.",
+    "add": "Add to the system menu",
+    "fix": "Fix shortcut",
+    "remove": "Remove from the system menu",
+    "howItWorks": "Optional and for this computer only: the shortcut is the one thing the app writes outside its folder, and only when you ask. With the drive unplugged the shortcut does not open. Remove it before giving back a borrowed computer."
+  },
   "shortcuts": {
     "title": "Shortcuts",
     "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period"
