@@ -54,7 +54,7 @@ python scripts/build_runtime.py backend/target/app.jar build/runtime
 frontend/node_modules/.bin/tauri build --bundles appimage
 python scripts/assemble_portable.py --os linux --shell src-tauri/target/release/PlanejamentoMensal \
   --jar backend/target/app.jar --runtime build/runtime --out dist/PlanejamentoMensal \
-  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_0.1.0_amd64.AppImage
+  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_0.2.0_amd64.AppImage
 python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 ```
 
@@ -66,7 +66,7 @@ into one zip. Users find start, backup, ejecting and update instructions in `LEI
 Add the version's notes to `CHANGELOG.md` under `## v<version> — <date>`, then push a tag:
 
 ```bash
-git tag -a v0.1.0 -m "Planejamento Mensal v0.1.0" && git push origin v0.1.0
+git tag -a v0.2.0 -m "Planejamento Mensal v0.2.0" && git push origin v0.2.0
 ```
 
 CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes.
