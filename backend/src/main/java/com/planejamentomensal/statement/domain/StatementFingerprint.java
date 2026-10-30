@@ -35,6 +35,13 @@ public final class StatementFingerprint {
         s.fixedExpenses().forEach(e -> text.append("F|").append(e.description()).append('|').append(e.amount()).append('\n'));
         s.variableExpenses().forEach(e -> text.append("V|").append(e.date()).append('|').append(e.description()).append('|')
                 .append(e.amount()).append('\n'));
+        if (s.previousBalance() != null) {
+            text.append("B|").append(s.previousBalance().billingPeriod()).append('|').append(s.previousBalance().amount())
+                    .append('\n');
+        }
+        if (s.carriedOut() != null) {
+            text.append("O|").append(s.carriedOut().billingPeriod()).append('|').append(s.carriedOut().amount()).append('\n');
+        }
         s.committed().forEach(c -> text.append("P|").append(c.billingPeriod()).append('|').append(c.amount()).append('\n'));
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

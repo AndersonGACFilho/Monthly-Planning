@@ -82,6 +82,7 @@ Rendas são parametrizadas: cadastra-se uma vez o modelo (fonte, valor, recorrê
 - RF-25: Tabela de despesa total por conta: renda, despesas fixas, dinâmicas, cartão e saldo de cada conta.
 - RF-26: Divisão de um lançamento entre contas: por padrão 100% para uma conta; opcionalmente dividir por percentual ou valor (ex.: compra da casa 50/50).
 - RF-27: Mostrar "quem deve a quem" quando uma conta pagou despesas atribuídas a outra (ex.: cartão do Anderson com compras da conta Casa).
+- RF-28: Transportar o saldo devido de uma cota de terceiro para a competência seguinte: devido = despesas da competência + saldo anterior − rendas da cota no mês (ex.: renda avulsa recebida dela). Os lançamentos ficam na competência deles; o mês de origem mantém o total devido e mostra "Transportado para", e o mês seguinte mostra "Saldo anterior" somado ao devido. O reembolso da casa (XLS-04) cai no mês de origem e sobe no seguinte, sem virar despesa nova. Transportar de novo atualiza o valor; atualizar ou desfazer só é possível enquanto o mês seguinte não transportou adiante.
 
 ## 6. Aba 3 — Despesas mensais
 
@@ -308,6 +309,7 @@ O ponto central é separar **Compra** (o fato) de **Lançamento** (cada parcela 
 | `RecurrenceRule` | id, kind (INCOME, FIXED\_EXPENSE), description, memberId, categoryId, defaultAmount, recurrence, day, validFrom, validUntil |
 | `Occurrence` | id, recurrenceRuleId, billingPeriod, amount, status, effectiveDate |
 | `VariableExpense` | id, date, description, memberId, categoryId, amount, paymentMethod |
+| `CarryOver` | id, memberId, fromPeriod, toPeriod, amount (único por cota e competência de origem, RF-28) |
 | `ImportBatch` | id, cardId, billingPeriod, format (PDF, XLSX), fileHash, importedAt, newCount, duplicateCount, matchedCount, divergentCount, undone |
 | `Template` / `TemplateVersion` | id, name, isDefault / id, templateId, version, settings, texts por idioma, createdAt |
 | `StatementDelivery` | id, memberId, billingPeriod, channel, language, templateVersionId, sentAt, status (SENT, AWAITING\_USER, FAILED) |
@@ -650,7 +652,7 @@ Para cada competência, o sistema gera um extrato por cota e o envia por e-mail,
 **Conteúdo do extrato**
 
 - RF-81: Selecionar a competência e uma ou mais cotas; o sistema gera um extrato por cota.
-- RF-82: O extrato traz: cabeçalho (cota, competência, data de emissão); resumo (total devido, renda e saldo quando aplicável); lançamentos da cota agrupados por cartão (data, descrição exibida, parcela, valor e % do rateio); despesas fixas e dinâmicas da cota; parcelas comprometidas nos próximos meses; total geral; dados para pagamento (PIX) e uma observação livre.
+- RF-82: O extrato traz: cabeçalho (cota, competência, data de emissão); resumo (saldo anterior e transportado para o mês seguinte quando houver (RF-28), total devido, renda e saldo quando aplicável); lançamentos da cota agrupados por cartão (data, descrição exibida, parcela, valor e % do rateio); despesas fixas e dinâmicas da cota; parcelas comprometidas nos próximos meses; total geral; dados para pagamento (PIX) e uma observação livre.
 - RF-83: Opções por exportação: mostrar ou ocultar categorias, usar alias ou descrição original, incluir ou não parcelas futuras.
 - RF-84: Formatos: PDF (padrão), PNG (para colar no WhatsApp) e XLSX/CSV (para quem quer conferir em planilha).
 - RF-85: Prévia do extrato antes de enviar ou baixar.
@@ -766,7 +768,7 @@ Para a competência selecionada, o app gera um `.xlsx` com as mesmas abas, tabel
 - XLS-01: Exportar a partir do seletor de competência; nome do arquivo `AAAA - MM - <MÊS> <sufixo>.xlsx` (ex.: `2026 - 11 - NOVEMBRO CJ.xlsx`), com sufixo configurável.
 - XLS-02: Colunas da aba Cartões no padrão do modelo: Vencimento = dia de vencimento do cartão; Cota = sigla da cota (AB, T, M, AP); Parcela = `-` para compra única, `*` para assinatura, `NN/NN` para parcela; Descrição = descrição exibida (alias).
 - XLS-03: Lançamentos agrupados por cartão, na ordem configurada, com uma linha em branco entre grupos. Despesas pagas por boleto ou débito que tenham cota entram no grupo "Boletos" da aba Cartões, como no modelo; as demais vão para Despesas mensais.
-- XLS-04: Cotas têm sigla e tipo: **principal** (a casa, ex.: AB) ou **terceiro** (quem reembolsa, ex.: M, T, AP). O total de cada cota de terceiro entra na Renda mensal como reembolso, por fórmula que aponta para a aba Cartões. A visão geral do app (RF-10) segue a mesma regra.
+- XLS-04: Cotas têm sigla e tipo: **principal** (a casa, ex.: AB) ou **terceiro** (quem reembolsa, ex.: M, T, AP). O total de cada cota de terceiro entra na Renda mensal como reembolso, por fórmula que aponta para a aba Cartões; o saldo anterior e o valor transportado da cota (RF-28) entram como linhas próprias ao lado do reembolso. A visão geral do app (RF-10) segue a mesma regra.
 - XLS-05: Categoria preenchida para a cota principal e vazia para cotas de terceiros, como no modelo.
 - XLS-06: Aba por cota (como "MÃE"): gerada para as cotas marcadas em Ajustes, com blocos dos meses vizinhos (padrão: 2 anteriores, o atual e 1 seguinte, como no modelo) e o total de cada bloco.
 - XLS-07: Lançamentos pendentes de validação entram destacados em amarelo, e o app avisa antes de exportar (como no RF-79b).

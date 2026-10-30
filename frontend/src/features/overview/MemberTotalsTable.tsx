@@ -5,7 +5,8 @@ import { useMemberMap } from '../../shared/hooks/useLookups';
 import { formatPercent } from '../../shared/format';
 
 /**
- * Totals by member: income, fixed, variable and card expenses, balance and % spent (RF-13, RF-25).
+ * Totals by member: income, fixed, variable and card expenses, balance and % spent (RF-13, RF-25). The previous
+ * balance and the carried-over amount only show up in months that have them (RF-28).
  *
  * @param props - member rows and the table caption
  * @returns the table
@@ -13,6 +14,8 @@ import { formatPercent } from '../../shared/format';
 export function MemberTotalsTable({ rows, caption }: { rows: MemberRow[]; caption: string }) {
   const { t } = useTranslation();
   const members = useMemberMap();
+  const carriedIn = rows.some((row) => (row.carriedIn ?? 0) !== 0);
+  const carriedOut = rows.some((row) => (row.carriedOut ?? 0) !== 0);
   return (
     <div className="overflow-x-auto">
       <table className="table">
@@ -35,6 +38,16 @@ export function MemberTotalsTable({ rows, caption }: { rows: MemberRow[]; captio
             <th scope="col" className="text-right">
               {t('overview.expense_short')}
             </th>
+            {carriedIn && (
+              <th scope="col" className="text-right">
+                {t('overview.previousBalance')}
+              </th>
+            )}
+            {carriedOut && (
+              <th scope="col" className="text-right">
+                {t('overview.carriedOut')}
+              </th>
+            )}
             <th scope="col" className="text-right">
               {t('overview.balance_short')}
             </th>
@@ -69,6 +82,16 @@ export function MemberTotalsTable({ rows, caption }: { rows: MemberRow[]; captio
                 <td className="text-right">
                   <MoneyText value={row.expense} />
                 </td>
+                {carriedIn && (
+                  <td className="text-right">
+                    <MoneyText value={row.carriedIn} />
+                  </td>
+                )}
+                {carriedOut && (
+                  <td className="text-right">
+                    <MoneyText value={row.carriedOut} />
+                  </td>
+                )}
                 <td className="text-right">
                   <MoneyText value={row.balance} kind="balance" />
                 </td>

@@ -45,7 +45,7 @@ class WorkbookTemplateTest {
                     ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 WorkbookLabels pt = labels("pt-BR");
                 WorkbookData empty = new WorkbookData(BillingPeriod.of(2026, 1), List.of(), List.of(), List.of(), List.of(),
-                        List.of(), List.of());
+                        List.of(), List.of(), List.of());
                 WorkbookContext ctx = new WorkbookContext(workbook, empty, pt, new CompatibleDialect());
                 new ListsSheetWriter().write(ctx);
                 new CardsSheetWriter().write(ctx);

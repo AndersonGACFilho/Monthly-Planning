@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
+import com.planejamentomensal.carryover.application.CarryOverCommands;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.expense.application.VariableExpenseCommands;
@@ -17,6 +18,7 @@ import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.application.Settings;
 import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.statement.application.StatementFixture;
+import com.planejamentomensal.summary.application.MonthlySummaryService;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.nio.file.Files;
@@ -51,6 +53,8 @@ class MonthlyWorkbookExporterTest {
     @Autowired private VariableExpenseCommands expenses;
     @Autowired private Settings settings;
     @Autowired private MonthlyWorkbookExporter exporter;
+    @Autowired private CarryOverCommands carryOvers;
+    @Autowired private MonthlySummaryService summaries;
 
     @TempDir
     Path dir;
@@ -77,6 +81,16 @@ class MonthlyWorkbookExporterTest {
             values.add(cell == null ? "" : cell.getCellType() == CellType.NUMERIC ? String.valueOf(cell.getNumericCellValue())
                     : cell.getCellType() == CellType.FORMULA ? "=" + cell.getCellFormula() : cell.getStringCellValue());
         }
+        return values;
+    }
+
+    private static List<String> texts(XSSFSheet sheet) {
+        List<String> values = new ArrayList<>();
+        sheet.forEach(row -> row.forEach(cell -> {
+            if (cell.getCellType() == CellType.STRING) {
+                values.add(cell.getStringCellValue());
+            }
+        }));
         return values;
     }
 
@@ -175,6 +189,36 @@ class MonthlyWorkbookExporterTest {
             assertThat(cardsTotal).isEqualTo(455.5 + 50 + 200);
             assertThat(income).isEqualTo(5000 + 455.5);
             assertThat(balance).isEqualTo(income - 0 - cardsTotal);
+            assertThat(book.getSheet("Cartões").getRow(3).getCell(10).getNumericCellValue()).isEqualTo(455.5);
+        }
+    }
+
+    @Test
+    @DisplayName("RF-28, XLS-04, XLS-18: carry-overs sit beside the reimbursements and LibreOffice still matches the app income")
+    void carryOvers() throws Exception {
+        carryOvers.carry(s.f.thirdParty, NOV.previous(), Money.of("20.00"));
+        carryOvers.carry(s.f.thirdParty, NOV, Money.of("155.50"));
+        ExportedWorkbook file = exporter.export(NOV, FormulaMode.COMPATIBLE, "pt-BR");
+        try (XSSFWorkbook book = open(file)) {
+            XSSFSheet income = book.getSheet("Renda mensal");
+            assertThat(column(income, 1, 3, 6)).containsExactly("Salário", "Reembolso T1 — Tia",
+                    "Saldo anterior T1 — Tia (OUTUBRO 2026)", "T1 — Tia transportado para DEZEMBRO 2026");
+            assertThat(column(income, 2, 5, 6)).containsExactly("20.0", "-155.5");
+            assertThat(texts(book.getSheet("TIA"))).contains("Saldo anterior", "Transportado para DEZEMBRO 2026");
+        }
+        String soffice = List.of("/usr/bin/soffice", "/usr/local/bin/soffice", "C:\\Program Files\\LibreOffice\\program\\soffice.exe")
+                .stream().filter(p -> new File(p).canExecute()).findFirst().orElse(null);
+        assumeTrue(soffice != null, "LibreOffice is not installed");
+        Path in = Files.createDirectories(dir.resolve("in")).resolve("book.xlsx");
+        Files.write(in, file.content());
+        Path out = Files.createDirectories(dir.resolve("out"));
+        Process process = new ProcessBuilder(soffice, "-env:UserInstallation=file://" + dir.resolve("profile").toAbsolutePath(),
+                "--headless", "--convert-to", "xlsx", "--outdir", out.toString(), in.toString()).redirectErrorStream(true).start();
+        assertThat(process.waitFor(120, TimeUnit.SECONDS)).isTrue();
+        try (XSSFWorkbook book = new XSSFWorkbook(Files.newInputStream(out.resolve("book.xlsx")))) {
+            double income = book.getSheet("Resumo").getRow(7).getCell(2).getNumericCellValue();
+            assertThat(income).isEqualTo(summaries.summary(NOV, null).indicators().income().amount().doubleValue())
+                    .isEqualTo(5000 + 455.5 + 20 - 155.5);
             assertThat(book.getSheet("Cartões").getRow(3).getCell(10).getNumericCellValue()).isEqualTo(455.5);
         }
     }

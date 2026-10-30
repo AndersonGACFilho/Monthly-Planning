@@ -26,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
  * Builds the overview of a period; it only gathers data and hands it to small calculators (SOL-01).
  *
  * <p>Household totals (Q8, XLS-04): income = incomes of MAIN members + the third-party share of the expenses
- * (reimbursements); expense = fixed (not paid by card) + variable + card bills (RF-11). With a member filter
- * (RF-15) only that member's incomes and shares count.</p>
+ * (reimbursements), adjusted by what third parties carried in and out (RF-28); expense = fixed (not paid by card) +
+ * variable + card bills (RF-11). With a member filter (RF-15) only that member's incomes and shares count.</p>
  *
  * @since 1.0
  */
@@ -70,7 +70,8 @@ public class MonthlySummaryService {
         List<EntryRow> future = data.futureInstallments(period);
 
         Predicate<ExpenseLine> lineFilter = l -> memberId == null || l.memberId() == memberId;
-        HouseholdTotals totals = HouseholdTotals.of(current.incomes(), current.expenses(), thirdParties, memberId);
+        HouseholdTotals totals = HouseholdTotals.of(current.incomes(), current.expenses(), thirdParties, memberId,
+                current.carries());
         List<ExpenseLine> lines = totals.lines();
         Indicators indicators = Indicators.of(totals.income(), totals.expense(),
                 settings.getInt(Setting.ALERT_WARNING_PERCENT), settings.getInt(Setting.ALERT_DANGER_PERCENT));
@@ -85,7 +86,7 @@ public class MonthlySummaryService {
         return new MonthlySummary(period, memberId, indicators, totals.mainIncome(), totals.reimbursements(), totals.fixed(),
                 totals.variable(), totals.card(),
                 CategoryTotalsCalculator.calculate(lines, previous.expenses().stream().filter(lineFilter).toList()),
-                MemberTotalsCalculator.calculate(shownMembers, current.incomes(), current.expenses()),
+                MemberTotalsCalculator.calculate(shownMembers, current.incomes(), current.expenses(), current.carries()),
                 cards.build(period, current.entries(), future, entryFilter),
                 CommittedInstallmentsCalculator.nextPeriods(period, future.stream().filter(entryFilter)
                         .map(r -> new FutureInstallment(r.billingPeriod(), r.cardId(), r.amount())).toList()),

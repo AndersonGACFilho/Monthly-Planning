@@ -434,6 +434,26 @@ export default {
     chart: ['Gráfico de despesas por categoria', 'Expense by category chart'],
     openCategory: ['Ver lançamentos de {{category}}', 'See entries of {{category}}'],
     totalsByMember: ['Despesa total por conta', 'Total expense by member'],
+    previousBalance: ['Saldo anterior', 'Previous balance'],
+    carriedOut: ['Transportado', 'Carried over'],
+  },
+  carryOver: {
+    button: ['Transportar saldo devido', 'Carry over unpaid balance'],
+    title: ['Transportar saldo devido para {{period}}', 'Carry over unpaid balance to {{period}}'],
+    hint: [
+      'O que cada cota ainda deve depois das rendas recebidas no mês passa para {{period}} como saldo anterior. Os lançamentos continuam na competência deles.',
+      'What each member still owes after the incomes received this month moves to {{period}} as previous balance. Entries stay in their own period.',
+    ],
+    unpaid: ['Devido {{amount}}', 'Unpaid {{amount}}'],
+    carried: ['Transportado {{amount}}', 'Carried over {{amount}}'],
+    outdated: ['Mudou desde o transporte: marque para atualizar.', 'Changed since it was carried over: tick to update.'],
+    submit: ['Transportar', 'Carry over'],
+    undo: ['Desfazer transporte de {{member}}', 'Undo carry-over of {{member}}'],
+    confirmUndo: [
+      'Desfazer o transporte de {{member}}? O valor sai de {{period}}.',
+      'Undo the carry-over of {{member}}? The amount leaves {{period}}.',
+    ],
+    nothing: ['Nenhuma cota deve nada neste mês.', 'No member owes anything this month.'],
   },
   statements: {
     members: ['Cotas', 'Members'],

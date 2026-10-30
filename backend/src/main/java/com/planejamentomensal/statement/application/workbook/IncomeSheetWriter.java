@@ -8,8 +8,8 @@ import org.apache.poi.xssf.usermodel.XSSFTable;
 
 /**
  * Monthly income sheet: table {@code Receita} with the incomes of MAIN members and one reimbursement line per third
- * party, which points to that member's total on the cards sheet, beside the table of what each third party owes
- * (XLS-04, XLS-08).
+ * party, which points to that member's total on the cards sheet, then what third parties carried in from the previous
+ * month and out to the next one (RF-28), beside the table of what each third party owes (XLS-04, XLS-08).
  *
  * @since 1.0
  */
@@ -77,6 +77,12 @@ public class IncomeSheetWriter implements SheetWriter {
             Cells.formula(sheet, r, 2, "H" + (sideRow + 1), s[1]);
             r++;
             sideRow++;
+        }
+        for (Line line : ctx.data.carries()) {
+            CellStyle[] s = rowStyles[(r - HEADER - 1) % 2];
+            Cells.text(sheet, r, 1, line.item(), s[0]);
+            Cells.number(sheet, r, 2, line.amount().amount().doubleValue(), s[1]);
+            r++;
         }
         while (r <= HEADER + 2) {
             CellStyle[] s = rowStyles[(r - HEADER - 1) % 2];

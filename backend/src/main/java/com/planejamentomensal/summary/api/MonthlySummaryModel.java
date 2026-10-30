@@ -42,16 +42,21 @@ public class MonthlySummaryModel extends RepresentationModel<MonthlySummaryModel
      * @param fixed        fixed expenses not paid by card
      * @param variable     variable expenses
      * @param card         share of card entries
-     * @param expense      total expense
-     * @param balance      income − expense
+     * @param expense      total expense of the period
+     * @param carriedIn    amount owed from the previous period (RF-28)
+     * @param carriedOut   amount carried into the next period (RF-28)
+     * @param unpaid       expense + carried in − income: what is left to carry over when positive
+     * @param balance      income − expense − carried in + carried out
      * @param percentSpent expense ÷ income × 100, or {@code null}
      */
     public record MemberRow(long memberId, boolean main, BigDecimal income, BigDecimal fixed, BigDecimal variable,
-            BigDecimal card, BigDecimal expense, BigDecimal balance, BigDecimal percentSpent) {
+            BigDecimal card, BigDecimal expense, BigDecimal carriedIn, BigDecimal carriedOut, BigDecimal unpaid,
+            BigDecimal balance, BigDecimal percentSpent) {
 
         static MemberRow of(MemberTotal t) {
             return new MemberRow(t.memberId(), t.main(), t.income().amount(), t.fixed().amount(), t.variable().amount(),
-                    t.card().amount(), t.expense().amount(), t.balance().amount(), t.percentSpent());
+                    t.card().amount(), t.expense().amount(), t.carriedIn().amount(), t.carriedOut().amount(),
+                    t.unpaid().amount(), t.balance().amount(), t.percentSpent());
         }
     }
 
@@ -90,7 +95,7 @@ public class MonthlySummaryModel extends RepresentationModel<MonthlySummaryModel
     public final String alert;
     /** Incomes of MAIN members (or of the filtered member). */
     public final BigDecimal mainIncome;
-    /** Third-party share of the expenses, counted as income (XLS-04). */
+    /** Third-party share of the expenses, counted as income, adjusted by their carry-overs (XLS-04, RF-28). */
     public final BigDecimal reimbursements;
     /** Fixed expenses not paid by card. */
     public final BigDecimal fixedTotal;

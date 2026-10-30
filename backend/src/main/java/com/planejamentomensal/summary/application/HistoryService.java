@@ -7,6 +7,7 @@ import com.planejamentomensal.member.application.MemberView;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.InvalidInputException;
 import com.planejamentomensal.shared.domain.Money;
+import com.planejamentomensal.summary.domain.CarryOvers;
 import com.planejamentomensal.summary.domain.ExpenseLine;
 import com.planejamentomensal.summary.domain.HouseholdTotals;
 import java.util.ArrayList;
@@ -72,9 +73,10 @@ public class HistoryService {
         for (BillingPeriod period = from; period.compareTo(to) <= 0; period = period.next()) {
             PeriodData.Lines lines = data.collect(period);
             List<ExpenseLine> expenses = lines.expenses().stream().filter(inCategory).toList();
-            HouseholdTotals totals = HouseholdTotals.of(lines.incomes(), expenses, thirdParties, memberId);
+            CarryOvers carries = categoryId == null ? lines.carries() : CarryOvers.NONE;
+            HouseholdTotals totals = HouseholdTotals.of(lines.incomes(), expenses, thirdParties, memberId, carries);
             Map<Long, Money> byCategory = new LinkedHashMap<>();
-            HouseholdTotals.of(lines.incomes(), lines.expenses(), thirdParties, memberId).lines()
+            HouseholdTotals.of(lines.incomes(), lines.expenses(), thirdParties, memberId, carries).lines()
                     .forEach(l -> byCategory.merge(l.categoryId(), l.amount(), Money::plus));
             Map<Long, Money> byMember = new LinkedHashMap<>();
             expenses.forEach(l -> byMember.merge(l.memberId(), l.amount(), Money::plus));

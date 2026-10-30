@@ -1,6 +1,8 @@
 package com.planejamentomensal.summary.application;
 
 import com.planejamentomensal.card.application.CardQueries;
+import com.planejamentomensal.carryover.application.CarryOverCommands;
+import com.planejamentomensal.carryover.application.CarryOverView;
 import com.planejamentomensal.card.application.CardView;
 import com.planejamentomensal.entry.application.EntryFilter;
 import com.planejamentomensal.entry.application.EntryQueries;
@@ -9,7 +11,9 @@ import com.planejamentomensal.expense.application.VariableExpenseCommands;
 import com.planejamentomensal.recurrence.application.OccurrenceView;
 import com.planejamentomensal.recurrence.application.RecurrenceCommands;
 import com.planejamentomensal.shared.domain.BillingPeriod;
+import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.shared.domain.PaymentMethod;
+import com.planejamentomensal.summary.domain.CarryOvers;
 import com.planejamentomensal.summary.domain.ExpenseLine;
 import com.planejamentomensal.summary.domain.ExpenseSource;
 import com.planejamentomensal.summary.domain.IncomeLine;
@@ -17,10 +21,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
- * Collects the incomes and the expense lines of a period from the other modules (RF-11, RF-26, RF-33, Q6).
+ * Collects the incomes, the expense lines and the carry-overs of a period from the other modules (RF-11, RF-26,
+ * RF-28, RF-33, Q6).
  *
  * @since 1.0
  */
@@ -34,6 +40,7 @@ public class PeriodData {
     private final VariableExpenseCommands expenses;
     private final EntryQueries entries;
     private final CardQueries cards;
+    private final CarryOverCommands carryOvers;
 
     /**
      * Creates the collector.
@@ -42,13 +49,15 @@ public class PeriodData {
      * @param expenses   variable expenses
      * @param entries    card entries
      * @param cards      card queries
+     * @param carryOvers carry-overs
      */
     public PeriodData(RecurrenceCommands recurrence, VariableExpenseCommands expenses, EntryQueries entries,
-            CardQueries cards) {
+            CardQueries cards, CarryOverCommands carryOvers) {
         this.recurrence = recurrence;
         this.expenses = expenses;
         this.entries = entries;
         this.cards = cards;
+        this.carryOvers = carryOvers;
     }
 
     /**
@@ -57,8 +66,9 @@ public class PeriodData {
      * @param incomes  income lines
      * @param expenses expense lines
      * @param entries  card entries of the period, UNCONFIRMED included
+     * @param carries  amounts carried in and out of the period
      */
-    public record Lines(List<IncomeLine> incomes, List<ExpenseLine> expenses, List<EntryRow> entries) {
+    public record Lines(List<IncomeLine> incomes, List<ExpenseLine> expenses, List<EntryRow> entries, CarryOvers carries) {
     }
 
     /**
@@ -89,7 +99,12 @@ public class PeriodData {
             row.memberAmounts(payer).forEach((member, amount) -> lines.add(
                     new ExpenseLine(ExpenseSource.CARD, member, row.categoryId(), amount, row.cardId(), payer)));
         }
-        return new Lines(incomes, lines, rows);
+        return new Lines(incomes, lines, rows,
+                new CarryOvers(byMember(carryOvers.incoming(period)), byMember(carryOvers.outgoing(period))));
+    }
+
+    private static Map<Long, Money> byMember(List<CarryOverView> carries) {
+        return carries.stream().collect(Collectors.toMap(CarryOverView::memberId, CarryOverView::amount, Money::plus));
     }
 
     /**
