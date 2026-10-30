@@ -66,7 +66,7 @@ into one zip. Users find start, backup, ejecting and update instructions in `LEI
 Every commit pushed to `main` is a release once all CI jobs pass on it (POR-17). Its version is
 `<VERSION>.<patch>`: `VERSION` holds the major and minor, and the patch counts the commits on `main` since `VERSION`
 last changed, so each commit has exactly one version and a re-run neither changes nor duplicates it. To start a
-new minor or major, change `VERSION` (for example to `0.3`); that commit is `v0.3.0`.
+new minor or major, change `VERSION` (for example to `0.4`); that commit is `v0.4.0`.
 
 `scripts/version.py compute` gives the version and `scripts/version.py apply <version>` writes it into
 `tauri.conf.json`, `Cargo.toml`, `package.json`, `package-lock.json` and `pom.xml` in the CI working tree; the
