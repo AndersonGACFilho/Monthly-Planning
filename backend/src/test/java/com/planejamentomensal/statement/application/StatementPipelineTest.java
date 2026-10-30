@@ -4,16 +4,22 @@ import static com.planejamentomensal.statement.application.StatementFixture.NOV;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
+import com.planejamentomensal.carryover.application.CarryOverCommands;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.expense.application.VariableExpenseCommands;
 import com.planejamentomensal.member.application.SaveMemberUseCase;
 import com.planejamentomensal.recurrence.application.RecurrenceCommands;
+import com.planejamentomensal.recurrence.domain.IncomeType;
+import com.planejamentomensal.recurrence.domain.Recurrence;
+import com.planejamentomensal.recurrence.domain.RuleDetails;
+import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.StatementFingerprint;
 import com.planejamentomensal.statement.domain.StatementOptions;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import javax.imageio.ImageIO;
@@ -41,6 +47,7 @@ class StatementPipelineTest {
     @Autowired private VariableExpenseCommands expenses;
     @Autowired private MemberStatementBuilder builder;
     @Autowired private StatementService service;
+    @Autowired private CarryOverCommands carryOvers;
 
     private StatementFixture s;
 
@@ -120,5 +127,31 @@ class StatementPipelineTest {
         }
         String csv = new String(service.csv(pt), java.nio.charset.StandardCharsets.UTF_8);
         assertThat(csv).contains("\"MERCADO BOM\"", "\"50,00\"", "\"Remédio\"");
+    }
+
+    @Test
+    @DisplayName("RF-28, RF-82, RF-93: the source period keeps its total and shows the carry-over; the next one owes it as previous balance")
+    void carryOver() {
+        recurrence.create(RuleKind.INCOME, new RuleDetails("Pix da tia", s.f.thirdParty, null, IncomeType.OTHER,
+                Money.of("100.00"), Recurrence.ONCE, 1, 15, NOV, null, null));
+        String before = StatementFingerprint.of(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT));
+        MemberStatement decBefore = builder.build(s.f.thirdParty, NOV.next(), StatementOptions.DEFAULT);
+        carryOvers.carry(s.f.thirdParty, NOV, Money.of("355.50"));
+
+        MemberStatement nov = builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT);
+        assertThat(nov.total()).isEqualTo(Money.of("455.50"));
+        assertThat(nov.carriedOut()).isEqualTo(new MemberStatement.Carry(NOV.next(), Money.of("355.50")));
+        assertThat(nov.balance()).isEqualTo(Money.ZERO);
+        assertThat(StatementFingerprint.of(nov)).isNotEqualTo(before);
+        MemberStatement dec = builder.build(s.f.thirdParty, NOV.next(), StatementOptions.DEFAULT);
+        assertThat(dec.previousBalance()).isEqualTo(new MemberStatement.Carry(NOV, Money.of("355.50")));
+        assertThat(dec.total()).isEqualTo(decBefore.total().plus(Money.of("355.50")));
+
+        PreparedStatement novPt = service.prepare(new StatementRequest(s.f.thirdParty, NOV, StatementOptions.DEFAULT, null, null, null));
+        assertThat(novPt.rendered().html()).contains("R$ 455,50", "Transportado para Dezembro de 2026", "R$ 355,50");
+        assertThat(new String(service.csv(novPt), StandardCharsets.UTF_8)).contains("\"Transportado para Dezembro de 2026\"");
+        PreparedStatement decPt = service.prepare(new StatementRequest(s.f.thirdParty, NOV.next(), StatementOptions.DEFAULT, null, null, null));
+        assertThat(decPt.rendered().html()).contains("Saldo anterior (Novembro de 2026)");
+        assertThat(new String(service.csv(decPt), StandardCharsets.UTF_8)).contains("\"Saldo anterior\"", "\"Novembro de 2026\"");
     }
 }

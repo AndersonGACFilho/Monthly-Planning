@@ -19,7 +19,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * The statement as a spreadsheet or CSV, for members who check it line by line (RF-84). Both list the same rows:
- * section, card, date, description, installment, category, share and amount.
+ * section, card, date, description, installment, category, share and amount; what was carried into the next period
+ * comes last, apart from the lines (RF-28).
  *
  * @since 1.0
  */
@@ -81,6 +82,12 @@ public class StatementSpreadsheet {
             total.createCell(6).setCellValue(label("total", format.locale()));
             total.createCell(7).setCellValue(statement.total().amount().doubleValue());
             total.getCell(7).setCellStyle(money);
+            if (statement.carriedOut() != null) {
+                Row carried = sheet.createRow(++r);
+                carried.createCell(6).setCellValue(carriedOutLabel(statement, format));
+                carried.createCell(7).setCellValue(statement.carriedOut().amount().amount().doubleValue());
+                carried.getCell(7).setCellStyle(money);
+            }
             for (int i = 0; i < headers.size(); i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -110,6 +117,12 @@ public class StatementSpreadsheet {
             csv.append(String.join(String.valueOf(separator), cells.stream().map(StatementSpreadsheet::quote).toList()))
                     .append("\r\n");
         }
+        if (statement.carriedOut() != null) {
+            List<String> cells = List.of(carriedOutLabel(statement, format), "", "", "", "", "", "",
+                    number(statement.carriedOut().amount(), format));
+            csv.append(String.join(String.valueOf(separator), cells.stream().map(StatementSpreadsheet::quote).toList()))
+                    .append("\r\n");
+        }
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
@@ -127,7 +140,15 @@ public class StatementSpreadsheet {
                 nullToEmpty(e.category()), "", e.amount())));
         s.variableExpenses().forEach(e -> lines.add(new Line(label("variableExpenses", locale), "", e.date(), e.description(),
                 "", nullToEmpty(e.category()), "", e.amount())));
+        if (s.previousBalance() != null) {
+            lines.add(new Line(label("previousBalance", locale), "", null, format.period(s.previousBalance().billingPeriod()),
+                    "", "", "", s.previousBalance().amount()));
+        }
         return lines;
+    }
+
+    private String carriedOutLabel(MemberStatement s, StatementFormat format) {
+        return label("carriedOut", format.locale()) + " " + format.period(s.carriedOut().billingPeriod());
     }
 
     private String label(String key, Locale locale) {

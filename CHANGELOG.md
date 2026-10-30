@@ -10,8 +10,30 @@ milestones.
   request it downloads the release, checks its SHA-256, and installs it when the app restarts, going back to the
   previous version if the new one does not open. `data/` is kept as it is. This is the last update installed by
   hand: replace the files once as described in `LEIA-ME.md`, and the next ones come from inside the app.
-- **A release for every commit on main**: versions `v0.2.<n>` are computed from `VERSION` and the commit count, and
+- **A release for every commit on main**: versions `v0.3.<n>` are computed from `VERSION` and the commit count, and
   each green commit is tagged and published with its commit list as notes.
+
+## v0.2.0 — 2026-10-30
+
+Carry-over of unpaid balances, splits by amount and a faster way through card entries.
+
+- **Carry over an unpaid balance** (RF-28): what a member still owes after the incomes they paid in a month can move
+  to the next month as a previous balance. The entries stay in their own billing period, so each month's total is
+  unchanged; the source month shows what was carried out. Carrying again updates the amount and a carry-over can be
+  undone. Statements, their spreadsheet and CSV, and the monthly workbook show the previous balance and the carried
+  amount. Existing data is migrated when the app starts.
+- **Splits by amount or by percentage**: the split editor toggles between the two, keeps each member's part to the
+  cent, divides the whole evenly and says how much is missing or over. A split saved by amount is now read back as
+  amounts instead of 100% for one member. The entry details panel can edit the split, and inline edits reject an
+  incomplete one.
+- **Manual entries** choose their bill, default the date to the local day and warn when there is no card. A manual
+  purchase that no imported bill has seen can be edited or deleted, and editing keeps its note.
+- **Overview**: a category in the table or the chart opens the Entries tab filtered by that category, period and member;
+  the chart height follows the number of categories.
+- **Category icons** are picked from a searchable grid of every icon, with suggestions first.
+- Success notices close after 4 seconds and errors after 8; Escape closes only the topmost dialog.
+- Fixes: category chart slices showed as "not classified" while categories loaded, and split amounts overflowed the
+  narrow details panel.
 
 ## v0.1.0 — 2026-10-28
 

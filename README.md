@@ -54,7 +54,7 @@ python scripts/build_runtime.py backend/target/app.jar build/runtime
 frontend/node_modules/.bin/tauri build --bundles appimage
 python scripts/assemble_portable.py --os linux --shell src-tauri/target/release/PlanejamentoMensal \
   --jar backend/target/app.jar --runtime build/runtime --out dist/PlanejamentoMensal \
-  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_0.1.0_amd64.AppImage
+  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_*_amd64.AppImage
 python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 ```
 

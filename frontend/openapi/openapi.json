@@ -42,6 +42,9 @@
     "description" : "Card entries: list with filters, inline editing, rename, restore, confirmation and manual entries that can\n be replaced or deleted (RF-40 to RF-51).",
     "name" : "bill-entry-controller"
   }, {
+    "description" : "Carries what third parties still owe at the end of a period into the next one, and undoes it (RF-28).",
+    "name" : "carry-over-controller"
+  }, {
     "description" : "Sends statements in batch and keeps the delivery history with resend and manual confirmation (RF-86 to RF-93,\n SOL-03).",
     "name" : "statement-delivery-controller"
   }, {
@@ -3301,6 +3304,80 @@
         "tags" : [ "monthly-summary-controller" ]
       }
     },
+    "/api/summaries/{billingPeriod}/carry-overs" : {
+      "post" : {
+        "description" : "Carries the unpaid amount of each member into the next period, replacing what was carried before.",
+        "operationId" : "carryOver",
+        "parameters" : [ {
+          "description" : "source period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CarryOverRequest"
+              }
+            }
+          },
+          "description" : "members",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CarryOverModel"
+                  }
+                }
+              }
+            },
+            "description" : "the carry-overs"
+          }
+        },
+        "summary" : "Carries the unpaid amount of each member into the next period, replacing what was carried before.",
+        "tags" : [ "carry-over-controller" ]
+      }
+    },
+    "/api/summaries/{billingPeriod}/carry-overs/{memberId}" : {
+      "delete" : {
+        "description" : "Removes the carry-over of a member out of a period.",
+        "operationId" : "undoCarryOver",
+        "parameters" : [ {
+          "description" : "source period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "member",
+          "in" : "path",
+          "name" : "memberId",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Removes the carry-over of a member out of a period.",
+        "tags" : [ "carry-over-controller" ]
+      }
+    },
     "/api/summaries/{billingPeriod}/categories" : {
       "get" : {
         "description" : "Returns the expense by category of a period (RF-12).",
@@ -4387,6 +4464,45 @@
           }
         },
         "required" : [ "bank", "defaultMemberId", "holderName", "lastDigits", "nickname" ]
+      },
+      "CarryOverModel" : {
+        "type" : "object",
+        "description" : "Amount a member carried from one period into the next (RF-28).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "positive amount"
+          },
+          "fromPeriod" : {
+            "type" : "string",
+            "description" : "source period, <code>yyyy-MM</code>"
+          },
+          "memberId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "member who owes"
+          },
+          "toPeriod" : {
+            "type" : "string",
+            "description" : "period the amount is owed in, <code>yyyy-MM</code>"
+          }
+        }
+      },
+      "CarryOverRequest" : {
+        "type" : "object",
+        "description" : "Third-party members whose unpaid amount is carried into the next period (RF-28).",
+        "properties" : {
+          "memberIds" : {
+            "type" : "array",
+            "description" : "members",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            },
+            "minItems" : 1
+          }
+        },
+        "required" : [ "memberIds" ]
       },
       "CategoryModel" : {
         "type" : "object",
@@ -5537,15 +5653,23 @@
         "properties" : {
           "balance" : {
             "type" : "number",
-            "description" : "income − expense"
+            "description" : "income − expense − carried in + carried out"
           },
           "card" : {
             "type" : "number",
             "description" : "share of card entries"
           },
+          "carriedIn" : {
+            "type" : "number",
+            "description" : "amount owed from the previous period (RF-28)"
+          },
+          "carriedOut" : {
+            "type" : "number",
+            "description" : "amount carried into the next period (RF-28)"
+          },
           "expense" : {
             "type" : "number",
-            "description" : "total expense"
+            "description" : "total expense of the period"
           },
           "fixed" : {
             "type" : "number",
@@ -5567,6 +5691,10 @@
           "percentSpent" : {
             "type" : "number",
             "description" : "expense ÷ income × 100, or <code>null</code>"
+          },
+          "unpaid" : {
+            "type" : "number",
+            "description" : "expense + carried in − income: what is left to carry over when positive"
           },
           "variable" : {
             "type" : "number",
@@ -5661,7 +5789,7 @@
           },
           "reimbursements" : {
             "type" : "number",
-            "description" : "Third-party share of the expenses, counted as income (XLS-04)."
+            "description" : "Third-party share of the expenses, counted as income, adjusted by their carry-overs (XLS-04, RF-28)."
           },
           "settlements" : {
             "type" : "array",
@@ -6396,6 +6524,10 @@
             "type" : "number",
             "description" : "Card total."
           },
+          "carriedOut" : {
+            "type" : "number",
+            "description" : "Amount carried into the next period, or <code>null</code> (RF-28)."
+          },
           "dueDate" : {
             "type" : "string",
             "format" : "date",
@@ -6444,6 +6576,10 @@
             "type" : "string",
             "description" : "PIX key shown."
           },
+          "previousBalance" : {
+            "type" : "number",
+            "description" : "Amount still owed from the previous period, or <code>null</code> (RF-28)."
+          },
           "subject" : {
             "type" : "string",
             "description" : "E-mail subject."
@@ -6460,7 +6596,7 @@
           },
           "total" : {
             "type" : "number",
-            "description" : "Total due."
+            "description" : "Total due, previous balance included."
           },
           "variableTotal" : {
             "type" : "number",

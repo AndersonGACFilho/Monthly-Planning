@@ -39,7 +39,7 @@ public final class SampleStatement {
         List<ExpenseLine> variable = List.of(new ExpenseLine(period.atDay(4), "Feira", Money.of("35.00"), "Mercado"));
         return new MemberStatement(0, "M", "Maria", false, period, LocalDate.now(), List.of(card), fixed, variable,
                 List.of(new CommittedPeriod(period.next(), Money.of("45.90"))), Money.ZERO, Money.of("130.20"),
-                Money.of("300.00"), Money.of("35.00"), Money.of("465.20"), period.atDay(10), "maria@example.com",
+                Money.of("300.00"), Money.of("35.00"), null, null, Money.of("465.20"), period.atDay(10), "maria@example.com",
                 List.of("Streaming"), StatementOptions.DEFAULT);
     }
 }

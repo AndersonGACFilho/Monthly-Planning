@@ -1,7 +1,8 @@
-// I18N-13: every translation key exists in every language file.
+// I18N-13: every translation key exists in every language file, and the files match locales-source.mjs.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderLocales } from './render-locales.mjs';
 
 const dir = fileURLToPath(new URL('../src/locales/', import.meta.url));
 const flatten = (object, prefix = '') =>
@@ -19,6 +20,12 @@ for (const [name, set] of keys) {
       console.error(`${name}: missing key ${key}`);
       missing++;
     }
+  }
+}
+for (const [language, text] of renderLocales()) {
+  if (readFileSync(join(dir, `${language}.json`), 'utf8') !== text) {
+    console.error(`${language}.json differs from scripts/locales-source.mjs: edit the source and run node scripts/build-locales.mjs`);
+    missing++;
   }
 }
 if (missing > 0) process.exit(1);

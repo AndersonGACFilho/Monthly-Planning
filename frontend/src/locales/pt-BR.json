@@ -447,7 +447,21 @@
     "everyone": "Todas as contas",
     "chart": "Gráfico de despesas por categoria",
     "openCategory": "Ver lançamentos de {{category}}",
-    "totalsByMember": "Despesa total por conta"
+    "totalsByMember": "Despesa total por conta",
+    "previousBalance": "Saldo anterior",
+    "carriedOut": "Transportado"
+  },
+  "carryOver": {
+    "button": "Transportar saldo devido",
+    "title": "Transportar saldo devido para {{period}}",
+    "hint": "O que cada cota ainda deve depois das rendas recebidas no mês passa para {{period}} como saldo anterior. Os lançamentos continuam na competência deles.",
+    "unpaid": "Devido {{amount}}",
+    "carried": "Transportado {{amount}}",
+    "outdated": "Mudou desde o transporte: marque para atualizar.",
+    "submit": "Transportar",
+    "undo": "Desfazer transporte de {{member}}",
+    "confirmUndo": "Desfazer o transporte de {{member}}? O valor sai de {{period}}.",
+    "nothing": "Nenhuma cota deve nada neste mês."
   },
   "statements": {
     "members": "Cotas",
