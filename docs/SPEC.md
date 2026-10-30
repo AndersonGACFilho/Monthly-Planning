@@ -618,7 +618,7 @@ public BillingPeriod calculate(LocalDate purchaseDate, CardCycle cycle) { ... }
 - TST-04: Cobertura mínima no JaCoCo: 90% de linhas em `domain`, 80% em `application`; abaixo disso o build falha.
 - TST-05: Builders de teste compartilhados (`BillEntryBuilder`, `CardBuilder`) em vez de montar objetos em cada teste (DRY).
 - TST-06: Todo bug corrigido ganha antes um teste que reproduz o erro.
-- TST-07: O CI (GitHub Actions) roda testes, Javadoc e cobertura a cada push; PR só entra com tudo verde.
+- TST-07: O CI (GitHub Actions) roda testes, Javadoc e cobertura em cada PR e em cada push na `main`; PR só entra com tudo verde.
 
 **Matriz de rastreabilidade**
 
