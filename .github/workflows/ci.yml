@@ -1,10 +1,12 @@
-# TST-07: tests, Javadoc and coverage on every push; PRs merge only when green.
+# TST-07: tests, Javadoc and coverage on every pull request and every push to main; PRs merge only when green.
+# Other branches run through their pull request only, so a branch with an open PR is tested once per push.
 # POR-15: app.jar built once; jlink + tauri build per OS; one portable zip for Windows and Linux.
 # POR-17: every green commit on main is released as v<VERSION>.<commits since VERSION changed>.
 name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
