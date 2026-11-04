@@ -3694,6 +3694,26 @@
         "tags" : [ "template-controller" ]
       }
     },
+    "/api/templates/layout-reference" : {
+      "get" : {
+        "description" : "Returns what a full layout of the advanced mode can use: the standard layout, its placeholders, the message\n variables and every class and id of the statement with what it marks (TPL-07).",
+        "operationId" : "templateLayoutReference",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LayoutReference"
+                }
+              }
+            },
+            "description" : "the reference, described in the request language"
+          }
+        },
+        "summary" : "Returns what a full layout of the advanced mode can use: the standard layout, its placeholders, the message\n variables and every class and id of the statement with what it marks (TPL-07).",
+        "tags" : [ "template-controller" ]
+      }
+    },
     "/api/templates/preview" : {
       "post" : {
         "description" : "Renders unsaved settings with real or sample data (TPL-03).",
@@ -5464,6 +5484,51 @@
         },
         "required" : [ "language" ]
       },
+      "LayoutReference" : {
+        "type" : "object",
+        "description" : "Everything a full layout can use.",
+        "properties" : {
+          "placeholders" : {
+            "type" : "array",
+            "description" : "placeholders of the statement parts, in the standard order",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "selectors" : {
+            "type" : "array",
+            "description" : "ids, then classes, in the order they appear",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutSelector"
+            }
+          },
+          "standardLayout" : {
+            "type" : "string",
+            "description" : "layout a new full layout starts from"
+          },
+          "variables" : {
+            "type" : "array",
+            "description" : "message variables",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "LayoutSelector" : {
+        "type" : "object",
+        "description" : "One class or id of the standard statement.",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "what it marks, in the requested language"
+          },
+          "selector" : {
+            "type" : "string",
+            "description" : "CSS selector, <code>.name</code> or <code>#name</code>"
+          }
+        }
+      },
       "Line" : {
         "type" : "object",
         "description" : "One card entry.",
@@ -6863,6 +6928,10 @@
             "type" : "string",
             "description" : "font family",
             "enum" : [ "NOTO_SANS", "NOTO_SERIF", "LIBERATION_SANS" ]
+          },
+          "layoutHtml" : {
+            "type" : "string",
+            "description" : "full layout of the advanced mode that replaces the whole statement body, or <code>null</code>; it\n                       is sanitized and places the parts of {@link TemplateLayout TemplateLayout} and the variables of\n                       {@link MessageVariables MessageVariables} (TPL-07)"
           },
           "logo" : {
             "type" : "string",

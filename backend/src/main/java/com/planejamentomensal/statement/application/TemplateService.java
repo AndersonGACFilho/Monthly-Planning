@@ -236,7 +236,7 @@ public class TemplateService {
                     text("emailSubject", locale), text("emailBody", locale), text("whatsapp", locale)));
         }
         return new TemplateSettings("#2563EB", "#475569", TemplateFont.NOTO_SANS, null,
-                Arrays.asList(StatementBlock.values()), texts, null, null);
+                Arrays.asList(StatementBlock.values()), texts, null, null, null);
     }
 
     private String text(String key, Locale locale) {

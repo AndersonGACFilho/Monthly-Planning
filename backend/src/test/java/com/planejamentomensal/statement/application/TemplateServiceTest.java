@@ -33,7 +33,7 @@ class TemplateServiceTest {
         Template dark = templates.create("Escuro", base);
         assertThat(dark.isDefault()).isFalse();
         TemplateSettings serif = new TemplateSettings("#111111", base.secondaryColor(), TemplateFont.NOTO_SERIF, null,
-                base.blocks(), base.texts(), "h1 { letter-spacing: 1px; }", null);
+                base.blocks(), base.texts(), "h1 { letter-spacing: 1px; }", null, null);
         Template changed = templates.update(dark.id(), "Escuro", serif, dark.version());
         assertThat(changed.currentVersion()).isEqualTo(2);
         assertThat(templates.versions(dark.id())).extracting(v -> v.number()).containsExactly(2, 1);

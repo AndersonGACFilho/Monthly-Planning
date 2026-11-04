@@ -19,10 +19,14 @@ import java.util.regex.Pattern;
  * @param advancedCss    extra CSS of the advanced mode, or {@code null} (TPL-07)
  * @param advancedHtml   HTML of the advanced mode that replaces the header, or {@code null}; it is sanitized and
  *                       may hold the variables of {@link MessageVariables} (TPL-07)
+ * @param layoutHtml     full layout of the advanced mode that replaces the whole statement body, or {@code null}; it
+ *                       is sanitized and places the parts of {@link TemplateLayout} and the variables of
+ *                       {@link MessageVariables} (TPL-07)
  * @since 1.0
  */
 public record TemplateSettings(String primaryColor, String secondaryColor, TemplateFont font, String logo,
-        List<StatementBlock> blocks, Map<String, TemplateTexts> texts, String advancedCss, String advancedHtml) {
+        List<StatementBlock> blocks, Map<String, TemplateTexts> texts, String advancedCss, String advancedHtml,
+        String layoutHtml) {
 
     /** Languages with their own texts (I18N-11). */
     public static final List<String> LANGUAGES = List.of("pt-BR", "en-US");
@@ -31,6 +35,7 @@ public record TemplateSettings(String primaryColor, String secondaryColor, Templ
     private static final Pattern LOGO = Pattern.compile("^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$");
     private static final int MAX_LOGO_LENGTH = 700_000;
     private static final int MAX_ADVANCED_LENGTH = 20_000;
+    private static final int MAX_LAYOUT_LENGTH = 50_000;
 
     /**
      * Checks the settings.
@@ -63,7 +68,11 @@ public record TemplateSettings(String primaryColor, String secondaryColor, Templ
         if (advancedHtml != null && advancedHtml.length() > MAX_ADVANCED_LENGTH) {
             throw new InvalidInputException("template-invalid", "advancedHtml");
         }
+        if (layoutHtml != null && layoutHtml.length() > MAX_LAYOUT_LENGTH) {
+            throw new InvalidInputException("template-invalid", "layoutHtml");
+        }
         MessageVariables.check(advancedHtml);
+        TemplateLayout.check(layoutHtml);
         texts.values().forEach(t -> {
             MessageVariables.check(t.header());
             MessageVariables.check(t.footer());
@@ -72,6 +81,15 @@ public record TemplateSettings(String primaryColor, String secondaryColor, Templ
             MessageVariables.check(t.emailBody());
             MessageVariables.check(t.whatsapp());
         });
+    }
+
+    /**
+     * Tells whether the full layout replaces the standard statement body.
+     *
+     * @return {@code true} when {@link #layoutHtml()} has content
+     */
+    public boolean hasLayout() {
+        return layoutHtml != null && !layoutHtml.isBlank();
     }
 
     /**

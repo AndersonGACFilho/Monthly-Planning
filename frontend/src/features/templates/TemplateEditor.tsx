@@ -20,6 +20,7 @@ import { reportError } from '../../app/queryClient';
 import { Field } from '../../shared/components/Field';
 import { embedded } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
+import { AdvancedLayout } from './AdvancedLayout';
 
 const BLOCKS: TemplateSettingsBlocksItem[] = ['SUMMARY', 'CARDS', 'FIXED_EXPENSES', 'VARIABLE_EXPENSES', 'COMMITTED', 'PAYMENT', 'NOTE'];
 const FONTS = [
@@ -47,7 +48,7 @@ export interface TemplateEditorProps {
 
 /**
  * Template editor without code: colours, font, logo, blocks and their order, texts per language with English
- * variables and an optional advanced HTML/CSS mode, with a live preview on real or sample data (TPL-02, TPL-03,
+ * variables and an optional advanced mode with a full HTML layout, header HTML and CSS, with a live preview on real or sample data (TPL-02, TPL-03,
  * TPL-05, TPL-07, I18N-11).
  *
  * @param props - {@link TemplateEditorProps}
@@ -165,6 +166,7 @@ export function TemplateEditor({ template, base, period, onDone }: TemplateEdito
 
         <fieldset className="panel flex flex-col gap-1">
           <legend className="font-semibold">{t('templates.blocks')}</legend>
+          {settings.layoutHtml?.trim() && <p className="text-xs text-amber-800">{t('templates.layout.blocksIgnored')}</p>}
           {[...blocks, ...BLOCKS.filter((b) => !blocks.includes(b))].map((block) => {
             const index = blocks.indexOf(block);
             return (
@@ -218,16 +220,7 @@ export function TemplateEditor({ template, base, period, onDone }: TemplateEdito
           ))}
         </fieldset>
 
-        <details className="panel">
-          <summary className="cursor-pointer font-semibold">{t('templates.advanced')}</summary>
-          <p className="my-2 text-xs text-(--color-text-muted)">{t('templates.advancedHint')}</p>
-          <Field label={t('templates.advancedHtml')} htmlFor="template-html">
-            <textarea id="template-html" className="input min-h-20 font-mono text-xs" value={settings.advancedHtml ?? ''} onChange={(e) => update({ advancedHtml: e.target.value || undefined })} />
-          </Field>
-          <Field label={t('templates.advancedCss')} htmlFor="template-css">
-            <textarea id="template-css" className="input min-h-20 font-mono text-xs" value={settings.advancedCss ?? ''} onChange={(e) => update({ advancedCss: e.target.value || undefined })} />
-          </Field>
-        </details>
+        <AdvancedLayout settings={settings} update={update} />
 
         {error && (
           <p role="alert" className="text-sm text-red-700">

@@ -16,11 +16,58 @@ const settings: TemplateSettings = {
   texts: { 'pt-BR': { header: 'Extrato de {{member.name}}' } },
 };
 
+const reference = {
+  standardLayout: '<div class="statement">\n  {{header}}\n  {{block.cards}}\n</div>',
+  placeholders: ['header', 'block.cards'],
+  variables: ['member.name', 'total'],
+  selectors: [
+    { selector: '#block-summary', description: 'Bloco de resumo' },
+    { selector: '#block-cards', description: 'Bloco de cartões' },
+    { selector: '.pending', description: 'Linha pendente' },
+  ],
+};
+
 describe('TemplateEditor', () => {
   useMockApi();
   beforeEach(async () => {
     await i18n.changeLanguage('pt-BR');
-    server.use(http.get(`${base}/api/members`, () => HttpResponse.json({ _embedded: { members: [{ id: 2, code: 'M', name: 'Mãe' }] } })));
+    server.use(
+      http.get(`${base}/api/members`, () => HttpResponse.json({ _embedded: { members: [{ id: 2, code: 'M', name: 'Mãe' }] } })),
+      http.get(`${base}/api/templates/layout-reference`, () => HttpResponse.json(reference)),
+    );
+  });
+
+  it('TPL-07: a full layout starts from the standard one, takes placeholders and fills the CSS from the class and id list', async () => {
+    const previews: { settings: TemplateSettings }[] = [];
+    server.use(
+      http.post(`${base}/api/templates/preview`, async ({ request }) => {
+        previews.push((await request.json()) as { settings: TemplateSettings });
+        return HttpResponse.json({ html: '' });
+      }),
+    );
+    renderWithProviders(<TemplateEditor base={settings} period="2026-11" onDone={() => undefined} />);
+    fireEvent.click(screen.getByText('Modo avançado (HTML/CSS)'));
+    const layout = screen.getByLabelText('Layout completo (HTML)') as HTMLTextAreaElement;
+    const start = screen.getByRole('button', { name: 'Começar do layout padrão' });
+    await waitFor(() => expect(start).toBeEnabled());
+    fireEvent.click(start);
+    expect(layout.value).toBe(reference.standardLayout);
+    expect(screen.getByText(/os blocos e a ordem vêm dos marcadores/)).toBeInTheDocument();
+
+    layout.setSelectionRange(0, 0);
+    fireEvent.click(screen.getByRole('button', { name: '{{member.name}}' }));
+    expect(layout.value.startsWith('{{member.name}}<div class="statement">')).toBe(true);
+
+    expect(screen.getByText('3 classes e ids do extrato')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Buscar classe ou id'), { target: { value: 'cartões' } });
+    expect(screen.queryByRole('rowheader', { name: '#block-summary' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Usar #block-cards no CSS' }));
+    expect((screen.getByLabelText('CSS extra') as HTMLTextAreaElement).value).toContain('#block-cards {');
+
+    await waitFor(() => expect(previews.at(-1)?.settings.layoutHtml).toContain('{{block.cards}}'));
+    expect(previews.at(-1)?.settings.advancedCss).toContain('#block-cards {');
+    fireEvent.click(screen.getByRole('button', { name: 'Remover layout completo' }));
+    expect(layout.value).toBe('');
   });
 
   it('TPL-03, I18N-11: the live preview follows the edits, with the language and the fallback warning', async () => {

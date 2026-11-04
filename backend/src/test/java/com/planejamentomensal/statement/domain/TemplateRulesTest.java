@@ -17,7 +17,7 @@ class TemplateRulesTest {
 
     private static TemplateSettings settings(Map<String, TemplateTexts> texts, String css, String html) {
         return new TemplateSettings("#2563EB", "#475569", TemplateFont.NOTO_SANS, null, List.of(StatementBlock.SUMMARY,
-                StatementBlock.CARDS), texts, css, html);
+                StatementBlock.CARDS), texts, css, html, null);
     }
 
     @Test
@@ -36,14 +36,14 @@ class TemplateRulesTest {
     void validation() {
         settings(Map.of("pt-BR", PT), null, null).validate();
         assertThatThrownBy(() -> new TemplateSettings("blue", "#475569", TemplateFont.NOTO_SANS, null, List.of(StatementBlock.CARDS),
-                Map.of(), null, null).validate()).hasFieldOrPropertyWithValue("code", "template-invalid");
+                Map.of(), null, null, null).validate()).hasFieldOrPropertyWithValue("code", "template-invalid");
         assertThatThrownBy(() -> new TemplateSettings("#2563EB", "#475569", TemplateFont.NOTO_SANS, "http://x/logo.png",
-                List.of(StatementBlock.CARDS), Map.of(), null, null).validate()).hasMessageContaining("template-invalid");
+                List.of(StatementBlock.CARDS), Map.of(), null, null, null).validate()).hasMessageContaining("template-invalid");
         assertThatThrownBy(() -> new TemplateSettings("#2563EB", "#475569", TemplateFont.NOTO_SANS, null,
-                List.of(StatementBlock.CARDS, StatementBlock.CARDS), Map.of(), null, null).validate()).isInstanceOf(InvalidInputException.class);
+                List.of(StatementBlock.CARDS, StatementBlock.CARDS), Map.of(), null, null, null).validate()).isInstanceOf(InvalidInputException.class);
         assertThatThrownBy(() -> settings(Map.of("fr-FR", PT), null, null).validate()).isInstanceOf(InvalidInputException.class);
         assertThatThrownBy(() -> new TemplateSettings("#2563EB", "#475569", null, null, List.of(StatementBlock.CARDS), Map.of(),
-                null, null).validate()).isInstanceOf(InvalidInputException.class);
+                null, null, null).validate()).isInstanceOf(InvalidInputException.class);
     }
 
     @Test
@@ -68,6 +68,34 @@ class TemplateRulesTest {
         assertThat(TemplateSanitizer.css("body { background: url(http://tracker) }")).isEmpty();
         assertThat(TemplateSanitizer.css("body { background: url(data:image/png;base64,AAA) }")).contains("data:image");
         assertThat(TemplateSanitizer.css("</style><script>")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("TPL-07: a full layout knows one placeholder per statement part and fills them in one pass")
+    void layout() {
+        assertThat(TemplateLayout.elementIds()).containsEntry("header", "statement-header")
+                .containsEntry("block.fixedExpenses", "block-fixed-expenses")
+                .containsEntry("footer", "statement-footer")
+                .hasSize(StatementBlock.values().length + 3);
+        assertThat(TemplateLayout.standardLayout()).startsWith("<div class=\"statement\">")
+                .contains("{{header}}", "{{warnings}}", "{{block.note}}", "{{footer}}");
+        TemplateLayout.check(TemplateLayout.standardLayout() + "{{member.name}}");
+        assertThatThrownBy(() -> TemplateLayout.check("{{block.extra}} {{block.cards}}"))
+                .hasFieldOrPropertyWithValue("code", "template-variable-unknown");
+        assertThat(TemplateLayout.fill("<p>{{member.name}}</p>{{block.cards}}{{footer}}",
+                Map.of("member.name", "{{block.cards}}", "block.cards", "<table/>")))
+                .isEqualTo("<p>{{block.cards}}</p><table/>");
+        assertThatThrownBy(() -> new TemplateSettings("#2563EB", "#475569", TemplateFont.NOTO_SANS, null,
+                List.of(StatementBlock.CARDS), Map.of(), null, null, "x".repeat(50_001)).validate())
+                .hasFieldOrPropertyWithValue("code", "template-invalid");
+    }
+
+    @Test
+    @DisplayName("TPL-07: a full layout keeps ids and sectioning tags but still loses scripts and handlers")
+    void layoutSanitizer() {
+        assertThat(TemplateSanitizer.layout("<section id=\"capa\" class=\"x\" onclick=\"y()\">{{header}}</section><script>z()</script>"))
+                .isEqualTo("<section id=\"capa\" class=\"x\">{{header}}</section>");
+        assertThat(TemplateSanitizer.html("<p id=\"a\">x</p>")).isEqualTo("<p>x</p>");
     }
 
     @Test

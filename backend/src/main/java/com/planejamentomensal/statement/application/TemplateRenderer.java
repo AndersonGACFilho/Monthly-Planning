@@ -19,7 +19,7 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 /**
  * Applies a template, a statement and the member's language and returns the HTML used for the e-mail, the PDF
- * and the PNG, plus the texts of the messages (TPL-01, TPL-05, I18N-08, I18N-10, I18N-11).
+ * and the PNG, plus the texts of the messages (TPL-01, TPL-05, TPL-07, I18N-08, I18N-10, I18N-11).
  *
  * <p>Fixed labels come from the {@code MessageSource} in the statement language; money and dates follow
  * {@link StatementFormat}.</p>
@@ -79,7 +79,9 @@ public class TemplateRenderer {
         context.setVariable("labels", labels);
         context.setVariable("settings", settings);
         context.setVariable("fontFamily", settings.font().family());
-        context.setVariable("blocks", settings.blocks().stream().map(StatementBlock::name).toList());
+        // A full layout places the blocks itself, so every block is rendered for it to pick from
+        List<StatementBlock> blocks = settings.hasLayout() ? List.of(StatementBlock.values()) : settings.blocks();
+        context.setVariable("blocks", blocks.stream().map(StatementBlock::name).toList());
         context.setVariable("header", MessageVariables.apply(texts.header(), variables));
         context.setVariable("footer", MessageVariables.apply(texts.footer(), variables));
         context.setVariable("message", note != null && !note.isBlank() ? note.strip()
@@ -88,7 +90,8 @@ public class TemplateRenderer {
         context.setVariable("advancedHtml", MessageVariables.apply(TemplateSanitizer.html(settings.advancedHtml()), escaped(variables)));
         context.setVariable("fallback", localized.fallback());
         context.setVariable("language", format.language());
-        String html = engine.process("statement", context);
+        String standard = engine.process("statement", context);
+        String html = settings.hasLayout() ? LayoutComposer.compose(standard, settings.layoutHtml(), escaped(variables)) : standard;
 
         String baseName = FileNameSanitizer.baseName(messages.getMessage("statement.file", null, locale) + " "
                 + statement.memberCode() + " " + statement.billingPeriod());

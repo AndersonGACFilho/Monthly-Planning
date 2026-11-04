@@ -135,4 +135,32 @@ class StatementControllerIT {
                 .content("{\"password\":\"abc\"}")).andExpect(jsonPath("$.configured").value(true));
         mockMvc.perform(authorized(get("/api/settings"))).andExpect(jsonPath("$.smtp-password").doesNotExist());
     }
+
+    @Test
+    @DisplayName("TPL-07: a full layout places the statement parts and the reference lists its placeholders, classes and ids")
+    void fullLayout() throws Exception {
+        String settings = """
+                {"primaryColor":"#123456","secondaryColor":"#654321","font":"NOTO_SANS","blocks":["SUMMARY"],
+                 "texts":{"pt-BR":{"header":"Extrato"}},
+                 "layoutHtml":"<section id=\\"capa\\"><p>Para {{member.name}}</p>{{block.cards}}</section>{{block.summary}}"}
+                """;
+        mockMvc.perform(authorized(post("/api/templates/preview")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"settings\":" + settings + ",\"billingPeriod\":\"2026-11\",\"language\":\"pt-BR\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.html").value(Matchers.matchesRegex(
+                        "(?s).*<section id=\"capa\">\\s*<p>Para Maria</p>\\s*<div class=\"block\" id=\"block-cards\">.*")))
+                .andExpect(jsonPath("$.html").value(Matchers.not(Matchers.containsString("id=\"statement-header\""))));
+        mockMvc.perform(authorized(post("/api/templates")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"X\",\"settings\":" + settings.replace("{{block.cards}}", "{{block.extra}}") + "}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("template-variable-unknown"));
+        mockMvc.perform(authorized(get("/api/templates/layout-reference")).header("Accept-Language", "pt-BR"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.standardLayout").value(Matchers.containsString("{{block.fixedExpenses}}")))
+                .andExpect(jsonPath("$.placeholders[0]").value("header"))
+                .andExpect(jsonPath("$.variables").value(Matchers.hasItem("member.name")))
+                .andExpect(jsonPath("$.selectors[?(@.selector == '#block-summary')].description")
+                        .value(Matchers.hasItem("Bloco de resumo; marcador {{block.summary}}")))
+                .andExpect(jsonPath("$.selectors[?(@.selector == '.pending')]").exists());
+    }
 }

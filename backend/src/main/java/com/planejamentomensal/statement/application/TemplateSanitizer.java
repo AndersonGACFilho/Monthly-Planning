@@ -19,6 +19,12 @@ public final class TemplateSanitizer {
             .removeTags("a", "img")
             .addAttributes(":all", "class", "style");
 
+    /** A full layout may also name its elements, so its CSS can target them. */
+    private static final Safelist LAYOUT = Safelist.relaxed()
+            .removeTags("a", "img")
+            .addTags("section", "header", "footer", "main", "article", "aside")
+            .addAttributes(":all", "class", "style", "id");
+
     private static final Pattern DANGEROUS_CSS = Pattern.compile(
             "@import|expression\\s*\\(|javascript:|behavior\\s*:|-moz-binding|</|<!--|url\\s*\\((?!\\s*['\"]?data:image/)",
             Pattern.CASE_INSENSITIVE);
@@ -34,10 +40,25 @@ public final class TemplateSanitizer {
      * @return safe HTML, empty when {@code null}
      */
     public static String html(String html) {
+        return clean(html, HTML);
+    }
+
+    /**
+     * Cleans a full layout like {@link #html(String)}, also keeping {@code id} attributes and the sectioning tags
+     * ({@code section}, {@code header}, {@code footer}, {@code main}, {@code article}, {@code aside}).
+     *
+     * @param html user layout, may be {@code null}
+     * @return safe HTML, empty when {@code null}
+     */
+    public static String layout(String html) {
+        return clean(html, LAYOUT);
+    }
+
+    private static String clean(String html, Safelist safelist) {
         if (html == null || html.isBlank()) {
             return "";
         }
-        Document document = Jsoup.parseBodyFragment(Jsoup.clean(html, HTML));
+        Document document = Jsoup.parseBodyFragment(Jsoup.clean(html, safelist));
         for (Element element : document.select("[style]")) {
             if (css(element.attr("style")).isEmpty()) {
                 element.removeAttr("style");
