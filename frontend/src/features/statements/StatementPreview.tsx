@@ -7,7 +7,8 @@ import type { MemberStatementParams } from '../../api/generated/model';
 import { apiFetchBlob, apiFetchFile } from '../../api/http';
 import { reportError } from '../../app/queryClient';
 import { MoneyText } from '../../shared/components/MoneyText';
-import { copyImage, downloadFile } from '../../shared/desktop';
+import { copyImage } from '../../shared/desktop';
+import { useFileExport } from '../../shared/hooks/useFileExport';
 import { linkOf } from '../../shared/hal';
 import { useNotifications } from '../../shared/state/notifications';
 
@@ -25,7 +26,7 @@ const FORMATS = ['pdf', 'png', 'xlsx', 'csv'] as const;
 
 /**
  * Preview of one member statement before sending or downloading, with the pending warning and the downloads
- * (RF-79b, RF-84, RF-85).
+ * (RF-79b, RF-84, RF-85); a finished download is notified and the buttons rest for a second (IMP-62).
  *
  * @param props - {@link StatementPreviewProps}
  * @returns the preview
@@ -33,6 +34,7 @@ const FORMATS = ['pdf', 'png', 'xlsx', 'csv'] as const;
 export function StatementPreview({ period, memberId, params }: StatementPreviewProps) {
   const { t } = useTranslation();
   const push = useNotifications((state) => state.push);
+  const { busy, run } = useFileExport();
   const { data: statement } = useMemberStatement(period, memberId, params);
   const previewHref = linkOf(statement, 'preview');
   const { data: html } = useQuery({
@@ -42,15 +44,9 @@ export function StatementPreview({ period, memberId, params }: StatementPreviewP
   });
   const pending = statement?.pendingItems?.length ?? 0;
 
-  const download = async (format: (typeof FORMATS)[number]) => {
+  const download = (format: (typeof FORMATS)[number]) => {
     const href = linkOf(statement, format);
-    if (!href) return;
-    try {
-      const file = await apiFetchFile(href);
-      downloadFile(file.blob, file.fileName ?? `${statement?.memberCode ?? memberId}-${period}.${format}`);
-    } catch (error) {
-      reportError(error);
-    }
+    if (href) void run(() => apiFetchFile(href), `${statement?.memberCode ?? memberId}-${period}.${format}`);
   };
 
   return (
@@ -69,7 +65,7 @@ export function StatementPreview({ period, memberId, params }: StatementPreviewP
         </span>
         <span className="ml-auto flex flex-wrap gap-2">
           {FORMATS.map((format) => (
-            <button key={format} type="button" className="button" disabled={!linkOf(statement, format)} onClick={() => void download(format)}>
+            <button key={format} type="button" className="button" disabled={busy || !linkOf(statement, format)} onClick={() => download(format)}>
               <FileDown size={14} aria-hidden /> {format.toUpperCase()}
             </button>
           ))}

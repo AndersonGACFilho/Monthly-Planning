@@ -86,6 +86,11 @@ Windows and Linux.
   can be opened to check it (changes made there are dropped when you go back to the live data) or restored; restoring
   saves the current data as a new backup first. Without the app, close it and replace `data/planejamento-mensal.db`
   with a copy.
+- **Finding the app when searching the computer:** *Settings → System menu → Add to the system menu* writes, only
+  on request, the one thing the app keeps outside this folder: `Planejamento Mensal.lnk` in your Start Menu
+  (Windows), or `planejamento-mensal.desktop` and its icon in `~/.local/share/applications/` (Linux). It belongs to
+  that computer only and does not open while the drive is unplugged; if the drive gets another letter or mount
+  path, Settings offers *Fix shortcut*. Updates keep it working; *Remove from the system menu* deletes all of it.
 - **Removing the drive:** close the app first.
 - **Updating:** when a new version exists the app shows a notice at the top of the window. *Update* downloads it and
   checks it; *Restart now* (or simply the next start) installs it, backs up and migrates the database, and goes back

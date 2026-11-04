@@ -5,7 +5,7 @@ import { useDatabase } from '../../api/generated/endpoints/database-controller/d
 import { apiFetchFile } from '../../api/http';
 import { reportError } from '../../app/queryClient';
 import { backupLabel, parseBackupName } from '../../shared/backupName';
-import { downloadFile } from '../../shared/desktop';
+import { useFileExport } from '../../shared/hooks/useFileExport';
 import { useDatabaseSwitch } from '../../shared/hooks/useDatabaseSwitch';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { useNotifications } from '../../shared/state/notifications';
@@ -22,6 +22,7 @@ export function BackupSettings() {
   const saved = useSaved();
   const { data: database } = useDatabase();
   const { openBackup, openLive, restore } = useDatabaseSwitch();
+  const { busy: exporting, run } = useFileExport();
   const live = database?.live !== false;
   const push = useNotifications((state) => state.push);
   const { data: files } = useBackups();
@@ -42,14 +43,8 @@ export function BackupSettings() {
     }
   };
 
-  const exportAll = async (format: 'json' | 'csv') => {
-    try {
-      const file = await apiFetchFile(`/api/data-export?format=${format}`);
-      downloadFile(file.blob, file.fileName ?? `planejamento-mensal.${format === 'csv' ? 'zip' : 'json'}`);
-    } catch (error) {
-      reportError(error);
-    }
-  };
+  const exportAll = (format: 'json' | 'csv') =>
+    void run(() => apiFetchFile(`/api/data-export?format=${format}`), `planejamento-mensal.${format === 'csv' ? 'zip' : 'json'}`);
 
   return (
     <section className="panel flex flex-col gap-3" aria-labelledby="backup-title">
@@ -67,10 +62,10 @@ export function BackupSettings() {
             {t('backup.nowTo')}
           </button>
         )}
-        <button type="button" className="button" onClick={() => void exportAll('json')}>
+        <button type="button" className="button" disabled={exporting} onClick={() => exportAll('json')}>
           {t('backup.exportJson')}
         </button>
-        <button type="button" className="button" onClick={() => void exportAll('csv')}>
+        <button type="button" className="button" disabled={exporting} onClick={() => exportAll('csv')}>
           {t('backup.exportCsv')}
         </button>
       </div>

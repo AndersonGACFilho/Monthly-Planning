@@ -9,7 +9,7 @@ import type { CardModel, MemberModel } from '../../api/generated/model';
 import { apiFetchFile } from '../../api/http';
 import { reportError } from '../../app/queryClient';
 import { Field } from '../../shared/components/Field';
-import { downloadFile } from '../../shared/desktop';
+import { useFileExport } from '../../shared/hooks/useFileExport';
 import { embedded } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { type SettingsMap, useSettingsMap } from './GeneralSettings';
@@ -27,6 +27,7 @@ const ids = (value: string | undefined) => (value ? value.split(',').map(Number)
 export function WorkbookSettings() {
   const { t } = useTranslation();
   const saved = useSaved();
+  const { busy: exporting, run } = useFileExport();
   const settings = useSettingsMap();
   const { data: memberPage } = useMembers({ size: 200, sort: ['code,asc'] });
   const { data: cardPage } = useCards({ size: 200, sort: ['nickname,asc'] });
@@ -119,14 +120,8 @@ export function WorkbookSettings() {
           <button
             type="button"
             className="button"
-            onClick={async () => {
-              try {
-                const file = await apiFetchFile('/api/workbook-model');
-                downloadFile(file.blob, file.fileName ?? 'monthly-workbook-model.xlsx');
-              } catch (error) {
-                reportError(error);
-              }
-            }}
+            disabled={exporting}
+            onClick={() => void run(() => apiFetchFile('/api/workbook-model'), 'monthly-workbook-model.xlsx')}
           >
             {t('workbook.downloadModel')}
           </button>

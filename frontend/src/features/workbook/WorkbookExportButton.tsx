@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useMonthlySummary } from '../../api/generated/endpoints/monthly-summary-controller/monthly-summary-controller';
 import { useWorkbookOptions } from '../../api/generated/endpoints/workbook-controller/workbook-controller';
 import { apiFetchFile } from '../../api/http';
-import { reportError } from '../../app/queryClient';
 import { Field } from '../../shared/components/Field';
-import { downloadFile } from '../../shared/desktop';
+import { useFileExport } from '../../shared/hooks/useFileExport';
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
 import { useUiStore } from '../../shared/state/ui';
 
@@ -15,6 +14,7 @@ type Mode = 'EXCEL_365' | 'COMPATIBLE';
 /**
  * Button beside the billing period that exports the monthly spreadsheet: formula mode (default by system),
  * language and the warning about entries pending review (XLS-01, XLS-07, XLS-09, XLS-10). Ctrl+E opens it (UI-01).
+ * The end of the export is notified and the buttons rest for a second (IMP-62).
  *
  * @returns the button and its dialog
  */
@@ -25,7 +25,7 @@ export function WorkbookExportButton() {
   const setOpen = useUiStore((state) => state.setExportOpen);
   const [mode, setMode] = useState<Mode | ''>('');
   const [language, setLanguage] = useState('');
-  const [busy, setBusy] = useState(false);
+  const { busy, run } = useFileExport();
   const { data: summary } = useMonthlySummary(period, undefined, { query: { enabled: open } });
   const { data: options } = useWorkbookOptions(period, undefined, { query: { enabled: open } });
   const defaultMode = (options?.defaultMode ?? 'COMPATIBLE') as Mode;
@@ -33,22 +33,14 @@ export function WorkbookExportButton() {
   const pending = summary?.pendingCount ?? 0;
 
   const download = async () => {
-    setBusy(true);
-    try {
-      const lang = language || (i18n.language === 'en-US' ? 'en-US' : 'pt-BR');
-      const file = await apiFetchFile(`/api/summaries/${period}/workbook?mode=${chosen}&language=${lang}`);
-      downloadFile(file.blob, file.fileName ?? `${period}.xlsx`);
-      setOpen(false);
-    } catch (error) {
-      reportError(error);
-    } finally {
-      setBusy(false);
-    }
+    const lang = language || (i18n.language === 'en-US' ? 'en-US' : 'pt-BR');
+    const saved = await run(() => apiFetchFile(`/api/summaries/${period}/workbook?mode=${chosen}&language=${lang}`), `${period}.xlsx`);
+    if (saved) setOpen(false);
   };
 
   return (
     <div className="relative">
-      <button type="button" className="button" onClick={() => setOpen(!open)} aria-expanded={open}>
+      <button type="button" className="button" disabled={busy} onClick={() => setOpen(!open)} aria-expanded={open}>
         <FileSpreadsheet size={16} aria-hidden /> {t('workbook.export')}
       </button>
       {open && (

@@ -15,11 +15,6 @@ milestones.
   letter or mount path and fixes it, and removing it deletes everything it wrote.
 - **A release for every commit on main**: versions `v0.3.<n>` are computed from `VERSION` and the commit count, and
   each green commit is tagged and published with its commit list as notes.
-
-## Unreleased
-
-A full layout for statements, every item of a category, what was left of the month, and backups you can check.
-
 - **Full statement layout** (TPL-07): the advanced template mode now edits the whole statement body as HTML. Parts
   of the statement are placed with placeholders (`{{header}}`, `{{warnings}}`, `{{block.summary}}`,
   `{{block.cards}}`, `{{block.fixedExpenses}}`, `{{block.variableExpenses}}`, `{{block.committed}}`,
@@ -34,6 +29,8 @@ A full layout for statements, every item of a category, what was left of the mon
 - **Template guide**: the template editor copies a guide with the rules, the answer format, every class and id, the
   standard layout, the current template and a statement with sample data, to have a template written elsewhere (an
   LLM, for example); **Apply JSON** brings the answer back into the editor for review before saving.
+- **Export feedback**: every download (statements, monthly spreadsheet, data export, spreadsheet model) ends with a
+  notice naming the file, and its buttons rest for a second so a double click never exports twice.
 - **Every item of a category**: a category in the overview opens all of its items (fixed expenses, variable expenses
   and card entries), each group with its subtotal and a shortcut to its screen, instead of only the card entries.
 - **What was left of the month**: the overview shows the month's leftover with its share of the income, a
