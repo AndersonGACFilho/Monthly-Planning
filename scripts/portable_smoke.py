@@ -3,7 +3,8 @@
 Copies the folder elsewhere, starts the backend with the bundled JRE exactly as the shell does, waits for
 health, calls the API, stops it through the shutdown endpoint and checks that:
   - the backend ends with code 0, releasing the lock and the WAL file;
-  - nothing was written outside the copied folder (HOME and temp dirs point to an empty sentinel).
+  - nothing was written outside the copied folder (HOME and temp dirs point to an empty sentinel);
+  - the package has no update/ folder, and start-linux.sh starts the app again after an update (POR-16).
 
 Usage: python scripts/portable_smoke.py <portable folder> [--os linux|windows] [--in-place] [--java <java>]
 
@@ -137,6 +138,7 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
             "WAL checkpointed": not (data / "planejamento-mensal.db-wal").exists()
             or (data / "planejamento-mensal.db-wal").stat().st_size == 0,
             "nothing written outside the folder": not any(sentinel.iterdir()),
+            "no update/ folder in the package (POR-16)": not (source / "update").exists(),
         }
         if os_name == "linux" and (home / "start-linux.sh").exists():
             scratch = Path(work) / "start-linux-tmp"
@@ -145,6 +147,8 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
                                  env={**env, "TMPDIR": str(scratch), "PM_START_DRY_RUN": "1"})
             checks["start-linux.sh prepares a temporary copy (POR-09)"] = run.returncode == 0 and "would run" in run.stdout
             checks["start-linux.sh removes its copy"] = not any(scratch.iterdir())
+            if not in_place:
+                checks |= launcher_restarts_after_update(home, Path(work), env)
         for name, ok in checks.items():
             print(f"{'OK  ' if ok else 'FAIL'} {name}")
         if not all(checks.values()):
@@ -153,6 +157,33 @@ def main(source: Path, os_name: str, in_place: bool = False, java_override: Path
             if leaked:
                 print("Written outside:", leaked)
             sys.exit(1)
+
+
+def launcher_restarts_after_update(home: Path, work: Path, env: dict[str, str]) -> dict[str, bool]:
+    """POR-16: the app exits with 75 after installing an update and start-linux.sh starts it again.
+
+    Runs on the throwaway copy: the AppImage is removed and the binary becomes a stub that records each start
+    and asks for a restart the first time.
+    """
+    runs = work / "launcher-runs.txt"
+    (home / "PlanejamentoMensal.AppImage").unlink(missing_ok=True)
+    stub = home / "PlanejamentoMensal"
+    stub.write_text(
+        "#!/bin/sh\n"
+        'echo "$PM_LAUNCHER" >> "$PM_STUB_RUNS"\n'
+        'if [ "$(wc -l < "$PM_STUB_RUNS")" -lt 2 ]; then exit 75; fi\n'
+    )
+    stub.chmod(0o755)
+    scratch = work / "start-linux-restart-tmp"
+    scratch.mkdir()
+    run = subprocess.run(["sh", str(home / "start-linux.sh")], capture_output=True, text=True, timeout=300,
+                         env={**env, "TMPDIR": str(scratch), "PM_STUB_RUNS": str(runs)})
+    starts = runs.read_text().split() if runs.exists() else []
+    return {
+        f"start-linux.sh restarts the app after an update (exit {run.returncode}, starts {starts})":
+            run.returncode == 0 and starts == ["start-linux.sh", "start-linux.sh"],
+        "start-linux.sh removes its copy after a restart": not any(scratch.iterdir()),
+    }
 
 
 if __name__ == "__main__":

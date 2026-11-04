@@ -40,3 +40,6 @@ frontend/src/api/generated/
 # Local tool settings
 .claude/
 build/
+
+# Python bytecode of the scripts
+__pycache__/

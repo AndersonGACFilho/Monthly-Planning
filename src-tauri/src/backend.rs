@@ -1,7 +1,7 @@
 //! Backend sidecar (POR-08): started with the bundled JRE on a free port with a session token, polled
 //! until healthy and stopped cleanly when the window closes.
 
-use crate::{app_home, http};
+use crate::{app_home, hex, http};
 use serde::Serialize;
 use std::env;
 use std::fs::{self, OpenOptions};
@@ -146,7 +146,7 @@ pub fn free_port() -> io::Result<u16> {
 pub fn new_token() -> io::Result<String> {
     let mut bytes = [0u8; 32];
     getrandom::fill(&mut bytes).map_err(|e| io::Error::other(e.to_string()))?;
-    Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
+    Ok(hex::encode(&bytes))
 }
 
 /// Path of the backend log, shown in error dialogs.

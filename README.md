@@ -61,22 +61,41 @@ python scripts/build_runtime.py backend/target/app.jar build/runtime
 frontend/node_modules/.bin/tauri build --bundles appimage
 python scripts/assemble_portable.py --os linux --shell src-tauri/target/release/PlanejamentoMensal \
   --jar backend/target/app.jar --runtime build/runtime --out dist/PlanejamentoMensal \
-  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_0.2.0_amd64.AppImage
+  --appimage src-tauri/target/release/bundle/appimage/PlanejamentoMensal_*_amd64.AppImage
 python scripts/portable_smoke.py dist/PlanejamentoMensal --os linux
 ```
 
 The Windows half is built the same way on Windows (`--os windows`, `PlanejamentoMensal.exe`); CI assembles both
 into one zip. Users find start, backup, ejecting and update instructions in `LEIA-ME.md` inside the folder.
 
+The folder writes nothing outside itself (POR-03) with two exceptions: the temporary copy of `start-linux.sh`
+(POR-09), and the system menu entry the user may add in Settings (POR-18, `src-tauri/src/menu_shortcut/`): a Start
+Menu `.lnk` on Windows, a `.desktop` file and icon in `~/.local/share/applications/` on Linux. It is never created
+at start, so `portable_smoke.py` still finds nothing outside the folder.
+
 ## Releases
 
-Add the version's notes to `CHANGELOG.md` under `## v<version> — <date>`, then push a tag:
+Every commit pushed to `main` is a release once all CI jobs pass on it (POR-17). Its version is
+`<VERSION>.<patch>`: `VERSION` holds the major and minor, and the patch counts the commits on `main` since `VERSION`
+last changed, so each commit has exactly one version and a re-run neither changes nor duplicates it. To start a
+new minor or major, change `VERSION` (for example to `0.4`); that commit is `v0.4.0`.
 
-```bash
-git tag -a v0.2.0 -m "Planejamento Mensal v0.2.0" && git push origin v0.2.0
-```
+`scripts/version.py compute` gives the version and `scripts/version.py apply <version>` writes it into
+`tauri.conf.json`, `Cargo.toml`, `package.json`, `package-lock.json` and `pom.xml` in the CI working tree; the
+repository keeps `0.0.0` there and nothing is committed back. Branches and pull requests build
+`<version>-dev.<commit>`, a pre-release the app never offers.
 
-CI builds the portable zip on Windows and Linux and publishes it as a GitHub release with those notes.
+CI builds the portable zip on Windows and Linux, tags the commit `v<version>` and publishes the zip with a
+`PlanejamentoMensal-v<version>.zip.sha256` file. The release notes are the subjects of the commits since the
+previous release (`scripts/release_notes.py`), and the app shows them in its update notice, so write commit
+subjects for the people who use the app.
+
+Installed apps find it by themselves (POR-16): at start the shell reads the
+[releases API](https://api.github.com/repos/AndersonGACFilho/Monthly-Planning/releases), offers the newest final
+(not draft, not pre-release) version above its own, downloads the zip into `update/` in the app folder, checks the
+SHA-256 and swaps the files at the next start, rolling back if the new backend does not start. Drafts and
+pre-releases are never offered, so a release can be tested by marking it as a pre-release first. `PM_UPDATE_URL`
+points the shell at another release list (local tests). Development builds check but never install.
 
 ## Real bills
 

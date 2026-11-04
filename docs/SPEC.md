@@ -471,7 +471,7 @@ PlanejamentoMensal/
 
 - POR-01: Uma pasta serve aos dois sistemas: `app.jar` único, um JRE por sistema e `data/` compartilhado. O mesmo SSD abre no Windows hoje e no Linux amanhã, com os mesmos dados.
 - POR-02: O SSD é formatado em exFAT, lido e gravado nativamente pelos dois sistemas.
-- POR-03: Todo caminho é relativo à pasta do executável e montado com `java.nio.file.Path`; nada é gravado em AppData, no registro, em `~/.config` ou fora da pasta.
+- POR-03: Todo caminho é relativo à pasta do executável e montado com `java.nio.file.Path`; nada é gravado em AppData, no registro, em `~/.config` ou fora da pasta (exceções: POR-09 e POR-18).
 - POR-04: Nomes de arquivo gerados pelo app usam só letras, números, `-` e `_`, evitando caracteres proibidos no Windows e nomes que só diferem em maiúsculas.
 - POR-05: Fontes do template ficam embutidas em `data/templates/`, para o PDF sair idêntico nos dois sistemas.
 - POR-06: Integrações com o sistema só pelos plugins do Tauri (abrir arquivo e pasta, área de transferência, diálogo de arquivo, notificações), sem código específico de sistema na interface.
@@ -480,16 +480,19 @@ PlanejamentoMensal/
 **Execução**
 
 - POR-08: Ao abrir, o Tauri sobe o backend com o JRE do sistema atual, numa porta livre em 127.0.0.1 e com token de sessão; mostra tela de carregamento até `/actuator/health` responder. Ao fechar a janela, encerra o backend.
-- POR-09: No Linux, se faltar FUSE ou o SSD estiver montado sem permissão de execução, `bash start-linux.sh` roda o AppImage extraído e copia o JRE para uma pasta temporária, removida ao fechar (única exceção ao POR-03).
+- POR-09: No Linux, se faltar FUSE ou o SSD estiver montado sem permissão de execução, `bash start-linux.sh` roda o AppImage extraído e copia o JRE para uma pasta temporária, removida ao fechar (exceção ao POR-03).
 - POR-10: Instância única: um arquivo de trava em `data/` com máquina, sistema e PID impede abrir o mesmo banco duas vezes; trava órfã (PID inexistente) é liberada com confirmação.
 - POR-11: SQLite em modo WAL com `synchronous=FULL`; ao fechar, faz checkpoint para deixar um único arquivo consistente antes de o SSD ir para o outro computador.
 - POR-12: Backup automático ao abrir (cópia em `data/backups/`, mantendo as 10 mais recentes) e botão "Fazer backup agora" com destino escolhido.
 - POR-13: Falha de escrita (SSD removido com o app aberto) gera aviso claro; a interface orienta fechar o app antes de ejetar.
+- POR-18: Atalho no menu do sistema, só quando o usuário pede em Ajustes (exceção ao POR-03): "Adicionar ao menu do sistema" grava `Planejamento Mensal.lnk` na pasta Programas do menu Iniciar do usuário (Windows) ou `planejamento-mensal.desktop` e o ícone `planejamento-mensal.png` em `~/.local/share/applications/` (Linux), apontando para o executável da pasta, para o AppImage ou, se o app foi aberto pelo `start-linux.sh`, para `sh start-linux.sh`. Nada é criado sozinho. Ajustes mostra se este computador tem o atalho e, se ele aponta para outra pasta (outra letra de unidade ou outro ponto de montagem), oferece "Corrigir atalho"; "Remover do menu do sistema" apaga tudo o que foi gravado. Com o SSD ausente o atalho não abre; as atualizações (POR-16) mantêm os nomes dos executáveis, então o atalho continua valendo.
 
 **Atualização e build**
 
 - POR-14: Atualizar = substituir executáveis e `backend/`; `data/` fica intacto e o Flyway migra o banco ao abrir, com backup antes.
 - POR-15: O CI compila o `app.jar` uma vez e roda em matriz `windows-latest` e `ubuntu-22.04` (a distro mais antiga suportada, para o AppImage funcionar nas mais novas): `jlink` e `tauri build` em cada sistema, juntando tudo num único `PlanejamentoMensal-<version>.zip`.
+- POR-16: O app procura uma versão nova nos releases do GitHub ao abrir (em silêncio se estiver sem internet) e mostra um aviso com as novidades, sem nunca obrigar. Ao aceitar, baixa o zip, confere o SHA-256 publicado com ele e prepara os arquivos em `update/`, dentro da pasta do app; ao reiniciar, troca executáveis, scripts e `backend/` e volta para a versão anterior se a nova não abrir. `data/` não é alterado (o backup do POR-12 e a migração do POR-14 seguem iguais), e o `start-linux.sh` reinicia o app depois da troca.
+- POR-17: Todo commit na `main` que passa no CI vira uma versão publicada: `VERSION` guarda maior e menor, o patch é o número de commits desde a última mudança de `VERSION`, e o CI grava a versão no build, marca o commit com `v<versão>` e publica o zip com as mensagens dos commits desde a versão anterior. Rodar de novo não duplica a versão; outros ramos geram pré-versões que o app não oferece.
 
 ## 13. DRY e SRP na prática
 
@@ -616,7 +619,7 @@ public BillingPeriod calculate(LocalDate purchaseDate, CardCycle cycle) { ... }
 - TST-04: Cobertura mínima no JaCoCo: 90% de linhas em `domain`, 80% em `application`; abaixo disso o build falha.
 - TST-05: Builders de teste compartilhados (`BillEntryBuilder`, `CardBuilder`) em vez de montar objetos em cada teste (DRY).
 - TST-06: Todo bug corrigido ganha antes um teste que reproduz o erro.
-- TST-07: O CI (GitHub Actions) roda testes, Javadoc e cobertura a cada push; PR só entra com tudo verde.
+- TST-07: O CI (GitHub Actions) roda testes, Javadoc e cobertura em cada PR e em cada push na `main`; PR só entra com tudo verde.
 
 **Matriz de rastreabilidade**
 

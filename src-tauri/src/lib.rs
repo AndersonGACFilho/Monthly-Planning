@@ -1,17 +1,24 @@
-//! Desktop shell: opens the window, runs the backend sidecar and closes both together (SPEC section 12).
+//! Desktop shell: opens the window, runs the backend sidecar and closes both together (SPEC section 12), and
+//! installs updates of the portable folder (POR-16) and, on request, adds the app to the system menu (POR-18).
 
 mod app_home;
 mod backend;
+mod files;
+mod hex;
 mod http;
+mod menu_shortcut;
 mod messages;
+mod update;
 mod window_state;
 
 use backend::{Backend, BackendConfig, StartError, EXIT_LOCK_HELD, EXIT_LOCK_ORPHANED};
+use menu_shortcut::MenuShortcut;
 use std::path::PathBuf;
 use std::sync::{Condvar, Mutex};
 use std::thread;
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+use update::{Installer, Relaunch, Updater};
 
 /// Startup progress of the backend, read by the `backend_config` command.
 enum Status {
@@ -65,6 +72,7 @@ fn start_backend(app: AppHandle) {
         };
         match backend.wait_until_healthy() {
             Ok(()) => {
+                app.state::<Installer>().confirm_started();
                 shell.set_status(Status::Ready(backend.config()));
                 *shell.backend.lock().unwrap() = Some(backend);
                 return;
@@ -103,6 +111,14 @@ fn fail(app: &AppHandle, reason: &str) {
     let shell = app.state::<Shell>();
     let text = messages::current();
     shell.set_status(Status::Failed(reason.to_string()));
+    if let Some(version) = app.state::<Installer>().undo_failed_start() {
+        app.dialog()
+            .message(text.update_undone.replace("{version}", &version))
+            .title(text.title)
+            .kind(MessageDialogKind::Warning)
+            .blocking_show();
+        return restart(app);
+    }
     app.dialog()
         .message(format!("{}\n{}", text.start_failed, backend::log_file(&shell.home).display()))
         .title(text.title)
@@ -117,9 +133,51 @@ fn stop_backend(app: &AppHandle) {
     }
 }
 
+/// Stops the backend and restarts the app, which moves a downloaded update in before opening (POR-16). Off the
+/// main thread, so the window stays responsive while the backend closes.
+#[tauri::command]
+async fn update_restart(app: AppHandle) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        stop_backend(&app);
+        let code = app.state::<Relaunch>().start().map_err(|e| e.to_string())?;
+        app.exit(code);
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// Starts the app again and ends this process.
+fn restart(app: &AppHandle) {
+    let code = app.state::<Relaunch>().start().unwrap_or(1);
+    app.exit(code);
+}
+
+/// Shows why a staged update could not be moved in at start, without blocking the startup.
+fn report_update_failure(app: &AppHandle) {
+    if let Some(reason) = app.state::<Installer>().take_failure() {
+        let text = messages::current();
+        app.dialog()
+            .message(format!("{}\n{reason}", text.update_failed))
+            .title(text.title)
+            .kind(MessageDialogKind::Warning)
+            .show(|_| {});
+    }
+}
+
 /// Entry point of the desktop app.
 pub fn run() {
     let home = app_home::resolve();
+    // captured before an update renames the running file
+    let relaunch = Relaunch::current();
+    let shortcut = MenuShortcut::current(&home);
+    let installer = Installer::new(&home);
+    if installer.resume() {
+        // the folder now holds another version: run that one instead of this process
+        if let Ok(code) = relaunch.start() {
+            std::process::exit(code);
+        }
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -131,7 +189,19 @@ pub fn run() {
             ready: Condvar::new(),
             backend: Mutex::new(None),
         })
-        .invoke_handler(tauri::generate_handler![backend_config])
+        .manage(installer)
+        .manage(Updater::new(&home))
+        .manage(relaunch)
+        .manage(shortcut)
+        .invoke_handler(tauri::generate_handler![
+            backend_config,
+            update::commands::update_check,
+            update::commands::update_download,
+            update_restart,
+            menu_shortcut::commands::menu_shortcut_status,
+            menu_shortcut::commands::menu_shortcut_add,
+            menu_shortcut::commands::menu_shortcut_remove
+        ])
         .setup(move |app| {
             if let Some(window) = app.get_webview_window("main") {
                 if let Some(state) = window_state::load(&app_home::data_dir(&home)) {
@@ -139,6 +209,7 @@ pub fn run() {
                 }
                 window.show()?;
             }
+            report_update_failure(app.handle());
             let handle = app.handle().clone();
             thread::spawn(move || start_backend(handle));
             Ok(())
