@@ -14,6 +14,13 @@ A full layout for statements, every item of a category, what was left of the mon
   standard layout and lists every class and id of the statement with what it marks, so extra CSS can target them.
   The layout is sanitized like the header HTML. Every part and line of the standard statement now has a stable id or
   class.
+- **Fine control of each export**: the Deliveries screen can change, for that export only, the header and footer
+  texts (template variables allowed), which blocks are shown and in what order, and whether the date, installment and
+  share columns appear. The template stays as it is; the preview, downloads and deliveries sent from there follow the
+  changes. With a full layout, unticked blocks stay empty where their placeholder is.
+- **Template guide**: the template editor copies a guide with the rules, the answer format, every class and id, the
+  standard layout, the current template and a statement with sample data, to have a template written elsewhere (an
+  LLM, for example); **Apply JSON** brings the answer back into the editor for review before saving.
 - **Every item of a category**: a category in the overview opens all of its items (fixed expenses, variable expenses
   and card entries), each group with its subtotal and a shortcut to its screen, instead of only the card entries.
 - **What was left of the month**: the overview shows the month's leftover with its share of the income, a
@@ -25,6 +32,7 @@ A full layout for statements, every item of a category, what was left of the mon
 - **Loading screen** with the app name, a progress bar and what the local service is doing (starting, opening the
   data, start backup and database check, a note when it takes longer than usual); on failure it says what to check
   and offers to try again.
+- Night theme: buttons inside the backup band and primary buttons are readable again.
 - **Check and restore backups**: each backup in Settings can be opened to check it across the app, with a yellow band
   and a way back to the live data; the backup file never changes and changes made to the copy are dropped. A backup
   can also be restored as the live data, after the current data is backed up. Backups opened from an older version
