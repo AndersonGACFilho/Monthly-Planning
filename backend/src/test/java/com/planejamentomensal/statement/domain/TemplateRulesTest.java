@@ -99,6 +99,27 @@ class TemplateRulesTest {
     }
 
     @Test
+    @DisplayName("IMP-60: an export customization replaces header, footer and blocks, and is checked")
+    void customization() {
+        TemplateSettings template = settings(Map.of("pt-BR", PT), null, null);
+        assertThat(StatementCustomization.NONE.applyTo(template)).isSameAs(template);
+        TemplateSettings custom = new StatementCustomization(" Olá ", "", List.of(StatementBlock.CARDS), null)
+                .applyTo(template);
+        assertThat(custom.blocks()).containsExactly(StatementBlock.CARDS);
+        assertThat(custom.texts().get("pt-BR").header()).isEqualTo("Olá");
+        assertThat(custom.texts().get("pt-BR").footer()).isEqualTo("Rodapé");
+        assertThat(custom.textsFor("en-US").texts().header()).isEqualTo("Olá");
+        assertThat(new StatementCustomization("Topo", null, null, null).applyTo(settings(Map.of(), null, null))
+                .textsFor("en-US").texts().header()).isEqualTo("Topo");
+        assertThatThrownBy(() -> new StatementCustomization("x".repeat(201), null, null, null).validate())
+                .hasFieldOrPropertyWithValue("code", "statement-customization-invalid");
+        assertThatThrownBy(() -> new StatementCustomization(null, "{{cpf}}", null, null).validate())
+                .hasFieldOrPropertyWithValue("code", "template-variable-unknown");
+        assertThatThrownBy(() -> new StatementCustomization(null, null, List.of(StatementBlock.NOTE, StatementBlock.NOTE),
+                null).validate()).hasFieldOrPropertyWithValue("code", "statement-customization-invalid");
+    }
+
+    @Test
     @DisplayName("TPL-06, SOL-03: a delivery awaiting the user can be marked as sent once")
     void delivery() {
         StatementDelivery d = new StatementDelivery(1, com.planejamentomensal.shared.domain.BillingPeriod.of(2026, 11),

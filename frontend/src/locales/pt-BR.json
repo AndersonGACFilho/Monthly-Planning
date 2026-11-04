@@ -517,6 +517,23 @@
     "members": "Cotas",
     "selectAll": "Todas",
     "options": "Opções",
+    "custom": {
+      "title": "Personalizar esta exportação",
+      "changed": "alterada",
+      "hint": "Vale só para esta exportação e os envios feitos daqui; o template não muda. Cabeçalho e rodapé aceitam as variáveis do template, como {{member.name}}.",
+      "header": "Cabeçalho (título)",
+      "footer": "Rodapé",
+      "fromTemplate": "Usar o do template",
+      "blocks": "Blocos",
+      "chooseBlocks": "Escolher os blocos e a ordem só aqui",
+      "columns": "Colunas das tabelas",
+      "columnNames": {
+        "DATE": "Data",
+        "INSTALLMENT": "Parcela",
+        "SHARE": "Rateio (%)"
+      },
+      "reset": "Voltar ao template"
+    },
     "showCategories": "Mostrar categorias",
     "useAlias": "Usar nomes renomeados (alias)",
     "includeFuture": "Incluir parcelas futuras",
@@ -617,7 +634,7 @@
       "startFromStandard": "Começar do layout padrão",
       "confirmReplace": "Trocar o layout atual pelo padrão?",
       "remove": "Remover layout completo",
-      "blocksIgnored": "Com layout completo, os blocos e a ordem vêm dos marcadores do layout.",
+      "blocksIgnored": "Com layout completo, a ordem vem dos marcadores do layout; blocos desmarcados ficam vazios.",
       "reference": "Referência do layout",
       "placeholders": "Partes do extrato (clique para inserir no layout)",
       "variables": "Variáveis (clique para inserir no layout)",

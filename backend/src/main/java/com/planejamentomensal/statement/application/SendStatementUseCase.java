@@ -55,7 +55,7 @@ public class SendStatementUseCase {
     public List<DeliveryOutcome> send(SendRequest request) {
         List<PreparedStatement> prepared = request.memberIds().stream()
                 .map(id -> statements.prepare(new StatementRequest(id, request.period(), request.options(),
-                        request.language(), request.templateId(), request.note())))
+                        request.language(), request.templateId(), request.note(), request.customization())))
                 .toList();
         int pending = prepared.stream().mapToInt(p -> p.statement().pendingItems().size()).sum();
         if (pending > 0 && !request.sendAnyway()) {

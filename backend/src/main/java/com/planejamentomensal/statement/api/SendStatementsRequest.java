@@ -3,12 +3,16 @@ package com.planejamentomensal.statement.api;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.statement.application.SendRequest;
 import com.planejamentomensal.statement.domain.DeliveryChannelType;
+import com.planejamentomensal.statement.domain.StatementBlock;
+import com.planejamentomensal.statement.domain.StatementColumn;
+import com.planejamentomensal.statement.domain.StatementCustomization;
 import com.planejamentomensal.statement.domain.StatementOptions;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Batch delivery of statements (RF-91).
@@ -23,6 +27,10 @@ import java.util.List;
  * @param templateId     template, optional
  * @param note           free note, optional
  * @param sendAnyway     send even with entries pending review (RF-79b)
+ * @param header         header text of this delivery, optional (IMP-60)
+ * @param footer         footer text of this delivery, optional (IMP-60)
+ * @param blocks         blocks shown, in order, optional (IMP-60)
+ * @param hiddenColumns  columns left out of the line tables, optional (IMP-60)
  * @since 1.0
  */
 public record SendStatementsRequest(
@@ -35,7 +43,11 @@ public record SendStatementsRequest(
         @Pattern(regexp = "^(pt-BR|en-US)$") String language,
         Long templateId,
         @Size(max = 1000) String note,
-        boolean sendAnyway) {
+        boolean sendAnyway,
+        @Size(max = 200) String header,
+        @Size(max = 200) String footer,
+        List<StatementBlock> blocks,
+        Set<StatementColumn> hiddenColumns) {
 
     /**
      * Converts to the use case request.
@@ -46,6 +58,6 @@ public record SendStatementsRequest(
         return new SendRequest(BillingPeriod.parse(billingPeriod), memberIds, channel,
                 new StatementOptions(!Boolean.FALSE.equals(showCategories), !Boolean.FALSE.equals(useAlias),
                         !Boolean.FALSE.equals(includeFuture)),
-                language, templateId, note, sendAnyway);
+                language, templateId, note, sendAnyway, new StatementCustomization(header, footer, blocks, hiddenColumns));
     }
 }

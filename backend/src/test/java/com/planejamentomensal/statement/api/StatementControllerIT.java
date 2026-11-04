@@ -17,6 +17,7 @@ import com.planejamentomensal.expense.application.VariableExpenseCommands;
 import com.planejamentomensal.member.application.SaveMemberUseCase;
 import com.planejamentomensal.recurrence.application.RecurrenceCommands;
 import com.planejamentomensal.statement.application.StatementFixture;
+import java.net.URI;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -140,7 +141,7 @@ class StatementControllerIT {
     @DisplayName("TPL-07: a full layout places the statement parts and the reference lists its placeholders, classes and ids")
     void fullLayout() throws Exception {
         String settings = """
-                {"primaryColor":"#123456","secondaryColor":"#654321","font":"NOTO_SANS","blocks":["SUMMARY"],
+                {"primaryColor":"#123456","secondaryColor":"#654321","font":"NOTO_SANS","blocks":["SUMMARY","CARDS"],
                  "texts":{"pt-BR":{"header":"Extrato"}},
                  "layoutHtml":"<section id=\\"capa\\"><p>Para {{member.name}}</p>{{block.cards}}</section>{{block.summary}}"}
                 """;
@@ -162,5 +163,24 @@ class StatementControllerIT {
                 .andExpect(jsonPath("$.selectors[?(@.selector == '#block-summary')].description")
                         .value(Matchers.hasItem("Bloco de resumo; marcador {{block.summary}}")))
                 .andExpect(jsonPath("$.selectors[?(@.selector == '.pending')]").exists());
+    }
+
+    @Test
+    @DisplayName("IMP-60: header, footer, blocks and hidden columns of one export reach the preview and every format link")
+    void customization() throws Exception {
+        String base = "/api/statements/2026-11/members/" + s.f.thirdParty;
+        String query = "?header=Cobran%C3%A7a&footer=Valeu&blocks=SUMMARY,COMMITTED&hide=DATE";
+        mockMvc.perform(authorized(get(URI.create(base + query))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.pdf.href").value(Matchers.containsString("header=Cobran%C3%A7a")))
+                .andExpect(jsonPath("$._links.preview.href").value(Matchers.containsString("blocks=SUMMARY%2CCOMMITTED&hide=DATE")));
+        mockMvc.perform(authorized(get(URI.create(base + "/html" + query))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Cobrança")))
+                .andExpect(content().string(Matchers.containsString("Valeu")))
+                .andExpect(content().string(Matchers.not(Matchers.containsString("id=\"block-cards\""))));
+        mockMvc.perform(authorized(get(base + "?blocks=CARDS,CARDS")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("statement-customization-invalid"));
     }
 }

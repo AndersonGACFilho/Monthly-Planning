@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n/i18n';
@@ -26,7 +26,7 @@ describe('StatementsPage', () => {
           },
         }),
       ),
-      http.get(`${base}/api/templates`, () => HttpResponse.json({ _embedded: { templates: [{ id: 5, name: 'Padrão', isDefault: true }] } })),
+      http.get(`${base}/api/templates`, () => HttpResponse.json({ _embedded: { templates: [{ id: 5, name: 'Padrão', isDefault: true, settings: { blocks: ['SUMMARY', 'CARDS', 'NOTE'] } }] } })),
       http.get(`${base}/api/statements/2026-11/members/2`, () =>
         HttpResponse.json({
           memberId: 2,
@@ -94,5 +94,43 @@ describe('StatementsPage', () => {
     expect(screen.getByRole('button', { name: 'Reenviar' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Marcar como enviado' }));
     await waitFor(() => expect(marked).toBe(true));
+  });
+  it('IMP-60: one export changes header, footer, blocks and columns for the preview and the delivery', async () => {
+    const asked: URLSearchParams[] = [];
+    let sent: Record<string, unknown> | undefined;
+    server.use(
+      http.get(`${base}/api/statements/2026-11/members/2`, ({ request }) => {
+        asked.push(new URL(request.url).searchParams);
+        return HttpResponse.json({ memberId: 2, memberCode: 'M', total: 1, _links: {} });
+      }),
+      http.post(`${base}/api/statement-deliveries`, async ({ request }) => {
+        sent = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json([]);
+      }),
+    );
+    renderWithProviders(<StatementsPage />);
+    fireEvent.click(await screen.findByRole('checkbox', { name: /M — Mãe/ }));
+    fireEvent.click(screen.getByText('Personalizar esta exportação'));
+    fireEvent.change(screen.getByLabelText('Cabeçalho (título)'), { target: { value: 'Cobrança de {{member.name}}' } });
+    fireEvent.change(screen.getByLabelText('Rodapé'), { target: { value: 'Obrigado' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Escolher os blocos e a ordem só aqui' }));
+    const blocks = screen.getByRole('group', { name: 'Blocos' });
+    fireEvent.click(within(blocks).getByRole('checkbox', { name: 'Observação' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Rateio (%)' }));
+    expect(screen.getByText('alterada')).toBeInTheDocument();
+
+    await waitFor(() => {
+      const last = asked.at(-1)!;
+      expect(last.get('header')).toBe('Cobrança de {{member.name}}');
+      expect(last.get('footer')).toBe('Obrigado');
+      expect(last.getAll('blocks')).toEqual(['SUMMARY', 'CARDS']);
+      expect(last.getAll('hide')).toEqual(['SHARE']);
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar na pasta' }));
+    await waitFor(() =>
+      expect(sent).toMatchObject({ header: 'Cobrança de {{member.name}}', footer: 'Obrigado', blocks: ['SUMMARY', 'CARDS'], hiddenColumns: ['SHARE'] }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar ao template' }));
+    await waitFor(() => expect(asked.at(-1)!.has('header')).toBe(false));
   });
 });

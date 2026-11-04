@@ -52,7 +52,7 @@ describe('TemplateEditor', () => {
     await waitFor(() => expect(start).toBeEnabled());
     fireEvent.click(start);
     expect(layout.value).toBe(reference.standardLayout);
-    expect(screen.getByText(/os blocos e a ordem vêm dos marcadores/)).toBeInTheDocument();
+    expect(screen.getByText(/blocos desmarcados ficam vazios/)).toBeInTheDocument();
 
     layout.setSelectionRange(0, 0);
     fireEvent.click(screen.getByRole('button', { name: '{{member.name}}' }));

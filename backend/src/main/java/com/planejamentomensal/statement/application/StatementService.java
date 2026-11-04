@@ -48,7 +48,8 @@ public class StatementService {
     }
 
     /**
-     * Builds and renders a statement in the member's language unless another is asked (I18N-08, I18N-09).
+     * Builds and renders a statement in the member's language unless another is asked (I18N-08, I18N-09), with the
+     * changes of this export (IMP-60).
      *
      * @param request what to put in the statement
      * @return the prepared statement
@@ -56,10 +57,12 @@ public class StatementService {
     public PreparedStatement prepare(StatementRequest request) {
         MemberView member = members.find(request.memberId())
                 .orElseThrow(() -> new NotFoundException("member", request.memberId()));
+        request.customization().validate();
         MemberStatement statement = builder.build(request.memberId(), request.period(), request.options());
         ResolvedTemplate template = templates.resolve(request.memberId(), request.templateId());
         String language = request.language() != null ? request.language() : member.preferredLanguage();
-        RenderedStatement rendered = renderer.render(statement, template.settings(), language, request.note());
+        RenderedStatement rendered = renderer.render(statement, template.settings(), language, request.note(),
+                request.customization());
         return new PreparedStatement(statement, template, rendered, member.email(), member.whatsappPhone());
     }
 

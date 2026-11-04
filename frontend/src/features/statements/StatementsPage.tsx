@@ -20,13 +20,24 @@ import { useSaved } from '../../shared/hooks/useSaved';
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
 import { DeliveryHistory } from './DeliveryHistory';
 import { DeliveryOutcomes } from './DeliveryOutcomes';
+import { ExportCustomization, NO_CUSTOMIZATION, type ExportCustomizationValue } from './ExportCustomization';
 import { StatementPreview } from './StatementPreview';
 
 const CHANNELS: SendStatementsRequestChannel[] = ['EMAIL', 'WHATSAPP', 'CLIPBOARD', 'FOLDER'];
 
+/** Writes statement parameters as a query string; lists repeat their name. */
+function queryOf(params: MemberStatementParams): string {
+  const query = new URLSearchParams();
+  for (const [name, value] of Object.entries(params)) {
+    if (Array.isArray(value)) value.forEach((item) => query.append(name, String(item)));
+    else if (value !== undefined) query.set(name, String(value));
+  }
+  return query.toString();
+}
+
 /**
- * Member statements of the billing period: choose members and options, preview, download, send through a
- * channel or print, and follow the history (RF-81 to RF-93).
+ * Member statements of the billing period: choose members and options, change header, footer, blocks and columns of
+ * this export, preview, download, send through a channel or print, and follow the history (RF-81 to RF-93, IMP-60).
  *
  * @returns the page
  */
@@ -46,6 +57,7 @@ export function StatementsPage() {
   const [language, setLanguage] = useState('');
   const [templateId, setTemplateId] = useState<number | null>(null);
   const [note, setNote] = useState('');
+  const [custom, setCustom] = useState<ExportCustomizationValue>(NO_CUSTOMIZATION);
   const [outcomes, setOutcomes] = useState<DeliveryOutcomeModel[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -57,7 +69,13 @@ export function StatementsPage() {
     ...(language ? { language } : {}),
     ...(templateId != null ? { template: templateId } : {}),
     ...(note.trim() ? { note: note.trim() } : {}),
+    ...(custom.header.trim() ? { header: custom.header.trim() } : {}),
+    ...(custom.footer.trim() ? { footer: custom.footer.trim() } : {}),
+    ...(custom.blocks ? { blocks: custom.blocks } : {}),
+    ...(custom.hide.length > 0 ? { hide: custom.hide } : {}),
   };
+  const templateBlocks =
+    templates.find((tpl) => (templateId != null ? tpl.id === templateId : tpl.isDefault))?.settings?.blocks ?? [];
   const toggle = (id: number) => setSelected((list) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]));
 
   const send = async (channel: SendStatementsRequestChannel, sendAnyway = false): Promise<DeliveryOutcomeModel[]> => {
@@ -73,6 +91,10 @@ export function StatementsPage() {
         templateId: templateId ?? undefined,
         note: note.trim() || undefined,
         sendAnyway,
+        header: params.header,
+        footer: params.footer,
+        blocks: params.blocks,
+        hiddenColumns: params.hide,
       });
     } catch (error) {
       if (!sendAnyway && error instanceof ProblemError && error.problem.code === 'statement-has-pending') {
@@ -101,7 +123,7 @@ export function StatementsPage() {
   const copyFirstImage = async (list: DeliveryOutcomeModel[]) => {
     const first = list.find((o) => o.status === 'AWAITING_USER');
     if (!first) return;
-    const png = await apiFetchBlob(`/api/statements/${period}/members/${first.memberId}/png?showCategories=${showCategories}&useAlias=${useAlias}&includeFuture=${includeFuture}${language ? `&language=${language}` : ''}${templateId != null ? `&template=${templateId}` : ''}`);
+    const png = await apiFetchBlob(`/api/statements/${period}/members/${first.memberId}/png?${queryOf(params)}`);
     await copyImage(png);
   };
 
@@ -173,6 +195,7 @@ export function StatementsPage() {
               <textarea id="statement-note" className="input min-h-16" value={note} maxLength={1000} onChange={(e) => setNote(e.target.value)} />
             </Field>
           </fieldset>
+          <ExportCustomization value={custom} onChange={setCustom} templateBlocks={templateBlocks} />
           <div className="panel flex flex-col gap-2" role="group" aria-label={t('statements.send')}>
             <span className="font-semibold">{t('statements.send')}</span>
             {CHANNELS.map((channel) => (

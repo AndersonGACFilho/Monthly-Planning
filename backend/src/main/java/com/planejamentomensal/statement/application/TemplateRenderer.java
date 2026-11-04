@@ -4,6 +4,8 @@ import com.planejamentomensal.shared.domain.FileNameSanitizer;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.MessageVariables;
 import com.planejamentomensal.statement.domain.StatementBlock;
+import com.planejamentomensal.statement.domain.StatementColumn;
+import com.planejamentomensal.statement.domain.StatementCustomization;
 import com.planejamentomensal.statement.domain.TemplateSettings;
 import com.planejamentomensal.statement.domain.TemplateTexts;
 import java.util.HashMap;
@@ -64,6 +66,22 @@ public class TemplateRenderer {
      * @return HTML and message texts
      */
     public RenderedStatement render(MemberStatement statement, TemplateSettings settings, String language, String note) {
+        return render(statement, settings, language, note, StatementCustomization.NONE);
+    }
+
+    /**
+     * Renders a statement with the changes of one export (IMP-60): header, footer, blocks and hidden columns.
+     *
+     * @param statement     statement
+     * @param template      settings of the template in use
+     * @param language      language tag of the delivery
+     * @param note          free note of this export, or {@code null} for the template's default message (RF-82)
+     * @param customization changes of this export
+     * @return HTML and message texts
+     */
+    public RenderedStatement render(MemberStatement statement, TemplateSettings template, String language, String note,
+            StatementCustomization customization) {
+        TemplateSettings settings = customization.applyTo(template);
         StatementFormat format = StatementFormat.of(language);
         Locale locale = format.locale();
         TemplateSettings.LocalizedTexts localized = settings.textsFor(format.language());
@@ -79,9 +97,10 @@ public class TemplateRenderer {
         context.setVariable("labels", labels);
         context.setVariable("settings", settings);
         context.setVariable("fontFamily", settings.font().family());
-        // A full layout places the blocks itself, so every block is rendered for it to pick from
-        List<StatementBlock> blocks = settings.hasLayout() ? List.of(StatementBlock.values()) : settings.blocks();
-        context.setVariable("blocks", blocks.stream().map(StatementBlock::name).toList());
+        context.setVariable("blocks", settings.blocks().stream().map(StatementBlock::name).toList());
+        context.setVariable("columns", columns(customization));
+        context.setVariable("cardColumns", cardColumns(customization, statement.options().showCategories()));
+        context.setVariable("variableColumns", variableColumns(customization, statement.options().showCategories()));
         context.setVariable("header", MessageVariables.apply(texts.header(), variables));
         context.setVariable("footer", MessageVariables.apply(texts.footer(), variables));
         context.setVariable("message", note != null && !note.isBlank() ? note.strip()
@@ -98,6 +117,29 @@ public class TemplateRenderer {
         return new RenderedStatement(html, MessageVariables.apply(texts.emailSubject(), variables),
                 MessageVariables.apply(texts.emailBody(), variables), MessageVariables.apply(texts.whatsapp(), variables),
                 format.language(), localized.fallback(), baseName);
+    }
+
+    private static Map<String, Boolean> columns(StatementCustomization customization) {
+        Map<String, Boolean> shown = new HashMap<>();
+        for (StatementColumn column : StatementColumn.values()) {
+            shown.put(column.name(), customization.shows(column));
+        }
+        return shown;
+    }
+
+    /** Columns of the card table: date, description, installment, category, share and amount, minus hidden ones. */
+    private static int cardColumns(StatementCustomization customization, boolean showCategories) {
+        return 2 + (showCategories ? 1 : 0) + shown(customization, StatementColumn.DATE)
+                + shown(customization, StatementColumn.INSTALLMENT) + shown(customization, StatementColumn.SHARE);
+    }
+
+    /** Columns of the variable expenses table: date, description, category and amount, minus hidden ones. */
+    private static int variableColumns(StatementCustomization customization, boolean showCategories) {
+        return 2 + (showCategories ? 1 : 0) + shown(customization, StatementColumn.DATE);
+    }
+
+    private static int shown(StatementCustomization customization, StatementColumn column) {
+        return customization.shows(column) ? 1 : 0;
     }
 
     private static Map<String, String> variables(MemberStatement s, StatementFormat format) {

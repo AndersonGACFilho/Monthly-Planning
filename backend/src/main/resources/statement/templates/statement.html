@@ -93,25 +93,25 @@
           <table class="lines">
             <thead>
               <tr>
-                <th th:text="${labels.date}">Date</th>
+                <th th:if="${columns['DATE']}" th:text="${labels.date}">Date</th>
                 <th th:text="${labels.description}">Description</th>
-                <th th:text="${labels.installment}">Inst.</th>
+                <th th:if="${columns['INSTALLMENT']}" th:text="${labels.installment}">Inst.</th>
                 <th th:if="${s.options.showCategories}" th:text="${labels.category}">Category</th>
-                <th class="num" th:text="${labels.share}">Share</th>
+                <th class="num" th:if="${columns['SHARE']}" th:text="${labels.share}">Share</th>
                 <th class="num" th:text="${labels.amount}">Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="line : ${group.lines}" th:classappend="${line.pending} ? 'pending'">
-                <td th:text="${f.date(line.date)}">date</td>
+                <td th:if="${columns['DATE']}" th:text="${f.date(line.date)}">date</td>
                 <td th:text="${line.description}">description</td>
-                <td th:text="${line.installment}">-</td>
+                <td th:if="${columns['INSTALLMENT']}" th:text="${line.installment}">-</td>
                 <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
-                <td class="num" th:text="${f.percent(line.percent)}"></td>
+                <td class="num" th:if="${columns['SHARE']}" th:text="${f.percent(line.percent)}"></td>
                 <td class="num" th:text="${f.money(line.amount)}">0</td>
               </tr>
               <tr class="subtotal">
-                <td th:colspan="${s.options.showCategories ? 5 : 4}" th:text="${labels.subtotal}">Subtotal</td>
+                <td th:colspan="${cardColumns - 1}" th:text="${labels.subtotal}">Subtotal</td>
                 <td class="num" th:text="${f.money(group.total)}">0</td>
               </tr>
             </tbody>
@@ -141,13 +141,13 @@
         <table class="lines">
           <tbody>
             <tr th:each="line : ${s.variableExpenses}">
-              <td th:text="${f.date(line.date)}">date</td>
+              <td th:if="${columns['DATE']}" th:text="${f.date(line.date)}">date</td>
               <td th:text="${line.description}">description</td>
               <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
               <td class="num" th:text="${f.money(line.amount)}">0</td>
             </tr>
             <tr class="subtotal">
-              <td th:colspan="${s.options.showCategories ? 3 : 2}" th:text="${labels.subtotal}">Subtotal</td>
+              <td th:colspan="${variableColumns - 1}" th:text="${labels.subtotal}">Subtotal</td>
               <td class="num" th:text="${f.money(s.variableTotal)}">0</td>
             </tr>
           </tbody>

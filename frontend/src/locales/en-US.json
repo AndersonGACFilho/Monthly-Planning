@@ -517,6 +517,23 @@
     "members": "Members",
     "selectAll": "All",
     "options": "Options",
+    "custom": {
+      "title": "Customize this export",
+      "changed": "changed",
+      "hint": "Applies to this export and the deliveries sent from here only; the template does not change. Header and footer take the template variables, such as {{member.name}}.",
+      "header": "Header (title)",
+      "footer": "Footer",
+      "fromTemplate": "Use the template text",
+      "blocks": "Blocks",
+      "chooseBlocks": "Choose the blocks and their order here",
+      "columns": "Table columns",
+      "columnNames": {
+        "DATE": "Date",
+        "INSTALLMENT": "Installment",
+        "SHARE": "Share (%)"
+      },
+      "reset": "Back to the template"
+    },
     "showCategories": "Show categories",
     "useAlias": "Use renamed descriptions (alias)",
     "includeFuture": "Include future installments",
@@ -617,7 +634,7 @@
       "startFromStandard": "Start from the standard layout",
       "confirmReplace": "Replace the current layout with the standard one?",
       "remove": "Remove full layout",
-      "blocksIgnored": "With a full layout, the blocks and their order come from the layout placeholders.",
+      "blocksIgnored": "With a full layout, the order comes from the layout placeholders; unticked blocks stay empty.",
       "reference": "Layout reference",
       "placeholders": "Statement parts (click to insert into the layout)",
       "variables": "Variables (click to insert into the layout)",

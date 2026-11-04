@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.StatementBlock;
+import com.planejamentomensal.statement.domain.StatementColumn;
+import com.planejamentomensal.statement.domain.StatementCustomization;
 import com.planejamentomensal.statement.domain.TemplateSettings;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -46,11 +48,11 @@ class TemplateRendererTest {
     }
 
     @Test
-    @DisplayName("TPL-07: a full layout replaces the body, keeps the styles and renders the blocks it places")
+    @DisplayName("TPL-07: a full layout replaces the body, keeps the styles and shows the chosen blocks it places")
     void fullLayout() {
         TemplateSettings base = templates.defaultSettings();
         TemplateSettings layout = new TemplateSettings(base.primaryColor(), base.secondaryColor(), base.font(), null,
-                List.of(StatementBlock.SUMMARY), base.texts(), ".capa { color: red; }", null,
+                List.of(StatementBlock.SUMMARY, StatementBlock.COMMITTED), base.texts(), ".capa { color: red; }", null,
                 "<div class=\"capa\">{{member.name}} · {{total}}</div>{{block.committed}}<script>x()</script>");
         String html = renderer.render(SampleStatement.of(BillingPeriod.of(2026, 11)), layout, "pt-BR", null).html();
         Document page = Jsoup.parse(html);
@@ -71,5 +73,22 @@ class TemplateRendererTest {
                     .contains("#statement-header", "#block-cards", "#statement-footer", ".statement", ".card-group", ".pending");
             assertThat(ref.selectors()).allSatisfy(s -> assertThat(s.description()).as(s.selector()).isNotBlank());
         }
+    }
+
+    @Test
+    @DisplayName("IMP-60: one export changes header, footer, blocks and columns without touching the template")
+    void customization() {
+        TemplateSettings base = templates.defaultSettings();
+        StatementCustomization custom = new StatementCustomization("Cobrança de {{member.name}}", "Obrigado!",
+                List.of(StatementBlock.CARDS, StatementBlock.SUMMARY),
+                java.util.Set.of(StatementColumn.DATE, StatementColumn.SHARE));
+        Document page = Jsoup.parse(renderer.render(SampleStatement.of(BillingPeriod.of(2026, 11)), base, "en-US", null,
+                custom).html());
+        assertThat(page.selectFirst("h1").text()).isEqualTo("Cobrança de Maria");
+        assertThat(page.getElementById("statement-footer").text()).isEqualTo("Obrigado!");
+        assertThat(page.select(".block").eachAttr("id")).containsExactly("block-cards", "block-summary");
+        assertThat(page.select("#block-cards thead th").eachText()).containsExactly("Description", "Installment", "Category", "Amount");
+        assertThat(page.selectFirst("#block-cards tr.subtotal td").attr("colspan")).isEqualTo("3");
+        assertThat(base.blocks()).hasSize(StatementBlock.values().length);
     }
 }

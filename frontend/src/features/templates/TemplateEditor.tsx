@@ -1,4 +1,3 @@
-import { ArrowDown, ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,18 +10,17 @@ import type {
   TemplateModel,
   TemplatePreviewModel,
   TemplateSettings,
-  TemplateSettingsBlocksItem,
   TemplateTexts,
 } from '../../api/generated/model';
 import { useMembers } from '../../api/generated/endpoints/member-controller/member-controller';
 import { ifMatch } from '../../api/requestOptions';
 import { reportError } from '../../app/queryClient';
+import { BlockOrderList } from '../../shared/components/BlockOrderList';
 import { Field } from '../../shared/components/Field';
 import { embedded } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { AdvancedLayout } from './AdvancedLayout';
 
-const BLOCKS: TemplateSettingsBlocksItem[] = ['SUMMARY', 'CARDS', 'FIXED_EXPENSES', 'VARIABLE_EXPENSES', 'COMMITTED', 'PAYMENT', 'NOTE'];
 const FONTS = [
   ['NOTO_SANS', 'Noto Sans'],
   ['NOTO_SERIF', 'Noto Serif'],
@@ -84,15 +82,6 @@ export function TemplateEditor({ template, base, period, onDone }: TemplateEdito
   const texts: TemplateTexts = (settings.texts as Record<string, TemplateTexts> | undefined)?.[textLanguage] ?? {};
   const setText = (field: (typeof TEXT_FIELDS)[number], value: string) =>
     update({ texts: { ...(settings.texts ?? {}), [textLanguage]: { ...texts, [field]: value } } });
-  const move = (index: number, delta: number) => {
-    const next = [...blocks];
-    const [item] = next.splice(index, 1);
-    next.splice(index + delta, 0, item!);
-    update({ blocks: next });
-  };
-  const toggleBlock = (block: TemplateSettingsBlocksItem) =>
-    update({ blocks: blocks.includes(block) ? blocks.filter((b) => b !== block) : [...blocks, block] });
-
   const save = async () => {
     try {
       const result = template?.id !== undefined
@@ -167,29 +156,7 @@ export function TemplateEditor({ template, base, period, onDone }: TemplateEdito
         <fieldset className="panel flex flex-col gap-1">
           <legend className="font-semibold">{t('templates.blocks')}</legend>
           {settings.layoutHtml?.trim() && <p className="text-xs text-amber-800">{t('templates.layout.blocksIgnored')}</p>}
-          {[...blocks, ...BLOCKS.filter((b) => !blocks.includes(b))].map((block) => {
-            const index = blocks.indexOf(block);
-            return (
-              <div key={block} className="flex items-center gap-2">
-                <label className="flex flex-1 items-center gap-2">
-                  <input type="checkbox" checked={index >= 0} onChange={() => toggleBlock(block)} />
-                  {t(`templates.blockNames.${block}`)}
-                </label>
-                <button type="button" className="icon-button" aria-label={t('templates.moveUp')} disabled={index <= 0} onClick={() => move(index, -1)}>
-                  <ArrowUp size={14} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className="icon-button"
-                  aria-label={t('templates.moveDown')}
-                  disabled={index < 0 || index === blocks.length - 1}
-                  onClick={() => move(index, 1)}
-                >
-                  <ArrowDown size={14} aria-hidden />
-                </button>
-              </div>
-            );
-          })}
+          <BlockOrderList blocks={blocks} onChange={(next) => update({ blocks: next })} />
         </fieldset>
 
         <fieldset className="panel flex flex-col gap-2">
