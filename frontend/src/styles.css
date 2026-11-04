@@ -106,6 +106,8 @@ body {
     border: 1px solid var(--color-border);
     border-radius: 0.25rem;
     background: var(--color-surface);
+    /* Own text colour: a button inside a coloured band must not inherit the band's text colour */
+    color: var(--color-text);
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     cursor: pointer;
@@ -120,7 +122,8 @@ body {
   .button-primary {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: #fff;
+    /* White on the day accent, dark on the lighter night accent: readable in both themes */
+    color: var(--color-surface);
   }
   .button-primary:hover {
     background: var(--color-accent);
