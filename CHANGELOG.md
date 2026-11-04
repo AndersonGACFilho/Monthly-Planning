@@ -3,6 +3,33 @@
 Versions follow the `v<major>.<minor>.<patch>` tags. Pushing a tag builds the portable zip in CI and publishes it as
 a GitHub release with the notes of that version below (IMP-47).
 
+## Unreleased
+
+A full layout for statements, every item of a category, what was left of the month, and backups you can check.
+
+- **Full statement layout** (TPL-07): the advanced template mode now edits the whole statement body as HTML. Parts
+  of the statement are placed with placeholders (`{{header}}`, `{{warnings}}`, `{{block.summary}}`,
+  `{{block.cards}}`, `{{block.fixedExpenses}}`, `{{block.variableExpenses}}`, `{{block.committed}}`,
+  `{{block.payment}}`, `{{block.note}}`, `{{footer}}`) next to the message variables; the editor starts from the
+  standard layout and lists every class and id of the statement with what it marks, so extra CSS can target them.
+  The layout is sanitized like the header HTML. Every part and line of the standard statement now has a stable id or
+  class.
+- **Every item of a category**: a category in the overview opens all of its items (fixed expenses, variable expenses
+  and card entries), each group with its subtotal and a shortcut to its screen, instead of only the card entries.
+- **What was left of the month**: the overview shows the month's leftover with its share of the income, a
+  spent-versus-left bar and the leftover of the last six months; a month in the chart opens it.
+- **Current month** stands out in the period selector; any other month says how far it is and offers a button back
+  to the current one.
+- **Month on start**: when the app opens it asks which month to work on, with the current one highlighted (Enter
+  opens it). It can be turned off in the dialog or in Settings.
+- **Loading screen** with the app name, a progress bar and what the local service is doing (starting, opening the
+  data, start backup and database check, a note when it takes longer than usual); on failure it says what to check
+  and offers to try again.
+- **Check and restore backups**: each backup in Settings can be opened to check it across the app, with a yellow band
+  and a way back to the live data; the backup file never changes and changes made to the copy are dropped. A backup
+  can also be restored as the live data, after the current data is backed up. Backups opened from an older version
+  are migrated in the copy.
+
 ## v0.2.0 — 2026-10-30
 
 Carry-over of unpaid balances, splits by amount and a faster way through card entries.

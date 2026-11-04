@@ -28,13 +28,20 @@ Tests, Javadoc (DOC-04) and coverage gates (TST-04) run in `verify`. Flags for d
 `-Dopenapi.update=true` (API contract), `-Dsnapshot.update=true` (statement HTML snapshots),
 `-Dworkbook.model.update=true` (bundled spreadsheet model, rebuilt from the masked fixture).
 
+The statement template (`backend/src/main/resources/statement/templates/statement.html`) gives every part an id or a
+class that full layouts can style; a new one needs a `template.selector.*` description in the three message bundles,
+or `TemplateRendererTest` fails.
+
 ## Frontend
 
 ```bash
-cd frontend && npm ci && npm run typecheck && npm run lint && npm test
+cd frontend && npm ci && npm run typecheck && npm run lint && npm run i18n:check && npm test && npm run build
 ```
 
-The API client is generated from `frontend/openapi/openapi.json` before build, typecheck and tests.
+The API client is generated from `frontend/openapi/openapi.json` before build, typecheck and tests. Interface texts
+live in `frontend/scripts/locales-source.mjs` (one `[pt-BR, en-US]` pair per key); `npm run i18n:build` writes
+`src/locales/*.json` and `npm run i18n:check` fails when they drift. After an API change, refresh the contract with
+`./mvnw test -Dtest=OpenApiContractIT -Dopenapi.update=true` in `backend/`.
 
 ## End-to-end tests
 

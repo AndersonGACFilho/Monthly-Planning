@@ -1,10 +1,10 @@
 # Implementation Plan
 
-Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 34/34 · M6 52/52 · M7 22/22 (total 296/297)
+Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 35/35 · M6 52/52 · M7 22/22 · M8 8/8 (total 305/306)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
-Status: **plan approved on 2026-10-26 (AGT-05).** M0 nearly done; what is left needs a GitHub remote (Q2) or a manual desktop check.
+Status: **plan approved on 2026-10-26 (AGT-05).** M0–M7 done except TST-07, whose last part is a branch protection rule the repository owner sets on GitHub. M8 holds the user requests made after v0.2.0.
 
 Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDoc + domain/use-case tests for each cited rule + endpoint integration test where there is an endpoint + traceability row updated + CI green.
 
@@ -330,25 +330,38 @@ Done criteria for every item (AGT-09, SPEC §15): item acceptance + Javadoc/TSDo
 - [x] IMP-50 — Data folder smoke on second OS: same `data/` opened on Windows then Linux (origin POR-01) · test · accept: identical data · portable smoke workflow · after: IMP-42 · done (CI run 40694893300 (v0.1.0): marker written on Windows read back on Linux)
 - [x] IMP-51 — Documentation for users: README in the portable folder (start, backup, eject, update) (origin POR-09, POR-13, POR-14) · docs · accept: README shipped in zip · review · after: IMP-42 · done (47ae76a)
 
+## M8 — User requests after v0.2.0 (category items, leftover, full layout, month choice, start-up, backups)
+
+Asked by the user on 2026-11-04. The SPEC does not name these features, so they use `IMP-nn` ids citing the requirement each one extends (AGT-02); the full layout widens TPL-07 and replaces the SPEC deviation recorded for it.
+
+- [x] IMP-52 — A category of the overview lists every item behind its total (fixed expenses, variable expenses, card entries), shares of a split purchase joined, each group with a subtotal and a shortcut to its screen; `GET /api/summaries/{period}/category-items` (origin RF-12, RF-38) · summary/frontend · accept: items add up to the category total; card entries still open the Entries tab · SummaryCalculatorsTest, MonthlySummaryControllerIT, OverviewPage.test.tsx · after: RF-12 · done (c5b0646)
+- [x] IMP-53 — Overview shows what was left of the income: amount, share of the income, spent-versus-left bar and the leftover of the last six months with the selected month highlighted; a month in the chart selects it (origin RF-10) · frontend · accept: same balance as the indicators; member filter applies · OverviewPage.test.tsx, leftoverShares.test.ts · after: RF-10 · done (924736d, 0096400)
+- [x] IMP-54 — Advanced template mode edits the whole statement layout: placeholders for the header, warnings, each block and the footer, plus the message variables; sanitized like the header HTML, ids and sectioning tags kept; every class and id of the statement listed with a description in both languages (`GET /api/templates/layout-reference`) (origin TPL-07) · statement/frontend · accept: blocks appear where their placeholder is; unknown placeholders refused; scripts removed · TemplateRulesTest, TemplateRendererTest, StatementControllerIT, TemplateEditor.test.tsx, insertText.test.ts · after: TPL-07 · done (9a48532)
+- [x] IMP-55 — The current month stands out in the period selector; another month says how far it is and offers a way back (origin UI-02) · frontend · accept: badge only on the current month · BillingPeriodSelector.test.tsx · after: UI-02 · done (0096400)
+- [x] IMP-56 — On start the app asks which month to open, the current one focused; setting `ask-period-on-start` turns it off from the dialog or Settings (origin UI-02, IMP-10) · shared/frontend · accept: asked once per launch; not asked when off · StartupPeriodDialog.test.tsx, SettingsControllerIT · after: IMP-55 · done (0096400)
+- [x] IMP-57 — Loading screen with the app name, progress bar, the step the service is on, a note when slow, and on failure what to check with a retry (origin POR-08) · frontend · accept: steps follow the time waited; retry asks the shell again · BackendGate.test.tsx · after: POR-08 · done (0096400)
+- [x] IMP-58 — A backup opens as a migrated copy to check it, with a band and a way back to the live data; a backup can be restored as the live data after the live data is backed up; no new backup while one is open (`GET`/`PUT /api/database`, `POST /api/database/restores`) (origin POR-12, POR-14) · shared/frontend · accept: the backup file never changes; changes to the copy are dropped; restore keeps a before-restore backup · DatabaseControllerIT, SettingsPage.test.tsx, DatabaseBanner.test.tsx, backupName.test.ts · after: POR-12 · done (0096400)
+- [x] IMP-59 — Documentation review: plan, decisions, SPEC deviations, traceability matrix, changelog, user README and developer README match the code (origin §15, DOC-01) · docs · accept: reviewed · review · after: IMP-52 to IMP-58 · done (2026-11-04 review)
+
 ## Open questions
 
-Final review (IMP-46, 2026-10-27). Q1 and Q2 were answered by the user; Q3–Q17 run on the adopted defaults listed in Decisions (implemented and tested; each can still be changed). Still open for the user:
+Final review (IMP-46, 2026-10-27; reviewed again with IMP-59 on 2026-11-04). Q1 and Q2 were answered by the user; Q3–Q17 run on the adopted defaults listed in Decisions (implemented and tested; each can still be changed). Still open for the user:
 
-- Q2 (blocks POR-15, TST-07, IMP-47, IMP-50 and the Windows half of POR-01, IMP-07, IMP-42): local git only, confirmed again by the user on 2026-10-27 when asked about creating a private GitHub repository. These seven items stay open by that decision; this machine also has no Windows Rust toolchain to cross-build the shell. The CI workflow (tests, Javadoc, coverage, Playwright with WebKit, Windows and Linux packages, exFAT noexec run, single zip) is written but has never run; it needs a GitHub remote.
+- Q2: answered on 2026-10-28, when the user created the GitHub remote. CI has run green since then and closed POR-15, IMP-07, IMP-42, IMP-47 and IMP-50; only TST-07 is left, waiting for the branch protection rule that makes pull requests wait for green CI (a repository setting of the owner).
 - Q14: the §12 diagram did not survive the export; nothing found missing from the text so far.
 - Q18 (RN-16 vs RN-19 example): the 8-character prefix minimum is kept as written, so `nuuvem *N` pairs show up as Divergent for the user to decide. Lower the minimum, or accept card + date ±1 + amount + installment when the prefix is short?
 - Q9 and Q10 were adopted as proposed; please confirm: the SMTP password key lives in `data/secret.key` (obfuscation, said on the settings screen), and the bundled spreadsheet model is derived from the masked model fixture without any of its data.
 
-Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11, Q12, Q13, Q15, Q16, Q17.
+Answered or adopted (history kept in Decisions): Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q11, Q12, Q13, Q15, Q16, Q17.
 
 ### SPEC deviations
 
 - Stack: Java 25 LTS, Spring Boot 4.1, React 19 instead of Java 21, Boot 3, React 18 (Q1, user decision).
 - Data model: category, splits, note and review state live on `Purchase`, not on each `BillEntry` (RN-08 by construction); added `AuditEntry`, `ImportBatch.status`, `ImportLine`, `AppSetting`, `MemberTemplate`, `TemplateVersion`, `StatementDelivery` with a content fingerprint (Q16, RF-93).
 - Variable expenses cannot be paid by card (card purchases come from the bill or a manual card entry), so RF-11 never counts them twice.
-- Advanced template mode (TPL-07) edits extra CSS and a header HTML fragment, not the whole layout.
+- Advanced template mode (TPL-07) edits extra CSS, a header HTML fragment and, since IMP-54, the whole layout of the statement body. The data tables inside each block stay generated by the app: the layout places them with placeholders instead of editing their rows.
 - The Linux shell ships as an AppImage plus the plain binary; `start-linux.sh` covers systems without FUSE and drives mounted noexec.
-- Portable size: the Linux half zips to 257 MB (AppImage with WebKitGTK 107 MB, JRE 78 MB, backend 99 MB); with the Windows half the single zip is estimated at about 330 MB, above the ~250 MB guess in the SPEC.
+- Portable size: the single Windows + Linux zip measured 283 MB in CI (run 40689084105) and 284 MB for v0.1.0, above the ~250 MB guess in the SPEC; the Linux half alone zips to 257 MB (AppImage with WebKitGTK 107 MB, JRE 78 MB, backend 99 MB).
 
 ## Decisions
 
@@ -400,6 +413,12 @@ Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11
 - 2026-10-27: XLS-09/Q11: Excel 365 mode writes the model's `SORT(UNIQUE(FILTER(...)))` card list as a dynamic array and builds a new POI pivot table (report filter Cota, rows Categoria, sum of Valor, sorted by value descending, refreshed on open; no member preselected). Compatible mode writes a sorted card list with one `SUMIF` per row, a `SUMIFS` table with the member in a drop-down (H1, MAIN member by default) and defines the totals with plain ranges instead of structured references. The summary's year goes to D1 and the title to B2 (C2 left empty).
 - 2026-10-27: XLS-06: member sheets are named after the member in capitals and lay out one block per month (default 2 before, current, 1 after) alternating left and right columns; future months show projected installments.
 
+- 2026-11-04: Category items (IMP-52): each `ExpenseLine` carries an `ExpenseOrigin` (occurrence, variable expense or card entry, with description, date and installment), so a category opens into exactly the lines that make its total; `CategoryItemsCalculator` joins the member shares of one record. The items endpoint takes the category id as the overview reports it (omitted for "not classified").
+- 2026-11-04: Leftover (IMP-53) reuses `/api/history` for the last six months and the overview indicators for the selected month, so both use the same household rules.
+- 2026-11-04: Full layout (IMP-54): the standard statement is rendered with every block and each part is cut out by its element id (`statement-header`, `statement-warnings`, `block-<name>`, `statement-footer`), then the sanitized layout places them; placeholders and variables are replaced in one pass so a value that looks like a placeholder is never expanded. The class and id list is read from `statement.html` itself and every entry needs a description in both bundles (`TemplateRendererTest`), so it cannot drift. User Thymeleaf is never executed.
+- 2026-11-04: Month on start (IMP-56): asked once per launch through a flag in the interface store, default on (`ask-period-on-start=true`). The E2E setup turns it off because every spec reloads the page.
+- 2026-11-04: Backups (IMP-58): the `DataSource` bean is a `SwitchableDataSource` over Hikari pools built by `SqlitePools`. Opening a backup copies it to `data/tmp/backup-view-*.db`, migrates the copy with the app's Flyway configuration before switching, and refuses new backups while it is open (409 `backup-open`); leftover copies are removed on the next start. Restoring stages and migrates the backup first, then backs up the live data (`before-restore`; staging first matters because that backup may prune the oldest copy), suspends the pool, removes the live `-wal`/`-shm` files and moves the staged file in. The open backup is not remembered across restarts: the app always starts on the live data.
+
 ## Iteration log
 
 - 2026-10-26 — Plan created from `docs/SPEC.md` (246 ids covered). Masked Itaú fixtures created and verified (IMP-21). Waiting for approval (AGT-05); M0 not started.
@@ -419,3 +438,4 @@ Answered or adopted (history kept in Decisions): Q1, Q3, Q4, Q5, Q6, Q7, Q8, Q11
 - 2026-10-28 — The user created the GitHub remote and pushed; the first CI run failed on two things local runs could not show: mocked downloads built from a jsdom Blob break on Node 22 (CI) but not on Node 26 (here), and the E2E job started Vite without the generated API client. Tests now mock downloads with string bodies, `npm run e2e` generates the client first, and the workflow actions move to their Node 24 releases. The seven items blocked by Q2 can close once the Windows and release jobs run green.
 - 2026-10-28 — First fully green CI (run 40689084105, 08da69e): backend, frontend, E2E on Chromium and WebKit, Windows and Linux packages with smoke tests, exFAT noexec, single zip (283 MB). Getting there found real bugs: the AppImage kept health DOWN (disk check on its read-only mount), the JVM wrote hsperfdata outside the folder, SQLite could not load from a noexec drive. POR-15, IMP-07 and IMP-42 done; the cross-OS data check (IMP-50, POR-01) is added to CI; TST-07 branch protection and the IMP-47 release are left to the owner.
 - 2026-10-28 — v0.1.0 released by CI (run 40694893300): the zip is attached to the GitHub release with the CHANGELOG notes, and the same data/ folder opened on Windows and then on Linux. Only TST-07 is left: the branch protection rule that makes PRs wait for green CI is the repository owner's setting.
+- 2026-11-04 — M8 from user requests: category items (c5b0646), leftover chart (924736d), full statement layout (9a48532), current month, month on start, loading screen and backups (0096400), documentation review (IMP-59). Checked in the browser against a backend seeded with the masked bills: category items match the totals, the custom layout and CSS reach the preview, a backup opens with the band, hides changes made after it and the live data comes back. Found and fixed during the work: white text on the accent colour was unreadable in the night theme; a restore test replaced the database file shared by other test contexts, so it now runs in its own data folder. Backend `verify` 324 tests, frontend 136 tests, both green.
