@@ -451,6 +451,18 @@
     "previousBalance": "Previous balance",
     "carriedOut": "Carried over"
   },
+  "leftover": {
+    "title": "What was left in {{period}}",
+    "left": "Left",
+    "missing": "Short by",
+    "ofIncome": "{{percent}} of income",
+    "spent": "Spent {{amount}} ({{percent}})",
+    "income": "Income {{amount}}",
+    "noIncome": "No income this month: nothing to measure the leftover against.",
+    "bar": "Spent {{spent}} of income, {{left}} left",
+    "chart_one": "Leftover of the last month",
+    "chart_other": "Leftover of the last {{count}} months; click a month to open it"
+  },
   "categoryItems": {
     "title": "Items of {{category}}",
     "empty": "No item in this category this month.",

@@ -451,6 +451,18 @@
     "previousBalance": "Saldo anterior",
     "carriedOut": "Transportado"
   },
+  "leftover": {
+    "title": "Quanto sobrou em {{period}}",
+    "left": "Sobrou",
+    "missing": "Faltou",
+    "ofIncome": "{{percent}} da renda",
+    "spent": "Gasto {{amount}} ({{percent}})",
+    "income": "Renda {{amount}}",
+    "noIncome": "Sem renda neste mês: não há como medir a sobra.",
+    "bar": "Gasto {{spent}} da renda, sobrou {{left}}",
+    "chart_one": "Sobra do último mês",
+    "chart_other": "Sobra dos últimos {{count}} meses; clique em um mês para abri-lo"
+  },
   "categoryItems": {
     "title": "Itens de {{category}}",
     "empty": "Nenhum item nesta categoria no mês.",

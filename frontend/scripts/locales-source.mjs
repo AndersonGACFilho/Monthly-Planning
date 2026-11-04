@@ -437,6 +437,18 @@ export default {
     previousBalance: ['Saldo anterior', 'Previous balance'],
     carriedOut: ['Transportado', 'Carried over'],
   },
+  leftover: {
+    title: ['Quanto sobrou em {{period}}', 'What was left in {{period}}'],
+    left: ['Sobrou', 'Left'],
+    missing: ['Faltou', 'Short by'],
+    ofIncome: ['{{percent}} da renda', '{{percent}} of income'],
+    spent: ['Gasto {{amount}} ({{percent}})', 'Spent {{amount}} ({{percent}})'],
+    income: ['Renda {{amount}}', 'Income {{amount}}'],
+    noIncome: ['Sem renda neste mês: não há como medir a sobra.', 'No income this month: nothing to measure the leftover against.'],
+    bar: ['Gasto {{spent}} da renda, sobrou {{left}}', 'Spent {{spent}} of income, {{left}} left'],
+    chart_one: ['Sobra do último mês', 'Leftover of the last month'],
+    chart_other: ['Sobra dos últimos {{count}} meses; clique em um mês para abri-lo', 'Leftover of the last {{count}} months; click a month to open it'],
+  },
   categoryItems: {
     title: ['Itens de {{category}}', 'Items of {{category}}'],
     empty: ['Nenhum item nesta categoria no mês.', 'No item in this category this month.'],
