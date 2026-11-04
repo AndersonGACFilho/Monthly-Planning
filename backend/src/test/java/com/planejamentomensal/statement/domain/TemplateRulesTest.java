@@ -99,6 +99,25 @@ class TemplateRulesTest {
     }
 
     @Test
+    @DisplayName("IMP-61: the published tag lists match what the sanitizer keeps")
+    void publishedTags() {
+        for (String tag : TemplateSanitizer.HTML_TAGS) {
+            String html = "<" + tag + " class=\"x\">t</" + tag + ">";
+            String inTable = tag.matches("t[dhr]|tbody|thead|tfoot|caption|col|colgroup")
+                    ? "<table>" + html + "</table>" : html;
+            assertThat(TemplateSanitizer.html(inTable)).as(tag).contains("<" + tag);
+        }
+        for (String tag : TemplateSanitizer.LAYOUT_TAGS) {
+            assertThat(TemplateSanitizer.layout("<" + tag + ">t</" + tag + ">")).as(tag).contains("<" + tag);
+            assertThat(TemplateSanitizer.html("<" + tag + ">t</" + tag + ">")).as(tag).doesNotContain("<" + tag);
+        }
+        for (String tag : List.of("a", "img", "script", "style", "iframe")) {
+            assertThat(TemplateSanitizer.layout("<" + tag + " src=\"x\" href=\"y\">t</" + tag + ">")).as(tag)
+                    .doesNotContain("<" + tag);
+        }
+    }
+
+    @Test
     @DisplayName("IMP-60: an export customization replaces header, footer and blocks, and is checked")
     void customization() {
         TemplateSettings template = settings(Map.of("pt-BR", PT), null, null);

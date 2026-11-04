@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TemplateSettings } from '../../api/generated/model';
@@ -35,6 +35,37 @@ describe('TemplateEditor', () => {
       http.get(`${base}/api/members`, () => HttpResponse.json({ _embedded: { members: [{ id: 2, code: 'M', name: 'Mãe' }] } })),
       http.get(`${base}/api/templates/layout-reference`, () => HttpResponse.json(reference)),
     );
+  });
+
+  it('IMP-61: copies a guide built from sample data and applies a pasted JSON answer to the preview', async () => {
+    const previews: { memberId?: number; settings: TemplateSettings }[] = [];
+    server.use(
+      http.post(`${base}/api/templates/preview`, async ({ request }) => {
+        previews.push((await request.json()) as { memberId?: number; settings: TemplateSettings });
+        return HttpResponse.json({ html: '<h1>Extrato de exemplo</h1>' });
+      }),
+    );
+    const copied: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: (text: string) => copied.push(text) }, configurable: true });
+    renderWithProviders(<TemplateEditor base={settings} period="2026-11" onDone={() => undefined} />);
+    const copy = screen.getByRole('button', { name: 'Copiar guia para LLM' });
+    await waitFor(() => expect(copy).toBeEnabled());
+    fireEvent.click(copy);
+    await waitFor(() => expect(copied).toHaveLength(1));
+    expect(copied[0]).toContain('Extrato de exemplo');
+    expect(copied[0]).toContain('#block-cards');
+    expect(previews.at(-1)?.memberId).toBeUndefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar JSON' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Aplicar um template em JSON' });
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'nada' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aplicar na prévia' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Não encontrei um JSON válido');
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: '```json\n{"primaryColor":"#0f766e","font":"NOTO_SERIF"}\n```' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aplicar na prévia' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Fonte')).toHaveValue('NOTO_SERIF');
+    await waitFor(() => expect(previews.at(-1)?.settings).toMatchObject({ primaryColor: '#0F766E', font: 'NOTO_SERIF' }));
   });
 
   it('TPL-07: a full layout starts from the standard one, takes placeholders and fills the CSS from the class and id list', async () => {

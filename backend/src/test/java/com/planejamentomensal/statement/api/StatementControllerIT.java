@@ -162,7 +162,11 @@ class StatementControllerIT {
                 .andExpect(jsonPath("$.variables").value(Matchers.hasItem("member.name")))
                 .andExpect(jsonPath("$.selectors[?(@.selector == '#block-summary')].description")
                         .value(Matchers.hasItem("Bloco de resumo; marcador {{block.summary}}")))
-                .andExpect(jsonPath("$.selectors[?(@.selector == '.pending')]").exists());
+                .andExpect(jsonPath("$.selectors[?(@.selector == '.pending')]").exists())
+                .andExpect(jsonPath("$.rules.maxLayout").value(50000))
+                .andExpect(jsonPath("$.rules.fonts.NOTO_SERIF").value("Noto Serif"))
+                .andExpect(jsonPath("$.rules.layoutAttributes").value(Matchers.hasItem("id")))
+                .andExpect(jsonPath("$.rules.htmlTags").value(Matchers.not(Matchers.hasItem("img"))));
     }
 
     @Test

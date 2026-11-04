@@ -1,18 +1,25 @@
 package com.planejamentomensal.statement.application;
 
 import com.planejamentomensal.statement.domain.MessageVariables;
+import com.planejamentomensal.statement.domain.StatementBlock;
+import com.planejamentomensal.statement.domain.TemplateFont;
 import com.planejamentomensal.statement.domain.TemplateLayout;
+import com.planejamentomensal.statement.domain.TemplateSettings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,8 +28,9 @@ import org.springframework.stereotype.Component;
 
 /**
  * What a full layout of the advanced template mode can use (TPL-07): the standard layout to start from, its
- * placeholders, the message variables and every class and id of the standard statement, so extra CSS can target
- * them. The classes and ids are read from the statement template itself, so the list never drifts from it.
+ * placeholders, the message variables, every class and id of the standard statement, so extra CSS can target
+ * them, and the rules the sanitizer applies, so a template can be written elsewhere (IMP-61). The classes and ids
+ * are read from the statement template itself, so the list never drifts from it.
  *
  * @since 1.0
  */
@@ -32,6 +40,14 @@ public class TemplateLayoutGuide {
     private static final String TEMPLATE = "statement/templates/statement.html";
     /** Class names added by Thymeleaf conditions, such as {@code th:classappend="${line.pending} ? 'pending'"}. */
     private static final Pattern APPENDED_CLASS = Pattern.compile("'([A-Za-z][\\w-]*)'");
+
+    /** Rules of the advanced mode; they do not depend on the language. */
+    private static final LayoutRules RULES = new LayoutRules(TemplateSanitizer.HTML_TAGS, TemplateSanitizer.LAYOUT_TAGS,
+            List.of("class", "style"), List.of("class", "style", "id"), TemplateSanitizer.FORBIDDEN_CSS,
+            TemplateSettings.MAX_ADVANCED_LENGTH, TemplateSettings.MAX_ADVANCED_LENGTH, TemplateSettings.MAX_LAYOUT_LENGTH,
+            Arrays.stream(TemplateFont.values()).collect(Collectors.toMap(Enum::name, TemplateFont::family,
+                    (a, b) -> a, LinkedHashMap::new)),
+            Arrays.stream(StatementBlock.values()).map(Enum::name).toList(), TemplateSettings.LANGUAGES);
 
     private final MessageSource messages;
     private final List<String> selectors;
@@ -46,16 +62,38 @@ public class TemplateLayoutGuide {
     }
 
     /**
+     * What the sanitizer and the settings accept, so a template written elsewhere can follow it (TPL-07, IMP-61).
+     *
+     * @param htmlTags         tags kept in the header HTML and in a full layout
+     * @param layoutTags       extra tags a full layout may use
+     * @param htmlAttributes   attributes kept in the header HTML
+     * @param layoutAttributes attributes kept in a full layout
+     * @param forbiddenCss     constructs that make a style be dropped whole
+     * @param maxCss           longest extra CSS, in characters
+     * @param maxHeaderHtml    longest header HTML, in characters
+     * @param maxLayout        longest full layout, in characters
+     * @param fonts            font values and their CSS family
+     * @param blocks           block values, in the standard order
+     * @param languages        languages with their own texts
+     */
+    public record LayoutRules(List<String> htmlTags, List<String> layoutTags, List<String> htmlAttributes,
+            List<String> layoutAttributes, List<String> forbiddenCss, int maxCss, int maxHeaderHtml, int maxLayout,
+            Map<String, String> fonts, List<String> blocks, List<String> languages) {
+    }
+
+    /**
      * Everything a full layout can use.
      *
      * @param standardLayout layout a new full layout starts from
      * @param placeholders   placeholders of the statement parts, in the standard order
      * @param variables      message variables
      * @param selectors      ids, then classes, in the order they appear
+     * @param rules          what the sanitizer and the settings accept
      */
     public record LayoutReference(String standardLayout, List<String> placeholders, List<String> variables,
-            List<LayoutSelector> selectors) {
+            List<LayoutSelector> selectors, LayoutRules rules) {
     }
+
 
     /**
      * Creates the reference and reads the classes and ids of the statement template.
@@ -78,7 +116,7 @@ public class TemplateLayoutGuide {
                 .map(s -> new LayoutSelector(s, messages.getMessage(messageKey(s), null, "", locale)))
                 .toList();
         return new LayoutReference(TemplateLayout.standardLayout(), List.copyOf(TemplateLayout.elementIds().keySet()),
-                MessageVariables.ALLOWED.stream().sorted().toList(), described);
+                MessageVariables.ALLOWED.stream().sorted().toList(), described, RULES);
     }
 
     /**

@@ -20,6 +20,7 @@ import { Field } from '../../shared/components/Field';
 import { embedded } from '../../shared/hal';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { AdvancedLayout } from './AdvancedLayout';
+import { TemplateGuideActions } from './TemplateGuideActions';
 
 const FONTS = [
   ['NOTO_SANS', 'Noto Sans'],
@@ -104,6 +105,7 @@ export function TemplateEditor({ template, base, period, onDone }: TemplateEdito
           void save();
         }}
       >
+        <TemplateGuideActions settings={settings} period={period} onApply={setSettings} />
         <fieldset className="panel grid grid-cols-2 gap-3">
           <legend className="font-semibold">{t('templates.look')}</legend>
           <Field label={t('templates.name')} htmlFor="template-name">

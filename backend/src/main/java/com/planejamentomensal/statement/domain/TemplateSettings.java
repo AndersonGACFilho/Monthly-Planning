@@ -34,8 +34,10 @@ public record TemplateSettings(String primaryColor, String secondaryColor, Templ
     private static final Pattern COLOR = Pattern.compile("^#[0-9A-Fa-f]{6}$");
     private static final Pattern LOGO = Pattern.compile("^data:image/(png|jpeg);base64,[A-Za-z0-9+/=]+$");
     private static final int MAX_LOGO_LENGTH = 700_000;
-    private static final int MAX_ADVANCED_LENGTH = 20_000;
-    private static final int MAX_LAYOUT_LENGTH = 50_000;
+    /** Longest extra CSS or header HTML, in characters (TPL-07). */
+    public static final int MAX_ADVANCED_LENGTH = 20_000;
+    /** Longest full layout, in characters (TPL-07). */
+    public static final int MAX_LAYOUT_LENGTH = 50_000;
 
     /**
      * Checks the settings.

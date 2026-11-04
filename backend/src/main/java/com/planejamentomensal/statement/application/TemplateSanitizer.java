@@ -1,5 +1,6 @@
 package com.planejamentomensal.statement.application;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import org.jsoup.Jsoup;
@@ -15,6 +16,17 @@ import org.jsoup.safety.Safelist;
  */
 public final class TemplateSanitizer {
 
+    /** Tags kept in the header HTML and in a full layout: jsoup's relaxed list without links and images. */
+    public static final List<String> HTML_TAGS = List.of("b", "blockquote", "br", "caption", "cite", "code", "col",
+            "colgroup", "dd", "div", "dl", "dt", "em", "h1", "h2", "h3", "h4", "h5", "h6", "i", "li", "ol", "p", "pre",
+            "q", "small", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td", "tfoot", "th", "thead", "tr",
+            "u", "ul");
+    /** Sectioning tags a full layout may use on top of {@link #HTML_TAGS}. */
+    public static final List<String> LAYOUT_TAGS = List.of("section", "header", "footer", "main", "article", "aside");
+    /** CSS constructs that make a style be dropped whole, as the user would write them. */
+    public static final List<String> FORBIDDEN_CSS = List.of("@import", "url(...) other than data:image",
+            "expression(", "javascript:", "behavior:", "-moz-binding", "</", "<!--");
+
     private static final Safelist HTML = Safelist.relaxed()
             .removeTags("a", "img")
             .addAttributes(":all", "class", "style");
@@ -22,7 +34,7 @@ public final class TemplateSanitizer {
     /** A full layout may also name its elements, so its CSS can target them. */
     private static final Safelist LAYOUT = Safelist.relaxed()
             .removeTags("a", "img")
-            .addTags("section", "header", "footer", "main", "article", "aside")
+            .addTags(LAYOUT_TAGS.toArray(String[]::new))
             .addAttributes(":all", "class", "style", "id");
 
     private static final Pattern DANGEROUS_CSS = Pattern.compile(

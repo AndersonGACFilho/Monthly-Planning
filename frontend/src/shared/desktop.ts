@@ -56,6 +56,20 @@ export async function copyImage(png: Blob): Promise<void> {
 }
 
 /**
+ * Copies text to the clipboard, such as the template guide (IMP-61).
+ *
+ * @param text - text to copy
+ */
+export async function copyText(text: string): Promise<void> {
+  if (isTauri()) {
+    const { writeText } = await import('@tauri-apps/plugin-clipboard-manager');
+    await writeText(text);
+  } else {
+    await navigator.clipboard.writeText(text);
+  }
+}
+
+/**
  * Lets the user save a file fetched from the API.
  *
  * @param blob - file content

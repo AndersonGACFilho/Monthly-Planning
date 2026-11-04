@@ -5884,6 +5884,10 @@
               "type" : "string"
             }
           },
+          "rules" : {
+            "$ref" : "#/components/schemas/LayoutRules",
+            "description" : "what the sanitizer and the settings accept"
+          },
           "selectors" : {
             "type" : "array",
             "description" : "ids, then classes, in the order they appear",
@@ -5901,6 +5905,83 @@
             "items" : {
               "type" : "string"
             }
+          }
+        }
+      },
+      "LayoutRules" : {
+        "type" : "object",
+        "description" : "What the sanitizer and the settings accept, so a template written elsewhere can follow it (TPL-07, IMP-61).",
+        "properties" : {
+          "blocks" : {
+            "type" : "array",
+            "description" : "block values, in the standard order",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "fonts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "font values and their CSS family"
+          },
+          "forbiddenCss" : {
+            "type" : "array",
+            "description" : "constructs that make a style be dropped whole",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "htmlAttributes" : {
+            "type" : "array",
+            "description" : "attributes kept in the header HTML",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "htmlTags" : {
+            "type" : "array",
+            "description" : "tags kept in the header HTML and in a full layout",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "languages" : {
+            "type" : "array",
+            "description" : "languages with their own texts",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "layoutAttributes" : {
+            "type" : "array",
+            "description" : "attributes kept in a full layout",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "layoutTags" : {
+            "type" : "array",
+            "description" : "extra tags a full layout may use",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "maxCss" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest extra CSS, in characters"
+          },
+          "maxHeaderHtml" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest header HTML, in characters"
+          },
+          "maxLayout" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest full layout, in characters"
           }
         }
       },
