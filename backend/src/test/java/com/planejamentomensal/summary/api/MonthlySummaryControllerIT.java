@@ -66,6 +66,31 @@ class MonthlySummaryControllerIT {
     }
 
     @Test
+    @DisplayName("RF-12, RF-38: a category lists its card entries and its fixed and variable expenses")
+    void categoryItems() throws Exception {
+        mockMvc.perform(authorized(post("/api/variable-expenses")).contentType("application/json")
+                        .content("""
+                                {"expenseDate":"2026-11-04","description":"Feira","memberId":%d,"amount":35.00,"paymentMethod":"PIX"}
+                                """.formatted(f.main)))
+                .andExpect(status().isCreated());
+        mockMvc.perform(authorized(get("/api/summaries/2026-11")))
+                .andExpect(jsonPath("$._links.category-items.href").value("/api/summaries/2026-11/category-items{?category,member}"));
+        mockMvc.perform(authorized(get("/api/summaries/2026-11/category-items")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].source").value("VARIABLE"))
+                .andExpect(jsonPath("$[0].description").value("Feira"))
+                .andExpect(jsonPath("$[0].date").value("2026-11-04"))
+                .andExpect(jsonPath("$[0].amount").value(35.0))
+                .andExpect(jsonPath("$[1].source").value("CARD"))
+                .andExpect(jsonPath("$[1].description").value("MERCADO"))
+                .andExpect(jsonPath("$[1].cardId").value(f.card))
+                .andExpect(jsonPath("$[1].amount").value(120.0));
+        mockMvc.perform(authorized(get("/api/summaries/2026-11/category-items?member=" + f.thirdParty)))
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     @DisplayName("RF-15: the member filter narrows the summary")
     void memberFilter() throws Exception {
         mockMvc.perform(authorized(get("/api/summaries/2026-11?member=" + f.thirdParty)))

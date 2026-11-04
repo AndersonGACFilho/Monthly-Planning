@@ -3419,6 +3419,56 @@
         "tags" : [ "monthly-summary-controller" ]
       }
     },
+    "/api/summaries/{billingPeriod}/category-items" : {
+      "get" : {
+        "description" : "Returns every record behind the total of one category: fixed and variable expenses and card entries\n (RF-12, RF-38).",
+        "operationId" : "categoryItems",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "category; omitted for \"not classified\"",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "member filter, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoryItemRow"
+                  }
+                }
+              }
+            },
+            "description" : "the items, by source and then by date"
+          }
+        },
+        "summary" : "Returns every record behind the total of one category: fixed and variable expenses and card entries\n (RF-12, RF-38).",
+        "tags" : [ "monthly-summary-controller" ]
+      }
+    },
     "/api/summaries/{billingPeriod}/members" : {
       "get" : {
         "description" : "Returns the totals by member of a period (RF-13, RF-25).",
@@ -4503,6 +4553,51 @@
           }
         },
         "required" : [ "memberIds" ]
+      },
+      "CategoryItemRow" : {
+        "type" : "object",
+        "description" : "One record counted in a category: a fixed expense, a variable expense or a card entry (RF-12, RF-38).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount that counts in the category"
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "primary card of a card entry, otherwise <code>null</code>"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "due day, expense date or entry date"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description shown to the user"
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "installment of a card entry, otherwise <code>null</code>"
+          },
+          "memberIds" : {
+            "type" : "array",
+            "description" : "members who bear the amount",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "referenceId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "occurrence, variable expense or card entry"
+          },
+          "source" : {
+            "type" : "string",
+            "description" : "<code>FIXED</code>, <code>VARIABLE</code> or <code>CARD</code>"
+          }
+        }
       },
       "CategoryModel" : {
         "type" : "object",

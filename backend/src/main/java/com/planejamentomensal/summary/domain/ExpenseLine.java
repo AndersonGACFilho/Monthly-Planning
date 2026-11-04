@@ -11,7 +11,9 @@ import com.planejamentomensal.shared.domain.Money;
  * @param amount     amount; negative for refunds and credits
  * @param cardId     primary card of a card line, otherwise {@code null}
  * @param payerId    member who paid: the card's default member for card lines, otherwise the member
+ * @param origin     record the amount was taken from
  * @since 1.0
  */
-public record ExpenseLine(ExpenseSource source, long memberId, Long categoryId, Money amount, Long cardId, long payerId) {
+public record ExpenseLine(ExpenseSource source, long memberId, Long categoryId, Money amount, Long cardId, long payerId,
+        ExpenseOrigin origin) {
 }

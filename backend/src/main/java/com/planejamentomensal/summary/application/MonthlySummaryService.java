@@ -6,6 +6,8 @@ import com.planejamentomensal.shared.application.Setting;
 import com.planejamentomensal.shared.application.Settings;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.Money;
+import com.planejamentomensal.summary.domain.CategoryItemsCalculator;
+import com.planejamentomensal.summary.domain.CategoryItemsCalculator.CategoryItem;
 import com.planejamentomensal.summary.domain.CategoryTotalsCalculator;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator.FutureInstallment;
@@ -93,6 +95,21 @@ public class MonthlySummaryService {
                 SettlementCalculator.calculate(current.expenses()),
                 pending.size(), sum(pending.stream().map(EntryRow::amount).toList()),
                 (int) visible.stream().filter(r -> PeriodData.UNCONFIRMED.equals(r.status())).count());
+    }
+
+    /**
+     * Lists every record behind the total of one category: fixed and variable expenses and card entries
+     * (RF-12, RF-38). The items add up to the category total of {@link #summary}.
+     *
+     * @param period     billing period
+     * @param categoryId category, or {@code null} for "not classified"
+     * @param memberId   member filter, or {@code null}
+     * @return the items
+     */
+    public List<CategoryItem> categoryItems(BillingPeriod period, Long categoryId, Long memberId) {
+        List<ExpenseLine> lines = data.collect(period).expenses().stream()
+                .filter(l -> memberId == null || l.memberId() == memberId).toList();
+        return CategoryItemsCalculator.calculate(lines, categoryId);
     }
 
     private static Money sum(List<Money> amounts) {

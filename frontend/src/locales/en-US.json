@@ -446,10 +446,29 @@
     "memberFilter": "Show only member",
     "everyone": "All members",
     "chart": "Expense by category chart",
-    "openCategory": "See entries of {{category}}",
+    "openCategory": "See every item of {{category}}",
     "totalsByMember": "Total expense by member",
     "previousBalance": "Previous balance",
     "carriedOut": "Carried over"
+  },
+  "categoryItems": {
+    "title": "Items of {{category}}",
+    "empty": "No item in this category this month.",
+    "date": "Date",
+    "description": "Description",
+    "subtotal": "Subtotal",
+    "total_one": "Total of {{count}} item",
+    "total_other": "Total of {{count}} items",
+    "sources": {
+      "FIXED": "Fixed expenses",
+      "VARIABLE": "Variable expenses",
+      "CARD": "Card entries"
+    },
+    "open": {
+      "FIXED": "Open expenses",
+      "VARIABLE": "Open expenses",
+      "CARD": "Open card entries"
+    }
   },
   "carryOver": {
     "button": "Carry over unpaid balance",

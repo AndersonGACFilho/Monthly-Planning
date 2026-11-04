@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { useLocation } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -116,8 +116,24 @@ describe('OverviewPage', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('RF-12, RF-38: a category opens its entries, and expenses without one open "not classified"', async () => {
-    server.use(http.get(`${base}/api/summaries/2026-11`, () => HttpResponse.json(summary())));
+  it('RF-12, RF-38: a category lists its fixed, variable and card items and opens the card entries', async () => {
+    const asked: (string | null)[] = [];
+    server.use(
+      http.get(`${base}/api/summaries/2026-11`, () => HttpResponse.json(summary())),
+      http.get(`${base}/api/summaries/2026-11/category-items`, ({ request }) => {
+        const category = new URL(request.url).searchParams.get('category');
+        asked.push(category);
+        return HttpResponse.json(
+          category === '5'
+            ? [
+                { source: 'FIXED', referenceId: 1, description: 'Cesta básica', date: '2026-11-05', amount: 300, memberIds: [1] },
+                { source: 'VARIABLE', referenceId: 2, description: 'Feira', date: '2026-11-09', amount: 35, memberIds: [1] },
+                { source: 'CARD', referenceId: 3, description: 'Supermercado', date: '2026-11-12', installment: '1/2', cardId: 7, amount: 100, memberIds: [1, 2] },
+              ]
+            : [{ source: 'VARIABLE', referenceId: 4, description: 'Sem categoria', date: '2026-11-01', amount: 8, memberIds: [1] }],
+        );
+      }),
+    );
     renderWithProviders(
       <>
         <OverviewPage />
@@ -125,8 +141,19 @@ describe('OverviewPage', () => {
       </>,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Mercado' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Itens de Mercado' });
+    expect(await within(dialog).findByText('Cesta básica')).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Despesas fixas' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('heading', { name: 'Despesas dinâmicas' })).toBeInTheDocument();
+    expect(within(dialog).getByText('AB, M')).toBeInTheDocument();
+    expect(within(dialog).getByText('Total de 3 itens')).toBeInTheDocument();
+    expect(within(dialog).getByText(/435,00/)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: /Abrir lançamentos/ }));
     expect(screen.getByTestId('where')).toHaveTextContent('/entries?billingPeriod=2026-11&category=5');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
     fireEvent.click(await screen.findByRole('button', { name: 'Não classificado' }));
-    expect(screen.getByTestId('where')).toHaveTextContent('/entries?billingPeriod=2026-11&category=1');
+    expect(await screen.findByText('Sem categoria')).toBeInTheDocument();
+    expect(asked).toEqual(['5', null]);
   });
 });

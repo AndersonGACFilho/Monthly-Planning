@@ -446,10 +446,29 @@
     "memberFilter": "Ver só a conta",
     "everyone": "Todas as contas",
     "chart": "Gráfico de despesas por categoria",
-    "openCategory": "Ver lançamentos de {{category}}",
+    "openCategory": "Ver todos os itens de {{category}}",
     "totalsByMember": "Despesa total por conta",
     "previousBalance": "Saldo anterior",
     "carriedOut": "Transportado"
+  },
+  "categoryItems": {
+    "title": "Itens de {{category}}",
+    "empty": "Nenhum item nesta categoria no mês.",
+    "date": "Data",
+    "description": "Descrição",
+    "subtotal": "Subtotal",
+    "total_one": "Total de {{count}} item",
+    "total_other": "Total de {{count}} itens",
+    "sources": {
+      "FIXED": "Despesas fixas",
+      "VARIABLE": "Despesas dinâmicas",
+      "CARD": "Lançamentos do cartão"
+    },
+    "open": {
+      "FIXED": "Abrir despesas",
+      "VARIABLE": "Abrir despesas",
+      "CARD": "Abrir lançamentos"
+    }
   },
   "carryOver": {
     "button": "Transportar saldo devido",
