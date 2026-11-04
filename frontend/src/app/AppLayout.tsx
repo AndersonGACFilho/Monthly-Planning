@@ -7,6 +7,8 @@ import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelecto
 import { ThemeToggle } from '../shared/components/ThemeToggle';
 import { Toaster } from '../shared/components/Toaster';
 import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
+import { DatabaseBanner } from './DatabaseBanner';
+import { StartupPeriodDialog } from './StartupPeriodDialog';
 import { useStartup } from './useStartup';
 
 /**
@@ -47,11 +49,13 @@ export function AppLayout() {
             <WorkbookExportButton />
           </span>
         </header>
+        <DatabaseBanner />
         <main className="relative min-h-0 min-w-0 flex-1 overflow-auto p-4">
           <Outlet />
         </main>
       </div>
       <Toaster />
+      <StartupPeriodDialog />
     </div>
   );
 }

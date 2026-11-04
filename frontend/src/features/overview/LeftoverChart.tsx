@@ -71,7 +71,13 @@ export function LeftoverChart({ period, member, income = 0, expense = 0, balance
         <p className="flex items-baseline gap-2">
           <span className="text-sm text-(--color-text-muted)">{balance < 0 ? t('leftover.missing') : t('leftover.left')}</span>
           <MoneyText value={balance} kind="balance" className="text-2xl font-semibold" />
-          {shares && <span className="text-sm text-(--color-text-muted)">{t('leftover.ofIncome', { percent: formatPercent(shares.left) })}</span>}
+          {shares && (
+            <span className="text-sm text-(--color-text-muted)">
+              {balance < 0
+                ? t('leftover.overIncome', { percent: formatPercent((-balance / income) * 100) })
+                : t('leftover.ofIncome', { percent: formatPercent(shares.left) })}
+            </span>
+          )}
         </p>
       </div>
 

@@ -20,8 +20,8 @@ export function useSettingsMap(): SettingsMap {
 }
 
 /**
- * Language, colour theme (UI-08), alert thresholds, automatic validation and projection horizon (I18N-03, RF-16, RF-79d,
- * RN-09).
+ * Language, colour theme (UI-08), alert thresholds, automatic validation, projection horizon and whether to ask the
+ * month on start (I18N-03, RF-16, RF-79d, RN-09, IMP-56).
  *
  * @returns the section
  */
@@ -32,7 +32,15 @@ export function GeneralSettings() {
   const [changes, setChanges] = useState<SettingsMap>({});
   const draft: SettingsMap = { ...settings, ...changes };
   const set = (key: string, value: string) => setChanges((d) => ({ ...d, [key]: value }));
-  const keys = ['language', 'theme', 'alert-warning-percent', 'alert-danger-percent', 'auto-validate', 'projection-horizon-months'];
+  const keys = [
+    'language',
+    'theme',
+    'alert-warning-percent',
+    'alert-danger-percent',
+    'auto-validate',
+    'projection-horizon-months',
+    'ask-period-on-start',
+  ];
 
   return (
     <form
@@ -77,6 +85,14 @@ export function GeneralSettings() {
       <label className="check-field">
         <input type="checkbox" checked={draft['auto-validate'] === 'true'} onChange={(e) => set('auto-validate', String(e.target.checked))} />
         {t('settings.autoValidate')}
+      </label>
+      <label className="check-field">
+        <input
+          type="checkbox"
+          checked={draft['ask-period-on-start'] !== 'false'}
+          onChange={(e) => set('ask-period-on-start', String(e.target.checked))}
+        />
+        {t('settings.askPeriod')}
       </label>
       <div className="col-span-full flex justify-end">
         <button type="submit" className="button button-primary">

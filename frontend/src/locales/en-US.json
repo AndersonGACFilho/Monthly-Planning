@@ -4,6 +4,16 @@
     "loading": "Loading…",
     "menu": "Main menu"
   },
+  "loading": {
+    "steps": {
+      "starting": "Starting the local service…",
+      "opening": "Opening your data…",
+      "checking": "Making the start backup and checking the database…",
+      "slow": "This is taking longer than usual. It happens on slow or external drives; please wait a little longer."
+    },
+    "failedHint": "Check that the drive is connected and that the app is not open in another window, then try again.",
+    "retry": "Try again"
+  },
   "nav": {
     "overview": "Overview",
     "history": "History",
@@ -34,7 +44,14 @@
   "period": {
     "label": "Billing period",
     "previous": "Previous month",
-    "next": "Next month"
+    "next": "Next month",
+    "current": "Current month",
+    "goToCurrent": "Go to the current month",
+    "askTitle": "Which month do you want to open?",
+    "askHint": "You can change it any time at the top of the window.",
+    "other": "Another month",
+    "open": "Open",
+    "dontAsk": "Do not ask when the app opens (always open the current month)"
   },
   "action": {
     "save": "Save",
@@ -268,7 +285,8 @@
     "alertWarning": "Yellow alert (% of income)",
     "alertDanger": "Red alert (% of income)",
     "horizon": "Months of projected subscriptions",
-    "autoValidate": "Validate items with a complete alias automatically"
+    "autoValidate": "Validate items with a complete alias automatically",
+    "askPeriod": "Ask for the month when the app opens"
   },
   "recurrence": {
     "description": "Description",
@@ -456,6 +474,7 @@
     "left": "Left",
     "missing": "Short by",
     "ofIncome": "{{percent}} of income",
+    "overIncome": "{{percent}} above income",
     "spent": "Spent {{amount}} ({{percent}})",
     "income": "Income {{amount}}",
     "noIncome": "No income this month: nothing to measure the leftover against.",
@@ -667,6 +686,30 @@
     "exportJson": "Export all data (JSON)",
     "exportCsv": "Export all data (CSV)",
     "eject": "Close the app before removing the drive, so no write is left half done."
+  },
+  "database": {
+    "hint": "Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.",
+    "when": "Copied on",
+    "reason": "Reason",
+    "reasons": {
+      "start": "App start",
+      "before-update": "Before an update",
+      "manual": "Made by you",
+      "before-restore": "Before a restore",
+      "other": "Other"
+    },
+    "open": "Open to check",
+    "openFor": "Open the backup of {{backup}} to check it",
+    "openNow": "open now",
+    "restore": "Restore",
+    "restoreFor": "Restore the backup of {{backup}}",
+    "confirmRestore": "Replace the live data with the backup of {{backup}}? The current data is backed up first, in data/backups.",
+    "restored": "Backup of {{backup}} restored; the previous data is kept in data/backups.",
+    "opened": "Showing the backup of {{backup}}.",
+    "backToLive": "Back to the live data.",
+    "viewing": "You are checking the backup of {{backup}}.",
+    "viewingHint": "It is a copy: what you change here is dropped when you go back to the live data.",
+    "goLive": "Back to the live data"
   },
   "shortcuts": {
     "title": "Shortcuts",

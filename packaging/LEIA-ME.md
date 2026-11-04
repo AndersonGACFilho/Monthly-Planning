@@ -18,7 +18,13 @@ pasta na próxima abertura.
 - A cada abertura o app copia o banco para `data/backups/` e guarda as 10 últimas.
 - Em **Ajustes → Cópias de segurança e dados** dá para fazer uma cópia agora (na pasta ou em outro lugar) e
   exportar todos os dados em JSON ou CSV.
-- Para restaurar: feche o app e substitua `data/planejamento-mensal.db` pela cópia desejada de `data/backups/`.
+- **Conferir uma cópia:** na lista de cópias, **Abrir para conferir** mostra aquela cópia em todo o app, com uma
+  faixa amarela no topo. É uma cópia da cópia: o arquivo do backup não muda, e o que for alterado enquanto ela está
+  aberta é descartado ao clicar em **Voltar aos dados reais**.
+- **Restaurar:** **Restaurar** troca os dados reais pela cópia escolhida. Antes, o app guarda os dados atuais em
+  `data/backups/` (motivo "Antes de restaurar"), então dá para desfazer restaurando essa cópia.
+- Sem abrir o app, também dá para restaurar à mão: feche o app e substitua `data/planejamento-mensal.db` pela cópia
+  desejada de `data/backups/`.
 
 ## Antes de remover o SSD
 
@@ -41,8 +47,10 @@ Windows and Linux.
 
 - **Open:** `PlanejamentoMensal.exe` on Windows; `PlanejamentoMensal.AppImage` on Linux, or `sh start-linux.sh` when the
   AppImage cannot run (no FUSE, or a drive mounted `noexec`).
-- **Backups:** one copy per start in `data/backups/` (latest 10 kept); more in *Settings → Backups and data*. To restore,
-  close the app and replace `data/planejamento-mensal.db` with a copy.
+- **Backups:** one copy per start in `data/backups/` (latest 10 kept); more in *Settings → Backups and data*. Each copy
+  can be opened to check it (changes made there are dropped when you go back to the live data) or restored; restoring
+  saves the current data as a new backup first. Without the app, close it and replace `data/planejamento-mensal.db`
+  with a copy.
 - **Removing the drive:** close the app first.
 - **Updating:** close the app, replace the executables and `backend/`, keep `data/`, open the app again; it backs up and
   migrates the database by itself.

@@ -4,6 +4,16 @@
     "loading": "Carregando…",
     "menu": "Menu principal"
   },
+  "loading": {
+    "steps": {
+      "starting": "Iniciando o serviço local…",
+      "opening": "Abrindo seus dados…",
+      "checking": "Fazendo o backup de início e conferindo o banco…",
+      "slow": "Está demorando mais que o normal. Em SSDs externos ou lentos isso acontece; aguarde mais um pouco."
+    },
+    "failedHint": "Confira se o SSD está conectado e se o app não está aberto em outra janela; depois tente de novo.",
+    "retry": "Tentar de novo"
+  },
   "nav": {
     "overview": "Visão geral",
     "history": "Histórico",
@@ -34,7 +44,14 @@
   "period": {
     "label": "Competência",
     "previous": "Mês anterior",
-    "next": "Próximo mês"
+    "next": "Próximo mês",
+    "current": "Mês atual",
+    "goToCurrent": "Ir para o mês atual",
+    "askTitle": "Qual mês você quer abrir?",
+    "askHint": "Você pode trocar a qualquer momento no topo da janela.",
+    "other": "Outro mês",
+    "open": "Abrir",
+    "dontAsk": "Não perguntar ao abrir o app (abre sempre no mês atual)"
   },
   "action": {
     "save": "Salvar",
@@ -268,7 +285,8 @@
     "alertWarning": "Alerta amarelo (% da renda)",
     "alertDanger": "Alerta vermelho (% da renda)",
     "horizon": "Meses de assinaturas projetadas",
-    "autoValidate": "Validar automaticamente itens com alias completo"
+    "autoValidate": "Validar automaticamente itens com alias completo",
+    "askPeriod": "Perguntar o mês ao abrir o app"
   },
   "recurrence": {
     "description": "Descrição",
@@ -456,6 +474,7 @@
     "left": "Sobrou",
     "missing": "Faltou",
     "ofIncome": "{{percent}} da renda",
+    "overIncome": "{{percent}} acima da renda",
     "spent": "Gasto {{amount}} ({{percent}})",
     "income": "Renda {{amount}}",
     "noIncome": "Sem renda neste mês: não há como medir a sobra.",
@@ -667,6 +686,30 @@
     "exportJson": "Exportar todos os dados (JSON)",
     "exportCsv": "Exportar todos os dados (CSV)",
     "eject": "Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade."
+  },
+  "database": {
+    "hint": "Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.",
+    "when": "Data da cópia",
+    "reason": "Motivo",
+    "reasons": {
+      "start": "Ao abrir o app",
+      "before-update": "Antes de atualizar",
+      "manual": "Feita por você",
+      "before-restore": "Antes de restaurar",
+      "other": "Outra"
+    },
+    "open": "Abrir para conferir",
+    "openFor": "Abrir o backup de {{backup}} para conferir",
+    "openNow": "aberto agora",
+    "restore": "Restaurar",
+    "restoreFor": "Restaurar o backup de {{backup}}",
+    "confirmRestore": "Trocar os dados reais pelo backup de {{backup}}? Os dados atuais são copiados antes, em data/backups.",
+    "restored": "Backup de {{backup}} restaurado; os dados anteriores ficaram em data/backups.",
+    "opened": "Mostrando o backup de {{backup}}.",
+    "backToLive": "De volta aos dados reais.",
+    "viewing": "Você está conferindo o backup de {{backup}}.",
+    "viewingHint": "É uma cópia: o que mudar aqui é descartado ao voltar aos dados reais.",
+    "goLive": "Voltar aos dados reais"
   },
   "shortcuts": {
     "title": "Atalhos",

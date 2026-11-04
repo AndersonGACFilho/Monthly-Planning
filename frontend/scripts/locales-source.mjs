@@ -2,6 +2,22 @@
 // to write src/locales/*.json, which keeps both languages with the same keys (I18N-13).
 export default {
   app: { name: ['Planejamento Mensal', 'Monthly Planner'], loading: ['Carregando…', 'Loading…'], menu: ['Menu principal', 'Main menu'] },
+  loading: {
+    steps: {
+      starting: ['Iniciando o serviço local…', 'Starting the local service…'],
+      opening: ['Abrindo seus dados…', 'Opening your data…'],
+      checking: ['Fazendo o backup de início e conferindo o banco…', 'Making the start backup and checking the database…'],
+      slow: [
+        'Está demorando mais que o normal. Em SSDs externos ou lentos isso acontece; aguarde mais um pouco.',
+        'This is taking longer than usual. It happens on slow or external drives; please wait a little longer.',
+      ],
+    },
+    failedHint: [
+      'Confira se o SSD está conectado e se o app não está aberto em outra janela; depois tente de novo.',
+      'Check that the drive is connected and that the app is not open in another window, then try again.',
+    ],
+    retry: ['Tentar de novo', 'Try again'],
+  },
   nav: {
     overview: ['Visão geral', 'Overview'],
     history: ['Histórico', 'History'],
@@ -27,7 +43,18 @@ export default {
     unexpected: ['Algo deu errado.', 'Something went wrong.'],
     network: ['Não foi possível falar com o serviço local.', 'Could not reach the local service.'],
   },
-  period: { label: ['Competência', 'Billing period'], previous: ['Mês anterior', 'Previous month'], next: ['Próximo mês', 'Next month'] },
+  period: {
+    label: ['Competência', 'Billing period'],
+    previous: ['Mês anterior', 'Previous month'],
+    next: ['Próximo mês', 'Next month'],
+    current: ['Mês atual', 'Current month'],
+    goToCurrent: ['Ir para o mês atual', 'Go to the current month'],
+    askTitle: ['Qual mês você quer abrir?', 'Which month do you want to open?'],
+    askHint: ['Você pode trocar a qualquer momento no topo da janela.', 'You can change it any time at the top of the window.'],
+    other: ['Outro mês', 'Another month'],
+    open: ['Abrir', 'Open'],
+    dontAsk: ['Não perguntar ao abrir o app (abre sempre no mês atual)', 'Do not ask when the app opens (always open the current month)'],
+  },
   action: {
     save: ['Salvar', 'Save'],
     cancel: ['Cancelar', 'Cancel'],
@@ -255,6 +282,7 @@ export default {
     alertDanger: ['Alerta vermelho (% da renda)', 'Red alert (% of income)'],
     horizon: ['Meses de assinaturas projetadas', 'Months of projected subscriptions'],
     autoValidate: ['Validar automaticamente itens com alias completo', 'Validate items with a complete alias automatically'],
+    askPeriod: ['Perguntar o mês ao abrir o app', 'Ask for the month when the app opens'],
   },
   recurrence: {
     description: ['Descrição', 'Description'],
@@ -442,6 +470,7 @@ export default {
     left: ['Sobrou', 'Left'],
     missing: ['Faltou', 'Short by'],
     ofIncome: ['{{percent}} da renda', '{{percent}} of income'],
+    overIncome: ['{{percent}} acima da renda', '{{percent}} above income'],
     spent: ['Gasto {{amount}} ({{percent}})', 'Spent {{amount}} ({{percent}})'],
     income: ['Renda {{amount}}', 'Income {{amount}}'],
     noIncome: ['Sem renda neste mês: não há como medir a sobra.', 'No income this month: nothing to measure the leftover against.'],
@@ -671,6 +700,39 @@ export default {
     exportJson: ['Exportar todos os dados (JSON)', 'Export all data (JSON)'],
     exportCsv: ['Exportar todos os dados (CSV)', 'Export all data (CSV)'],
     eject: ['Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade.', 'Close the app before removing the drive, so no write is left half done.'],
+  },
+  database: {
+    hint: [
+      'Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.',
+      'Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.',
+    ],
+    when: ['Data da cópia', 'Copied on'],
+    reason: ['Motivo', 'Reason'],
+    reasons: {
+      start: ['Ao abrir o app', 'App start'],
+      'before-update': ['Antes de atualizar', 'Before an update'],
+      manual: ['Feita por você', 'Made by you'],
+      'before-restore': ['Antes de restaurar', 'Before a restore'],
+      other: ['Outra', 'Other'],
+    },
+    open: ['Abrir para conferir', 'Open to check'],
+    openFor: ['Abrir o backup de {{backup}} para conferir', 'Open the backup of {{backup}} to check it'],
+    openNow: ['aberto agora', 'open now'],
+    restore: ['Restaurar', 'Restore'],
+    restoreFor: ['Restaurar o backup de {{backup}}', 'Restore the backup of {{backup}}'],
+    confirmRestore: [
+      'Trocar os dados reais pelo backup de {{backup}}? Os dados atuais são copiados antes, em data/backups.',
+      'Replace the live data with the backup of {{backup}}? The current data is backed up first, in data/backups.',
+    ],
+    restored: ['Backup de {{backup}} restaurado; os dados anteriores ficaram em data/backups.', 'Backup of {{backup}} restored; the previous data is kept in data/backups.'],
+    opened: ['Mostrando o backup de {{backup}}.', 'Showing the backup of {{backup}}.'],
+    backToLive: ['De volta aos dados reais.', 'Back to the live data.'],
+    viewing: ['Você está conferindo o backup de {{backup}}.', 'You are checking the backup of {{backup}}.'],
+    viewingHint: [
+      'É uma cópia: o que mudar aqui é descartado ao voltar aos dados reais.',
+      'It is a copy: what you change here is dropped when you go back to the live data.',
+    ],
+    goLive: ['Voltar aos dados reais', 'Back to the live data'],
   },
   shortcuts: {
     title: ['Atalhos', 'Shortcuts'],

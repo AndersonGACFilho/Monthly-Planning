@@ -6,6 +6,10 @@ interface UiState {
   exportOpen: boolean;
   /** Opens or closes the export dialog. */
   setExportOpen: (open: boolean) => void;
+  /** Whether the billing period was already asked in this launch (IMP-56). */
+  periodAsked: boolean;
+  /** Records that the billing period was asked. */
+  setPeriodAsked: () => void;
 }
 
 /**
@@ -14,4 +18,6 @@ interface UiState {
 export const useUiStore = create<UiState>((set) => ({
   exportOpen: false,
   setExportOpen: (exportOpen) => set({ exportOpen }),
+  periodAsked: false,
+  setPeriodAsked: () => set({ periodAsked: true }),
 }));

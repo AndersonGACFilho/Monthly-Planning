@@ -76,13 +76,17 @@ export function CategoryItemsDialog({ categoryId, name, entriesCategoryId, perio
                   {t(`categoryItems.open.${source.source}`)} <ArrowRight size={14} aria-hidden />
                 </button>
               </div>
-              <table className="table">
+              <table className="table table-fixed">
                 <thead>
                   <tr>
-                    <th scope="col">{t('categoryItems.date')}</th>
+                    <th scope="col" className="w-28">
+                      {t('categoryItems.date')}
+                    </th>
                     <th scope="col">{t('categoryItems.description')}</th>
-                    <th scope="col">{t('overview.member')}</th>
-                    <th scope="col" className="text-right">
+                    <th scope="col" className="w-24">
+                      {t('overview.member')}
+                    </th>
+                    <th scope="col" className="w-32 text-right">
                       {t('recurrence.amount')}
                     </th>
                   </tr>
@@ -91,7 +95,7 @@ export function CategoryItemsDialog({ categoryId, name, entriesCategoryId, perio
                   {group.map((item) => (
                     <tr key={item.referenceId}>
                       <td className="whitespace-nowrap">{formatDate(item.date)}</td>
-                      <td>
+                      <td className="break-words">
                         {item.description}
                         {item.installment && item.installment !== '-' && (
                           <span className="ml-2 text-xs text-(--color-text-muted)">{item.installment}</span>

@@ -181,4 +181,24 @@ body {
     background: color-mix(in srgb, #d97706 18%, transparent);
     color: #b45309;
   }
+  /* Indeterminate progress of the loading screen (IMP-57); still when the user asks for less motion */
+  .loading-bar {
+    animation: loading-slide 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .loading-bar {
+      animation: none;
+      width: 100%;
+      opacity: 0.6;
+    }
+  }
+}
+
+@keyframes loading-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
 }

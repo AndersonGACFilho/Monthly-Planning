@@ -33,6 +33,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Database the app works on: the live data or a copy of a backup opened to check it, and restoring a backup as the\n live data (IMP-58, POR-12).",
+    "name" : "database-controller"
+  }, {
     "description" : "Spending categories with colour, icon and optional parent (RF-06, RF-07, I18N-07).",
     "name" : "category-controller"
   }, {
@@ -189,7 +192,7 @@
         "tags" : [ "backup-controller" ]
       },
       "post" : {
-        "description" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12).",
+        "description" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12). Refused while a backup is open\n (IMP-58): the copy would be saved as if it were the live data.",
         "operationId" : "backupNow",
         "requestBody" : {
           "content" : {
@@ -1243,6 +1246,86 @@
         },
         "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
         "tags" : [ "backup-controller" ]
+      }
+    },
+    "/api/database" : {
+      "get" : {
+        "description" : "Returns the database the app works on.",
+        "operationId" : "database",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "live data or the backup open"
+          }
+        },
+        "summary" : "Returns the database the app works on.",
+        "tags" : [ "database-controller" ]
+      },
+      "put" : {
+        "description" : "Opens a copy of a backup to check it, or goes back to the live data; the backup file is never changed and what\n is changed in the copy is dropped when the live data comes back.",
+        "operationId" : "switchDatabase",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DatabaseRequest"
+              }
+            }
+          },
+          "description" : "backup to open, or empty for the live data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use"
+          }
+        },
+        "summary" : "Opens a copy of a backup to check it, or goes back to the live data; the backup file is never changed and what\n is changed in the copy is dropped when the live data comes back.",
+        "tags" : [ "database-controller" ]
+      }
+    },
+    "/api/database/restores" : {
+      "post" : {
+        "description" : "Makes a backup the live data, after backing the live data up.",
+        "operationId" : "restoreBackup",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RestoreRequest"
+              }
+            }
+          },
+          "description" : "backup to restore",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use: the live data"
+          }
+        },
+        "summary" : "Makes a backup the live data, after backing the live data up.",
+        "tags" : [ "database-controller" ]
       }
     },
     "/api/history" : {
@@ -4977,6 +5060,32 @@
         },
         "required" : [ "validFrom" ]
       },
+      "DatabaseModel" : {
+        "type" : "object",
+        "description" : "Database the app works on.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of the backup open, or <code>null</code>"
+          },
+          "live" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> for the live data"
+          }
+        }
+      },
+      "DatabaseRequest" : {
+        "type" : "object",
+        "description" : "Which database to work on.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of a backup in <code>data/backups/</code>, or empty for the live data",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        }
+      },
       "DeliveryModel" : {
         "type" : "object",
         "description" : "One row of the delivery history (RF-92, RF-93, I18N-12).",
@@ -6385,6 +6494,19 @@
             "$ref" : "#/components/schemas/Links"
           }
         }
+      },
+      "RestoreRequest" : {
+        "type" : "object",
+        "description" : "Backup to restore.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of a backup in <code>data/backups/</code>",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "backup" ]
       },
       "ReviewEditRequest" : {
         "type" : "object",

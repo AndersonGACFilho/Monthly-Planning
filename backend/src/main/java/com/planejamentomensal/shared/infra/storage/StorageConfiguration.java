@@ -1,9 +1,6 @@
 package com.planejamentomensal.shared.infra.storage;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.nio.file.Path;
-import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,15 +9,12 @@ import org.springframework.context.annotation.Configuration;
  * Wires the portable app folder and the SQLite database inside it.
  *
  * <p>Implements POR-03 (database under {@code data/}) and POR-11 (WAL journal with
- * {@code synchronous=FULL}); transactions start with {@code BEGIN IMMEDIATE} so writers queue.</p>
+ * {@code synchronous=FULL}) through {@link SqlitePools}.</p>
  *
  * @since 1.0
  */
 @Configuration(proxyBeanMethods = false)
 public class StorageConfiguration {
-
-    /** Connections kept open; SQLite serializes writes, WAL lets reads run alongside. */
-    private static final int MAX_CONNECTIONS = 4;
 
     /**
      * Creates the app paths and the {@code data/} folders.
@@ -50,25 +44,14 @@ public class StorageConfiguration {
     }
 
     /**
-     * Creates the connection pool for the SQLite file in {@code data/}.
+     * Creates the data source of the SQLite file in {@code data/}; it can later point at a backup (IMP-58).
      *
      * @param paths app paths
      * @param lock  single-instance lock; required so the database is only opened after it is held
-     * @return pooled data source with the POR-11 pragmas set on every connection
+     * @return switchable data source with the POR-11 pragmas set on every connection
      */
-    @Bean
-    public DataSource dataSource(AppPaths paths, InstanceLock lock) {
-        HikariConfig config = new HikariConfig();
-        config.setPoolName("sqlite");
-        config.setJdbcUrl("jdbc:sqlite:" + paths.database());
-        config.setMaximumPoolSize(MAX_CONNECTIONS);
-        config.addDataSourceProperty("journal_mode", "WAL");
-        config.addDataSourceProperty("synchronous", "FULL");
-        config.addDataSourceProperty("foreign_keys", "true");
-        config.addDataSourceProperty("busy_timeout", "10000");
-        // BEGIN IMMEDIATE: concurrent writers wait for the lock instead of failing with SQLITE_BUSY when a
-        // read transaction is upgraded to a write
-        config.addDataSourceProperty("transaction_mode", "IMMEDIATE");
-        return new HikariDataSource(config);
+    @Bean(destroyMethod = "close")
+    public SwitchableDataSource dataSource(AppPaths paths, InstanceLock lock) {
+        return new SwitchableDataSource(SqlitePools.open(paths.database(), SqlitePools.LIVE));
     }
 }
