@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n/i18n';
 import { useNotifications } from '../../shared/state/notifications';
 import { renderWithProviders } from '../../test/render';
@@ -20,7 +20,43 @@ describe('SettingsPage', () => {
       http.get(`${base}/api/cards`, () => HttpResponse.json({})),
       http.get(`${base}/api/categories`, () => HttpResponse.json({})),
       http.get(`${base}/api/backups`, () => HttpResponse.json(['planejamento-mensal-2026-11-01T10-00-00-000-start.db'])),
+      http.get(`${base}/api/database`, () => HttpResponse.json({ live: true })),
     );
+  });
+
+  it('IMP-58: each backup opens to be checked, with the way back, and can be restored after confirming', async () => {
+    const backup = 'planejamento-mensal-2026-11-01T10-00-00-000-start.db';
+    let state: { live: boolean; backup?: string } = { live: true };
+    const restored: unknown[] = [];
+    server.use(
+      http.get(`${base}/api/database`, () => HttpResponse.json(state)),
+      http.put(`${base}/api/database`, async ({ request }) => {
+        const body = (await request.json()) as { backup?: string };
+        state = body.backup ? { live: false, backup: body.backup } : { live: true };
+        return HttpResponse.json(state);
+      }),
+      http.post(`${base}/api/database/restores`, async ({ request }) => {
+        restored.push(await request.json());
+        state = { live: true };
+        return HttpResponse.json(state);
+      }),
+    );
+    renderWithProviders(<SettingsPage />);
+    const list = await screen.findByRole('region', { name: 'Cópias em data/backups' });
+    expect(within(list).getByRole('rowheader', { name: '01/11/2026, 10:00' })).toBeInTheDocument();
+    expect(within(list).getByText('Ao abrir o app')).toBeInTheDocument();
+    fireEvent.click(within(list).getByRole('button', { name: 'Abrir o backup de 01/11/2026, 10:00 para conferir' }));
+    expect(await within(list).findByText('aberto agora')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fazer cópia agora' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar aos dados reais' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Fazer cópia agora' })).toBeEnabled());
+
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    const restore = within(list).getByRole('button', { name: 'Restaurar o backup de 01/11/2026, 10:00' });
+    fireEvent.click(restore);
+    fireEvent.click(restore);
+    await waitFor(() => expect(restored).toEqual([{ backup }]));
+    expect(confirm).toHaveBeenCalledTimes(2);
   });
 
   it('IMP-39: language, alerts, e-mail, spreadsheet and backups are on one screen; registries moved out', async () => {

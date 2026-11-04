@@ -101,7 +101,7 @@ function ModeToggle({ mode, onChange }: { mode: SplitMode; onChange: (mode: Spli
   const option = (value: SplitMode, symbol: string, label: string) => (
     <button
       type="button"
-      className={`px-2 py-0.5 ${mode === value ? 'bg-(--color-accent) text-white' : ''}`}
+      className={`px-2 py-0.5 ${mode === value ? 'bg-(--color-accent) text-(--color-surface)' : ''}`}
       aria-pressed={mode === value}
       aria-label={label}
       title={label}

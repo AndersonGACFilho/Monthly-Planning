@@ -1,12 +1,12 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import type { CategoryRow } from '../../api/generated/model';
 import { CategoryIcon } from '../../shared/components/CategoryIcon';
 import { MoneyText } from '../../shared/components/MoneyText';
 import { formatPercent } from '../../shared/format';
 import { useCategoryMap } from '../../shared/hooks/useLookups';
 import { CategoryChart, UNCLASSIFIED_COLOR } from './CategoryChart';
-import { categoryEntriesPath } from './categoryEntriesPath';
+import { CategoryItemsDialog } from './CategoryItemsDialog';
 
 /** Props of {@link CategoryBreakdown}. */
 export interface CategoryBreakdownProps {
@@ -19,30 +19,27 @@ export interface CategoryBreakdownProps {
 }
 
 /**
- * Expense by category as a doughnut and a table (RF-12, UI-07); a slice or a category name opens the
- * Entries tab filtered by that category.
+ * Expense by category as a doughnut and a table (RF-12, UI-07); a slice or a category name lists every item of
+ * that category, fixed and variable expenses as well as card entries (RF-38).
  *
  * @param props - {@link CategoryBreakdownProps}
  * @returns the section
  */
 export function CategoryBreakdown({ rows, period, member }: CategoryBreakdownProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const categories = useCategoryMap();
-  // Entries without a category are listed under the system "not classified" category
+  const [selected, setSelected] = useState<CategoryRow | null>(null);
+  // Card entries without a category are listed under the system "not classified" category
   const unclassifiedId = [...categories.values()].find((c) => c.system)?.id;
-  const targetOf = (row: CategoryRow) => row.categoryId ?? unclassifiedId;
-  const open = (row: CategoryRow) => {
-    const target = targetOf(row);
-    if (target != null) navigate(categoryEntriesPath(period, target, member));
-  };
+  const nameOf = (row: CategoryRow) =>
+    (row.categoryId != null ? categories.get(row.categoryId)?.name : undefined) ?? t('overview.unclassified');
 
   return (
     <section className="grid gap-4 wide:grid-cols-2" aria-labelledby="by-category-title">
       <h2 id="by-category-title" className="text-lg font-semibold wide:col-span-2">
         {t('overview.byCategory')}
       </h2>
-      <CategoryChart rows={rows} onSelect={open} />
+      <CategoryChart rows={rows} onSelect={setSelected} />
       <div className="overflow-x-auto">
         <table className="table">
           <thead>
@@ -62,16 +59,15 @@ export function CategoryBreakdown({ rows, period, member }: CategoryBreakdownPro
           <tbody>
             {rows.map((row) => {
               const category = row.categoryId != null ? categories.get(row.categoryId) : undefined;
-              const name = category?.name ?? t('overview.unclassified');
+              const name = nameOf(row);
               return (
                 <tr key={row.categoryId ?? 'none'}>
                   <th scope="row" className="font-normal">
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2 text-left hover:underline disabled:no-underline"
-                      disabled={targetOf(row) == null}
+                      className="inline-flex items-center gap-2 text-left hover:underline"
                       title={t('overview.openCategory', { category: name })}
-                      onClick={() => open(row)}
+                      onClick={() => setSelected(row)}
                     >
                       <CategoryIcon icon={category?.icon} color={category?.color ?? UNCLASSIFIED_COLOR} />
                       {name}
@@ -90,6 +86,16 @@ export function CategoryBreakdown({ rows, period, member }: CategoryBreakdownPro
           </tbody>
         </table>
       </div>
+      {selected && (
+        <CategoryItemsDialog
+          categoryId={selected.categoryId ?? null}
+          name={nameOf(selected)}
+          entriesCategoryId={selected.categoryId ?? unclassifiedId}
+          period={period}
+          member={member}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </section>
   );
 }

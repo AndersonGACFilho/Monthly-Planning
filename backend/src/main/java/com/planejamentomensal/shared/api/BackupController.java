@@ -1,7 +1,9 @@
 package com.planejamentomensal.shared.api;
 
+import com.planejamentomensal.shared.application.ActiveDatabase;
 import com.planejamentomensal.shared.application.Backups;
 import com.planejamentomensal.shared.application.DataExport;
+import com.planejamentomensal.shared.domain.BusinessRuleException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.nio.file.Path;
@@ -29,16 +31,19 @@ public class BackupController {
 
     private final Backups backups;
     private final DataExport export;
+    private final ActiveDatabase database;
 
     /**
      * Creates the controller.
      *
-     * @param backups backups
-     * @param export  data export
+     * @param backups  backups
+     * @param export   data export
+     * @param database database in use, so a backup is never made of an open backup
      */
-    public BackupController(Backups backups, DataExport export) {
+    public BackupController(Backups backups, DataExport export, ActiveDatabase database) {
         this.backups = backups;
         this.export = export;
+        this.database = database;
     }
 
     /**
@@ -60,13 +65,18 @@ public class BackupController {
     }
 
     /**
-     * Makes a backup now, in {@code data/backups/} or where the user chose (POR-12).
+     * Makes a backup now, in {@code data/backups/} or where the user chose (POR-12). Refused while a backup is open
+     * (IMP-58): the copy would be saved as if it were the live data.
      *
      * @param request destination
      * @return {@code {"file": path}}
+     * @throws BusinessRuleException with code {@code backup-open} while a backup is open
      */
     @PostMapping("/api/backups")
     public Map<String, String> backupNow(@Valid @RequestBody BackupRequest request) {
+        if (!database.state().live()) {
+            throw new BusinessRuleException("backup-open", database.state().backup());
+        }
         Path file = request.destination() == null || request.destination().isBlank() ? backups.backup("manual")
                 : backups.backupTo(Path.of(request.destination()));
         return Map.of("file", file.toString());

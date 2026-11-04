@@ -33,6 +33,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Database the app works on: the live data or a copy of a backup opened to check it, and restoring a backup as the\n live data (IMP-58, POR-12).",
+    "name" : "database-controller"
+  }, {
     "description" : "Spending categories with colour, icon and optional parent (RF-06, RF-07, I18N-07).",
     "name" : "category-controller"
   }, {
@@ -189,7 +192,7 @@
         "tags" : [ "backup-controller" ]
       },
       "post" : {
-        "description" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12).",
+        "description" : "Makes a backup now, in <code>data/backups/</code> or where the user chose (POR-12). Refused while a backup is open\n (IMP-58): the copy would be saved as if it were the live data.",
         "operationId" : "backupNow",
         "requestBody" : {
           "content" : {
@@ -1243,6 +1246,86 @@
         },
         "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
         "tags" : [ "backup-controller" ]
+      }
+    },
+    "/api/database" : {
+      "get" : {
+        "description" : "Returns the database the app works on.",
+        "operationId" : "database",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "live data or the backup open"
+          }
+        },
+        "summary" : "Returns the database the app works on.",
+        "tags" : [ "database-controller" ]
+      },
+      "put" : {
+        "description" : "Opens a copy of a backup to check it, or goes back to the live data; the backup file is never changed and what\n is changed in the copy is dropped when the live data comes back.",
+        "operationId" : "switchDatabase",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DatabaseRequest"
+              }
+            }
+          },
+          "description" : "backup to open, or empty for the live data",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use"
+          }
+        },
+        "summary" : "Opens a copy of a backup to check it, or goes back to the live data; the backup file is never changed and what\n is changed in the copy is dropped when the live data comes back.",
+        "tags" : [ "database-controller" ]
+      }
+    },
+    "/api/database/restores" : {
+      "post" : {
+        "description" : "Makes a backup the live data, after backing the live data up.",
+        "operationId" : "restoreBackup",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RestoreRequest"
+              }
+            }
+          },
+          "description" : "backup to restore",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use: the live data"
+          }
+        },
+        "summary" : "Makes a backup the live data, after backing the live data up.",
+        "tags" : [ "database-controller" ]
       }
     },
     "/api/history" : {
@@ -2760,42 +2843,40 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories (RF-83)",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use the displayed description (RF-83)",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments (RF-83)",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language of this export, optional (I18N-09)",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional (TPL-04)",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
@@ -2804,12 +2885,58 @@
             "format" : "int64"
           }
         }, {
-          "description" : "free note, optional (RF-82)",
+          "description" : "free note, or empty for the template's message",
           "in" : "query",
           "name" : "note",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -2850,48 +2977,100 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use aliases",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language, optional",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "free note, or empty for the template's message",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -2933,42 +3112,40 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use aliases",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language, optional",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
@@ -2977,12 +3154,58 @@
             "format" : "int64"
           }
         }, {
-          "description" : "free note, optional",
+          "description" : "free note, or empty for the template's message",
           "in" : "query",
           "name" : "note",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -3023,42 +3246,40 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use aliases",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language, optional",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
@@ -3067,12 +3288,58 @@
             "format" : "int64"
           }
         }, {
-          "description" : "free note, optional",
+          "description" : "free note, or empty for the template's message",
           "in" : "query",
           "name" : "note",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -3114,42 +3381,40 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use aliases",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language, optional",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
@@ -3158,12 +3423,58 @@
             "format" : "int64"
           }
         }, {
-          "description" : "free note, optional",
+          "description" : "free note, or empty for the template's message",
           "in" : "query",
           "name" : "note",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -3205,48 +3516,100 @@
             "format" : "int64"
           }
         }, {
-          "description" : "show categories",
+          "description" : "show the category of each line",
           "in" : "query",
           "name" : "showCategories",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "use aliases",
+          "description" : "show the displayed description instead of the original one",
           "in" : "query",
           "name" : "useAlias",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "include future installments",
+          "description" : "include the installments committed in the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
           "schema" : {
-            "type" : "boolean",
-            "default" : true
+            "type" : "boolean"
           }
         }, {
-          "description" : "language, optional",
+          "description" : "language of this export, or empty for the member's",
           "in" : "query",
           "name" : "language",
           "required" : false,
           "schema" : {
-            "type" : "string"
+            "type" : "string",
+            "pattern" : "^(pt-BR|en-US)?$"
           }
         }, {
-          "description" : "template, optional",
+          "description" : "template, or empty for the member's or the default",
           "in" : "query",
           "name" : "template",
           "required" : false,
           "schema" : {
             "type" : "integer",
             "format" : "int64"
+          }
+        }, {
+          "description" : "free note, or empty for the template's message",
+          "in" : "query",
+          "name" : "note",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 1000,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "header text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "header",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "footer text of this export, or empty for the template's",
+          "in" : "query",
+          "name" : "footer",
+          "required" : false,
+          "schema" : {
+            "type" : "string",
+            "maxLength" : 200,
+            "minLength" : 0
+          }
+        }, {
+          "description" : "blocks shown, in order, or empty for the template's",
+          "in" : "query",
+          "name" : "blocks",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          }
+        }, {
+          "description" : "columns left out of the line tables",
+          "in" : "query",
+          "name" : "hide",
+          "required" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            }
           }
         } ],
         "responses" : {
@@ -3416,6 +3779,56 @@
           }
         },
         "summary" : "Returns the expense by category of a period (RF-12).",
+        "tags" : [ "monthly-summary-controller" ]
+      }
+    },
+    "/api/summaries/{billingPeriod}/category-items" : {
+      "get" : {
+        "description" : "Returns every record behind the total of one category: fixed and variable expenses and card entries\n (RF-12, RF-38).",
+        "operationId" : "categoryItems",
+        "parameters" : [ {
+          "description" : "period, <code>yyyy-MM</code>",
+          "in" : "path",
+          "name" : "billingPeriod",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "category; omitted for \"not classified\"",
+          "in" : "query",
+          "name" : "category",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "description" : "member filter, optional",
+          "in" : "query",
+          "name" : "member",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/CategoryItemRow"
+                  }
+                }
+              }
+            },
+            "description" : "the items, by source and then by date"
+          }
+        },
+        "summary" : "Returns every record behind the total of one category: fixed and variable expenses and card entries\n (RF-12, RF-38).",
         "tags" : [ "monthly-summary-controller" ]
       }
     },
@@ -3641,6 +4054,26 @@
           }
         },
         "summary" : "Chooses the template of a member, or clears the choice.",
+        "tags" : [ "template-controller" ]
+      }
+    },
+    "/api/templates/layout-reference" : {
+      "get" : {
+        "description" : "Returns what a full layout of the advanced mode can use: the standard layout, its placeholders, the message\n variables and every class and id of the statement with what it marks (TPL-07).",
+        "operationId" : "templateLayoutReference",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LayoutReference"
+                }
+              }
+            },
+            "description" : "the reference, described in the request language"
+          }
+        },
+        "summary" : "Returns what a full layout of the advanced mode can use: the standard layout, its placeholders, the message\n variables and every class and id of the statement with what it marks (TPL-07).",
         "tags" : [ "template-controller" ]
       }
     },
@@ -4504,6 +4937,51 @@
         },
         "required" : [ "memberIds" ]
       },
+      "CategoryItemRow" : {
+        "type" : "object",
+        "description" : "One record counted in a category: a fixed expense, a variable expense or a card entry (RF-12, RF-38).",
+        "properties" : {
+          "amount" : {
+            "type" : "number",
+            "description" : "amount that counts in the category"
+          },
+          "cardId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "primary card of a card entry, otherwise <code>null</code>"
+          },
+          "date" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "due day, expense date or entry date"
+          },
+          "description" : {
+            "type" : "string",
+            "description" : "description shown to the user"
+          },
+          "installment" : {
+            "type" : "string",
+            "description" : "installment of a card entry, otherwise <code>null</code>"
+          },
+          "memberIds" : {
+            "type" : "array",
+            "description" : "members who bear the amount",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "referenceId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "occurrence, variable expense or card entry"
+          },
+          "source" : {
+            "type" : "string",
+            "description" : "<code>FIXED</code>, <code>VARIABLE</code> or <code>CARD</code>"
+          }
+        }
+      },
       "CategoryModel" : {
         "type" : "object",
         "description" : "HAL representation of a category.",
@@ -4861,6 +5339,32 @@
           }
         },
         "required" : [ "validFrom" ]
+      },
+      "DatabaseModel" : {
+        "type" : "object",
+        "description" : "Database the app works on.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of the backup open, or <code>null</code>"
+          },
+          "live" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> for the live data"
+          }
+        }
+      },
+      "DatabaseRequest" : {
+        "type" : "object",
+        "description" : "Which database to work on.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of a backup in <code>data/backups/</code>, or empty for the live data",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        }
       },
       "DeliveryModel" : {
         "type" : "object",
@@ -5368,6 +5872,132 @@
           }
         },
         "required" : [ "language" ]
+      },
+      "LayoutReference" : {
+        "type" : "object",
+        "description" : "Everything a full layout can use.",
+        "properties" : {
+          "placeholders" : {
+            "type" : "array",
+            "description" : "placeholders of the statement parts, in the standard order",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "rules" : {
+            "$ref" : "#/components/schemas/LayoutRules",
+            "description" : "what the sanitizer and the settings accept"
+          },
+          "selectors" : {
+            "type" : "array",
+            "description" : "ids, then classes, in the order they appear",
+            "items" : {
+              "$ref" : "#/components/schemas/LayoutSelector"
+            }
+          },
+          "standardLayout" : {
+            "type" : "string",
+            "description" : "layout a new full layout starts from"
+          },
+          "variables" : {
+            "type" : "array",
+            "description" : "message variables",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "LayoutRules" : {
+        "type" : "object",
+        "description" : "What the sanitizer and the settings accept, so a template written elsewhere can follow it (TPL-07, IMP-61).",
+        "properties" : {
+          "blocks" : {
+            "type" : "array",
+            "description" : "block values, in the standard order",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "fonts" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "type" : "string"
+            },
+            "description" : "font values and their CSS family"
+          },
+          "forbiddenCss" : {
+            "type" : "array",
+            "description" : "constructs that make a style be dropped whole",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "htmlAttributes" : {
+            "type" : "array",
+            "description" : "attributes kept in the header HTML",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "htmlTags" : {
+            "type" : "array",
+            "description" : "tags kept in the header HTML and in a full layout",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "languages" : {
+            "type" : "array",
+            "description" : "languages with their own texts",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "layoutAttributes" : {
+            "type" : "array",
+            "description" : "attributes kept in a full layout",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "layoutTags" : {
+            "type" : "array",
+            "description" : "extra tags a full layout may use",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "maxCss" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest extra CSS, in characters"
+          },
+          "maxHeaderHtml" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest header HTML, in characters"
+          },
+          "maxLayout" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "longest full layout, in characters"
+          }
+        }
+      },
+      "LayoutSelector" : {
+        "type" : "object",
+        "description" : "One class or id of the standard statement.",
+        "properties" : {
+          "description" : {
+            "type" : "string",
+            "description" : "what it marks, in the requested language"
+          },
+          "selector" : {
+            "type" : "string",
+            "description" : "CSS selector, <code>.name</code> or <code>#name</code>"
+          }
+        }
       },
       "Line" : {
         "type" : "object",
@@ -6226,6 +6856,19 @@
           }
         }
       },
+      "RestoreRequest" : {
+        "type" : "object",
+        "description" : "Backup to restore.",
+        "properties" : {
+          "backup" : {
+            "type" : "string",
+            "description" : "file name of a backup in <code>data/backups/</code>",
+            "maxLength" : 255,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "backup" ]
+      },
       "ReviewEditRequest" : {
         "type" : "object",
         "description" : "Changes for one or more review items (RF-76, RF-77); <code>null</code> fields keep their value.",
@@ -6386,10 +7029,39 @@
             "description" : "period, <code>yyyy-MM</code>",
             "pattern" : "^\\d{4}-\\d{2}$"
           },
+          "blocks" : {
+            "type" : "array",
+            "description" : "blocks shown, in order, optional (IMP-60)",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "SUMMARY", "CARDS", "FIXED_EXPENSES", "VARIABLE_EXPENSES", "COMMITTED", "PAYMENT", "NOTE" ]
+            }
+          },
           "channel" : {
             "type" : "string",
             "description" : "channel",
             "enum" : [ "EMAIL", "WHATSAPP", "CLIPBOARD", "FOLDER" ]
+          },
+          "footer" : {
+            "type" : "string",
+            "description" : "footer text of this delivery, optional (IMP-60)",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "header" : {
+            "type" : "string",
+            "description" : "header text of this delivery, optional (IMP-60)",
+            "maxLength" : 200,
+            "minLength" : 0
+          },
+          "hiddenColumns" : {
+            "type" : "array",
+            "description" : "columns left out of the line tables, optional (IMP-60)",
+            "items" : {
+              "type" : "string",
+              "enum" : [ "DATE", "INSTALLMENT", "SHARE" ]
+            },
+            "uniqueItems" : true
           },
           "includeFuture" : {
             "type" : "boolean",
@@ -6768,6 +7440,10 @@
             "type" : "string",
             "description" : "font family",
             "enum" : [ "NOTO_SANS", "NOTO_SERIF", "LIBERATION_SANS" ]
+          },
+          "layoutHtml" : {
+            "type" : "string",
+            "description" : "full layout of the advanced mode that replaces the whole statement body, or <code>null</code>; it\n                       is sanitized and places the parts of {@link TemplateLayout TemplateLayout} and the variables of\n                       {@link MessageVariables MessageVariables} (TPL-07)"
           },
           "logo" : {
             "type" : "string",

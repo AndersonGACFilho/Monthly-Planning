@@ -9,6 +9,8 @@ const FIXTURES = new URL('../../backend/src/test/resources/fixtures/itau/', impo
  */
 export default async function globalSetup(): Promise<void> {
   const client = await api();
+  // The specs drive the screens directly; the start-up month question (IMP-56) is covered by unit tests
+  await client.patch('/api/settings', { data: { 'ask-period-on-start': 'false' } });
   const json = async (path: string, data: unknown) => (await client.post(path, { data })).json() as Promise<{ id: number }>;
   const house = await json('/api/members', { code: 'AB', name: 'Casa', kind: 'MAIN', color: '#2563EB', preferredLanguage: 'pt-BR' });
   await json('/api/members', {

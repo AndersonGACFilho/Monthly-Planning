@@ -15,6 +15,8 @@ public enum Setting {
     LANGUAGE("language", "", v -> v.isEmpty() || v.equals("pt-BR") || v.equals("en-US")),
     /** Colour theme of the interface (UI-08); empty means "follow the system". */
     THEME("theme", "", v -> v.isEmpty() || v.equals("light") || v.equals("dark")),
+    /** Ask which billing period to open when the app starts (IMP-56). */
+    ASK_PERIOD_ON_START("ask-period-on-start", "true", Setting::isBoolean),
     /** Percentage of income spent that turns the alert yellow (RF-16). */
     ALERT_WARNING_PERCENT("alert-warning-percent", "80", Setting::isPercent),
     /** Percentage of income spent that turns the alert red (RF-16). */

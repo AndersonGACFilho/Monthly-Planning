@@ -17,6 +17,7 @@ import com.planejamentomensal.expense.application.VariableExpenseCommands;
 import com.planejamentomensal.member.application.SaveMemberUseCase;
 import com.planejamentomensal.recurrence.application.RecurrenceCommands;
 import com.planejamentomensal.statement.application.StatementFixture;
+import java.net.URI;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -134,5 +135,56 @@ class StatementControllerIT {
         mockMvc.perform(authorized(put("/api/settings/smtp-password")).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"password\":\"abc\"}")).andExpect(jsonPath("$.configured").value(true));
         mockMvc.perform(authorized(get("/api/settings"))).andExpect(jsonPath("$.smtp-password").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("TPL-07: a full layout places the statement parts and the reference lists its placeholders, classes and ids")
+    void fullLayout() throws Exception {
+        String settings = """
+                {"primaryColor":"#123456","secondaryColor":"#654321","font":"NOTO_SANS","blocks":["SUMMARY","CARDS"],
+                 "texts":{"pt-BR":{"header":"Extrato"}},
+                 "layoutHtml":"<section id=\\"capa\\"><p>Para {{member.name}}</p>{{block.cards}}</section>{{block.summary}}"}
+                """;
+        mockMvc.perform(authorized(post("/api/templates/preview")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"settings\":" + settings + ",\"billingPeriod\":\"2026-11\",\"language\":\"pt-BR\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.html").value(Matchers.matchesRegex(
+                        "(?s).*<section id=\"capa\">\\s*<p>Para Maria</p>\\s*<div class=\"block\" id=\"block-cards\">.*")))
+                .andExpect(jsonPath("$.html").value(Matchers.not(Matchers.containsString("id=\"statement-header\""))));
+        mockMvc.perform(authorized(post("/api/templates")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"X\",\"settings\":" + settings.replace("{{block.cards}}", "{{block.extra}}") + "}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("template-variable-unknown"));
+        mockMvc.perform(authorized(get("/api/templates/layout-reference")).header("Accept-Language", "pt-BR"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.standardLayout").value(Matchers.containsString("{{block.fixedExpenses}}")))
+                .andExpect(jsonPath("$.placeholders[0]").value("header"))
+                .andExpect(jsonPath("$.variables").value(Matchers.hasItem("member.name")))
+                .andExpect(jsonPath("$.selectors[?(@.selector == '#block-summary')].description")
+                        .value(Matchers.hasItem("Bloco de resumo; marcador {{block.summary}}")))
+                .andExpect(jsonPath("$.selectors[?(@.selector == '.pending')]").exists())
+                .andExpect(jsonPath("$.rules.maxLayout").value(50000))
+                .andExpect(jsonPath("$.rules.fonts.NOTO_SERIF").value("Noto Serif"))
+                .andExpect(jsonPath("$.rules.layoutAttributes").value(Matchers.hasItem("id")))
+                .andExpect(jsonPath("$.rules.htmlTags").value(Matchers.not(Matchers.hasItem("img"))));
+    }
+
+    @Test
+    @DisplayName("IMP-60: header, footer, blocks and hidden columns of one export reach the preview and every format link")
+    void customization() throws Exception {
+        String base = "/api/statements/2026-11/members/" + s.f.thirdParty;
+        String query = "?header=Cobran%C3%A7a&footer=Valeu&blocks=SUMMARY,COMMITTED&hide=DATE";
+        mockMvc.perform(authorized(get(URI.create(base + query))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._links.pdf.href").value(Matchers.containsString("header=Cobran%C3%A7a")))
+                .andExpect(jsonPath("$._links.preview.href").value(Matchers.containsString("blocks=SUMMARY%2CCOMMITTED&hide=DATE")));
+        mockMvc.perform(authorized(get(URI.create(base + "/html" + query))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(Matchers.containsString("Cobrança")))
+                .andExpect(content().string(Matchers.containsString("Valeu")))
+                .andExpect(content().string(Matchers.not(Matchers.containsString("id=\"block-cards\""))));
+        mockMvc.perform(authorized(get(base + "?blocks=CARDS,CARDS")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("statement-customization-invalid"));
     }
 }

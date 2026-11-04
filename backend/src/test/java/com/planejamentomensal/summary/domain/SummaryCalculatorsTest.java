@@ -24,7 +24,41 @@ class SummaryCalculatorsTest {
     }
 
     private static ExpenseLine line(ExpenseSource source, long member, Long category, String amount, long payer) {
-        return new ExpenseLine(source, member, category, m(amount), source == ExpenseSource.CARD ? 9L : null, payer);
+        return new ExpenseLine(source, member, category, m(amount), source == ExpenseSource.CARD ? 9L : null, payer,
+                new ExpenseOrigin(member, "line", null, null));
+    }
+
+    private static ExpenseLine share(ExpenseSource source, long reference, String description, int day, long member,
+            Long category, String amount) {
+        return new ExpenseLine(source, member, category, m(amount), source == ExpenseSource.CARD ? 9L : null, member,
+                new ExpenseOrigin(reference, description, NOV.atDay(day), source == ExpenseSource.CARD ? "1/2" : null));
+    }
+
+    @Test
+    @DisplayName("RF-12, RF-38: a category opens into its fixed, variable and card items, shares joined per record")
+    void categoryItems() {
+        List<ExpenseLine> lines = List.of(
+                share(ExpenseSource.CARD, 30, "Mercado", 12, 1, 4L, "60.00"),
+                share(ExpenseSource.CARD, 30, "Mercado", 12, 2, 4L, "40.00"),
+                share(ExpenseSource.VARIABLE, 20, "Feira", 9, 1, 4L, "35.00"),
+                share(ExpenseSource.FIXED, 10, "Cesta", 5, 1, 4L, "300.00"),
+                share(ExpenseSource.VARIABLE, 21, "Padaria", 3, 1, 4L, "12.00"),
+                share(ExpenseSource.VARIABLE, 22, "Cinema", 1, 1, 7L, "50.00"),
+                share(ExpenseSource.VARIABLE, 23, "Sem categoria", 1, 1, null, "8.00"));
+
+        List<CategoryItemsCalculator.CategoryItem> items = CategoryItemsCalculator.calculate(lines, 4L);
+
+        assertThat(items).extracting(CategoryItemsCalculator.CategoryItem::description)
+                .containsExactly("Cesta", "Padaria", "Feira", "Mercado");
+        CategoryItemsCalculator.CategoryItem card = items.getLast();
+        assertThat(card.amount()).isEqualTo(m("100.00"));
+        assertThat(card.memberIds()).containsExactly(1L, 2L);
+        assertThat(card.installment()).isEqualTo("1/2");
+        assertThat(card.cardId()).isEqualTo(9L);
+        assertThat(items.stream().map(CategoryItemsCalculator.CategoryItem::amount).reduce(Money.ZERO, Money::plus))
+                .isEqualTo(m("447.00"));
+        assertThat(CategoryItemsCalculator.calculate(lines, null)).singleElement()
+                .extracting(CategoryItemsCalculator.CategoryItem::description).isEqualTo("Sem categoria");
     }
 
     @Test

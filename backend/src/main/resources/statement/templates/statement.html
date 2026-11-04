@@ -29,7 +29,7 @@
   </style>
 </head>
 <body>
-  <div class="head">
+  <div class="head" id="statement-header">
     <div th:if="${!#strings.isEmpty(advancedHtml)}" th:utext="${advancedHtml}"></div>
     <table th:if="${#strings.isEmpty(advancedHtml)}">
       <tr>
@@ -45,13 +45,15 @@
       </tr>
     </table>
   </div>
-  <div class="warning" th:if="${fallback}" th:text="${labels.fallbackWarning}">fallback</div>
-  <div class="warning" th:if="${!s.pendingItems.isEmpty()}" th:text="${labels.pendingWarning}">pending</div>
+  <div class="warnings" id="statement-warnings">
+    <div class="warning" id="warning-fallback" th:if="${fallback}" th:text="${labels.fallbackWarning}">fallback</div>
+    <div class="warning" id="warning-pending" th:if="${!s.pendingItems.isEmpty()}" th:text="${labels.pendingWarning}">pending</div>
+  </div>
 
   <th:block th:each="block : ${blocks}">
     <th:block th:switch="${block}">
 
-      <div th:case="'SUMMARY'">
+      <div class="block" id="block-summary" th:case="'SUMMARY'">
         <h2 th:text="${labels.summary}">Summary</h2>
         <table class="summary">
           <tr th:if="${s.previousBalance != null}">
@@ -81,9 +83,9 @@
         </table>
       </div>
 
-      <div th:case="'CARDS'" th:if="${!s.cards.isEmpty()}">
+      <div class="block" id="block-cards" th:case="'CARDS'" th:if="${!s.cards.isEmpty()}">
         <h2 th:text="${labels.cards}">Cards</h2>
-        <th:block th:each="group : ${s.cards}">
+        <div class="card-group" th:each="group : ${s.cards}">
           <div class="card-title">
             <span th:text="${group.cardName}">Card</span>
             <span class="muted" th:if="${group.dueDate != null}" th:text="'· ' + ${labels.dueDate} + ' ' + ${f.date(group.dueDate)}">due</span>
@@ -91,33 +93,33 @@
           <table class="lines">
             <thead>
               <tr>
-                <th th:text="${labels.date}">Date</th>
+                <th th:if="${columns['DATE']}" th:text="${labels.date}">Date</th>
                 <th th:text="${labels.description}">Description</th>
-                <th th:text="${labels.installment}">Inst.</th>
+                <th th:if="${columns['INSTALLMENT']}" th:text="${labels.installment}">Inst.</th>
                 <th th:if="${s.options.showCategories}" th:text="${labels.category}">Category</th>
-                <th class="num" th:text="${labels.share}">Share</th>
+                <th class="num" th:if="${columns['SHARE']}" th:text="${labels.share}">Share</th>
                 <th class="num" th:text="${labels.amount}">Amount</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="line : ${group.lines}" th:classappend="${line.pending} ? 'pending'">
-                <td th:text="${f.date(line.date)}">date</td>
+                <td th:if="${columns['DATE']}" th:text="${f.date(line.date)}">date</td>
                 <td th:text="${line.description}">description</td>
-                <td th:text="${line.installment}">-</td>
+                <td th:if="${columns['INSTALLMENT']}" th:text="${line.installment}">-</td>
                 <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
-                <td class="num" th:text="${f.percent(line.percent)}"></td>
+                <td class="num" th:if="${columns['SHARE']}" th:text="${f.percent(line.percent)}"></td>
                 <td class="num" th:text="${f.money(line.amount)}">0</td>
               </tr>
               <tr class="subtotal">
-                <td th:colspan="${s.options.showCategories ? 5 : 4}" th:text="${labels.subtotal}">Subtotal</td>
+                <td th:colspan="${cardColumns - 1}" th:text="${labels.subtotal}">Subtotal</td>
                 <td class="num" th:text="${f.money(group.total)}">0</td>
               </tr>
             </tbody>
           </table>
-        </th:block>
+        </div>
       </div>
 
-      <div th:case="'FIXED_EXPENSES'" th:if="${!s.fixedExpenses.isEmpty()}">
+      <div class="block" id="block-fixed-expenses" th:case="'FIXED_EXPENSES'" th:if="${!s.fixedExpenses.isEmpty()}">
         <h2 th:text="${labels.fixedExpenses}">Fixed</h2>
         <table class="lines">
           <tbody>
@@ -134,25 +136,25 @@
         </table>
       </div>
 
-      <div th:case="'VARIABLE_EXPENSES'" th:if="${!s.variableExpenses.isEmpty()}">
+      <div class="block" id="block-variable-expenses" th:case="'VARIABLE_EXPENSES'" th:if="${!s.variableExpenses.isEmpty()}">
         <h2 th:text="${labels.variableExpenses}">Variable</h2>
         <table class="lines">
           <tbody>
             <tr th:each="line : ${s.variableExpenses}">
-              <td th:text="${f.date(line.date)}">date</td>
+              <td th:if="${columns['DATE']}" th:text="${f.date(line.date)}">date</td>
               <td th:text="${line.description}">description</td>
               <td th:if="${s.options.showCategories}" th:text="${line.category}">category</td>
               <td class="num" th:text="${f.money(line.amount)}">0</td>
             </tr>
             <tr class="subtotal">
-              <td th:colspan="${s.options.showCategories ? 3 : 2}" th:text="${labels.subtotal}">Subtotal</td>
+              <td th:colspan="${variableColumns - 1}" th:text="${labels.subtotal}">Subtotal</td>
               <td class="num" th:text="${f.money(s.variableTotal)}">0</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div th:case="'COMMITTED'" th:if="${!s.committed.isEmpty()}">
+      <div class="block" id="block-committed" th:case="'COMMITTED'" th:if="${!s.committed.isEmpty()}">
         <h2 th:text="${labels.committed}">Committed</h2>
         <table class="lines">
           <tbody>
@@ -164,19 +166,19 @@
         </table>
       </div>
 
-      <div th:case="'PAYMENT'" th:if="${s.pixKey != null}">
+      <div class="block" id="block-payment" th:case="'PAYMENT'" th:if="${s.pixKey != null}">
         <h2 th:text="${labels.payment}">Payment</h2>
-        <p><span th:text="${labels.pixKey} + ': '">PIX: </span><strong th:text="${s.pixKey}">key</strong></p>
+        <p><span th:text="${labels.pixKey} + ': '">PIX: </span><strong class="pix-key" th:text="${s.pixKey}">key</strong></p>
       </div>
 
-      <div th:case="'NOTE'" th:if="${!#strings.isEmpty(message)}">
+      <div class="block" id="block-note" th:case="'NOTE'" th:if="${!#strings.isEmpty(message)}">
         <h2 th:text="${labels.note}">Note</h2>
         <div class="message" th:text="${message}">message</div>
       </div>
 
     </th:block>
   </th:block>
-  <p th:if="${s.cards.isEmpty() and s.fixedExpenses.isEmpty() and s.variableExpenses.isEmpty()}" class="muted" th:text="${labels.empty}">empty</p>
-  <div class="foot" th:if="${!#strings.isEmpty(footer)}" th:text="${footer}">footer</div>
+  <p id="statement-empty" class="muted" th:if="${s.cards.isEmpty() and s.fixedExpenses.isEmpty() and s.variableExpenses.isEmpty()}" th:text="${labels.empty}">empty</p>
+  <div class="foot" id="statement-footer" th:if="${!#strings.isEmpty(footer)}" th:text="${footer}">footer</div>
 </body>
 </html>

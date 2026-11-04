@@ -2,9 +2,11 @@ package com.planejamentomensal.summary.api;
 
 import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.summary.application.MonthlySummary;
+import com.planejamentomensal.summary.domain.CategoryItemsCalculator.CategoryItem;
 import com.planejamentomensal.summary.domain.CategoryTotalsCalculator.CategoryTotal;
 import com.planejamentomensal.summary.domain.MemberTotalsCalculator.MemberTotal;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -30,6 +32,27 @@ public class MonthlySummaryModel extends RepresentationModel<MonthlySummaryModel
         static CategoryRow of(CategoryTotal t) {
             return new CategoryRow(t.categoryId(), t.amount().amount(), t.percentOfTotal(), t.previousAmount().amount(),
                     t.variation());
+        }
+    }
+
+    /**
+     * One record counted in a category: a fixed expense, a variable expense or a card entry (RF-12, RF-38).
+     *
+     * @param source      {@code FIXED}, {@code VARIABLE} or {@code CARD}
+     * @param referenceId occurrence, variable expense or card entry
+     * @param description description shown to the user
+     * @param date        due day, expense date or entry date
+     * @param installment installment of a card entry, otherwise {@code null}
+     * @param cardId      primary card of a card entry, otherwise {@code null}
+     * @param amount      amount that counts in the category
+     * @param memberIds   members who bear the amount
+     */
+    public record CategoryItemRow(String source, long referenceId, String description, LocalDate date,
+            String installment, Long cardId, BigDecimal amount, List<Long> memberIds) {
+
+        static CategoryItemRow of(CategoryItem i) {
+            return new CategoryItemRow(i.source().name(), i.referenceId(), i.description(), i.date(), i.installment(),
+                    i.cardId(), i.amount().amount(), i.memberIds());
         }
     }
 

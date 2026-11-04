@@ -4,6 +4,7 @@ import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.Relations;
 import com.planejamentomensal.shared.api.RootLinkContributor;
 import com.planejamentomensal.shared.domain.BillingPeriod;
+import com.planejamentomensal.statement.application.TemplateLayoutGuide;
 import com.planejamentomensal.statement.application.RenderedStatement;
 import com.planejamentomensal.statement.application.StatementRequest;
 import com.planejamentomensal.statement.application.StatementService;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
@@ -40,16 +42,30 @@ public class TemplateController {
 
     private final TemplateService templates;
     private final StatementService statements;
+    private final TemplateLayoutGuide layoutGuide;
 
     /**
      * Creates the controller.
      *
-     * @param templates  templates
-     * @param statements statement rendering
+     * @param templates       templates
+     * @param statements      statement rendering
+     * @param layoutGuide     what a full layout can use
      */
-    public TemplateController(TemplateService templates, StatementService statements) {
+    public TemplateController(TemplateService templates, StatementService statements, TemplateLayoutGuide layoutGuide) {
         this.templates = templates;
         this.statements = statements;
+        this.layoutGuide = layoutGuide;
+    }
+
+    /**
+     * Returns what a full layout of the advanced mode can use: the standard layout, its placeholders, the message
+     * variables and every class and id of the statement with what it marks (TPL-07).
+     *
+     * @return the reference, described in the request language
+     */
+    @GetMapping("/layout-reference")
+    public TemplateLayoutGuide.LayoutReference templateLayoutReference() {
+        return layoutGuide.reference(LocaleContextHolder.getLocale());
     }
 
     /**

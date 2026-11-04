@@ -15,6 +15,7 @@ import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.shared.domain.PaymentMethod;
 import com.planejamentomensal.summary.domain.CarryOvers;
 import com.planejamentomensal.summary.domain.ExpenseLine;
+import com.planejamentomensal.summary.domain.ExpenseOrigin;
 import com.planejamentomensal.summary.domain.ExpenseSource;
 import com.planejamentomensal.summary.domain.IncomeLine;
 import java.util.ArrayList;
@@ -84,11 +85,12 @@ public class PeriodData {
             if (o.income()) {
                 incomes.add(new IncomeLine(o.memberId(), o.amount()));
             } else if (o.paymentMethod() != PaymentMethod.CARD) {
-                lines.add(new ExpenseLine(ExpenseSource.FIXED, o.memberId(), o.categoryId(), o.amount(), null, o.memberId()));
+                lines.add(new ExpenseLine(ExpenseSource.FIXED, o.memberId(), o.categoryId(), o.amount(), null, o.memberId(),
+                        new ExpenseOrigin(o.id(), o.description(), period.atDay(o.day()), null)));
             }
         }
-        expenses.views(period).forEach(e -> lines.add(
-                new ExpenseLine(ExpenseSource.VARIABLE, e.memberId(), e.categoryId(), e.amount(), null, e.memberId())));
+        expenses.views(period).forEach(e -> lines.add(new ExpenseLine(ExpenseSource.VARIABLE, e.memberId(), e.categoryId(),
+                e.amount(), null, e.memberId(), new ExpenseOrigin(e.id(), e.description(), e.expenseDate(), null))));
         List<EntryRow> rows = entries.list(new EntryFilter(period, null, null, null, null, null, null));
         Map<Long, Long> payers = new HashMap<>();
         for (EntryRow row : rows) {
@@ -96,8 +98,9 @@ public class PeriodData {
                 continue;
             }
             long payer = payers.computeIfAbsent(row.cardId(), this::payerOf);
+            ExpenseOrigin origin = new ExpenseOrigin(row.entryId(), row.displayDescription(), row.entryDate(), row.installment());
             row.memberAmounts(payer).forEach((member, amount) -> lines.add(
-                    new ExpenseLine(ExpenseSource.CARD, member, row.categoryId(), amount, row.cardId(), payer)));
+                    new ExpenseLine(ExpenseSource.CARD, member, row.categoryId(), amount, row.cardId(), payer, origin)));
         }
         return new Lines(incomes, lines, rows,
                 new CarryOvers(byMember(carryOvers.incoming(period)), byMember(carryOvers.outgoing(period))));

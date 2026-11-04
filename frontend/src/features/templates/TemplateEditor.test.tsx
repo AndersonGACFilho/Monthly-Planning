@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TemplateSettings } from '../../api/generated/model';
@@ -16,11 +16,89 @@ const settings: TemplateSettings = {
   texts: { 'pt-BR': { header: 'Extrato de {{member.name}}' } },
 };
 
+const reference = {
+  standardLayout: '<div class="statement">\n  {{header}}\n  {{block.cards}}\n</div>',
+  placeholders: ['header', 'block.cards'],
+  variables: ['member.name', 'total'],
+  selectors: [
+    { selector: '#block-summary', description: 'Bloco de resumo' },
+    { selector: '#block-cards', description: 'Bloco de cartões' },
+    { selector: '.pending', description: 'Linha pendente' },
+  ],
+};
+
 describe('TemplateEditor', () => {
   useMockApi();
   beforeEach(async () => {
     await i18n.changeLanguage('pt-BR');
-    server.use(http.get(`${base}/api/members`, () => HttpResponse.json({ _embedded: { members: [{ id: 2, code: 'M', name: 'Mãe' }] } })));
+    server.use(
+      http.get(`${base}/api/members`, () => HttpResponse.json({ _embedded: { members: [{ id: 2, code: 'M', name: 'Mãe' }] } })),
+      http.get(`${base}/api/templates/layout-reference`, () => HttpResponse.json(reference)),
+    );
+  });
+
+  it('IMP-61: copies a guide built from sample data and applies a pasted JSON answer to the preview', async () => {
+    const previews: { memberId?: number; settings: TemplateSettings }[] = [];
+    server.use(
+      http.post(`${base}/api/templates/preview`, async ({ request }) => {
+        previews.push((await request.json()) as { memberId?: number; settings: TemplateSettings });
+        return HttpResponse.json({ html: '<h1>Extrato de exemplo</h1>' });
+      }),
+    );
+    const copied: string[] = [];
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: (text: string) => copied.push(text) }, configurable: true });
+    renderWithProviders(<TemplateEditor base={settings} period="2026-11" onDone={() => undefined} />);
+    const copy = screen.getByRole('button', { name: 'Copiar guia para LLM' });
+    await waitFor(() => expect(copy).toBeEnabled());
+    fireEvent.click(copy);
+    await waitFor(() => expect(copied).toHaveLength(1));
+    expect(copied[0]).toContain('Extrato de exemplo');
+    expect(copied[0]).toContain('#block-cards');
+    expect(previews.at(-1)?.memberId).toBeUndefined();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aplicar JSON' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Aplicar um template em JSON' });
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: 'nada' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aplicar na prévia' }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('Não encontrei um JSON válido');
+    fireEvent.change(within(dialog).getByRole('textbox'), { target: { value: '```json\n{"primaryColor":"#0f766e","font":"NOTO_SERIF"}\n```' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Aplicar na prévia' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Fonte')).toHaveValue('NOTO_SERIF');
+    await waitFor(() => expect(previews.at(-1)?.settings).toMatchObject({ primaryColor: '#0F766E', font: 'NOTO_SERIF' }));
+  });
+
+  it('TPL-07: a full layout starts from the standard one, takes placeholders and fills the CSS from the class and id list', async () => {
+    const previews: { settings: TemplateSettings }[] = [];
+    server.use(
+      http.post(`${base}/api/templates/preview`, async ({ request }) => {
+        previews.push((await request.json()) as { settings: TemplateSettings });
+        return HttpResponse.json({ html: '' });
+      }),
+    );
+    renderWithProviders(<TemplateEditor base={settings} period="2026-11" onDone={() => undefined} />);
+    fireEvent.click(screen.getByText('Modo avançado (HTML/CSS)'));
+    const layout = screen.getByLabelText('Layout completo (HTML)') as HTMLTextAreaElement;
+    const start = screen.getByRole('button', { name: 'Começar do layout padrão' });
+    await waitFor(() => expect(start).toBeEnabled());
+    fireEvent.click(start);
+    expect(layout.value).toBe(reference.standardLayout);
+    expect(screen.getByText(/blocos desmarcados ficam vazios/)).toBeInTheDocument();
+
+    layout.setSelectionRange(0, 0);
+    fireEvent.click(screen.getByRole('button', { name: '{{member.name}}' }));
+    expect(layout.value.startsWith('{{member.name}}<div class="statement">')).toBe(true);
+
+    expect(screen.getByText('3 classes e ids do extrato')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Buscar classe ou id'), { target: { value: 'cartões' } });
+    expect(screen.queryByRole('rowheader', { name: '#block-summary' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Usar #block-cards no CSS' }));
+    expect((screen.getByLabelText('CSS extra') as HTMLTextAreaElement).value).toContain('#block-cards {');
+
+    await waitFor(() => expect(previews.at(-1)?.settings.layoutHtml).toContain('{{block.cards}}'));
+    expect(previews.at(-1)?.settings.advancedCss).toContain('#block-cards {');
+    fireEvent.click(screen.getByRole('button', { name: 'Remover layout completo' }));
+    expect(layout.value).toBe('');
   });
 
   it('TPL-03, I18N-11: the live preview follows the edits, with the language and the fallback warning', async () => {

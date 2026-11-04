@@ -4,6 +4,16 @@
     "loading": "Loading…",
     "menu": "Main menu"
   },
+  "loading": {
+    "steps": {
+      "starting": "Starting the local service…",
+      "opening": "Opening your data…",
+      "checking": "Making the start backup and checking the database…",
+      "slow": "This is taking longer than usual. It happens on slow or external drives; please wait a little longer."
+    },
+    "failedHint": "Check that the drive is connected and that the app is not open in another window, then try again.",
+    "retry": "Try again"
+  },
   "nav": {
     "overview": "Overview",
     "history": "History",
@@ -34,7 +44,14 @@
   "period": {
     "label": "Billing period",
     "previous": "Previous month",
-    "next": "Next month"
+    "next": "Next month",
+    "current": "Current month",
+    "goToCurrent": "Go to the current month",
+    "askTitle": "Which month do you want to open?",
+    "askHint": "You can change it any time at the top of the window.",
+    "other": "Another month",
+    "open": "Open",
+    "dontAsk": "Do not ask when the app opens (always open the current month)"
   },
   "action": {
     "save": "Save",
@@ -268,7 +285,8 @@
     "alertWarning": "Yellow alert (% of income)",
     "alertDanger": "Red alert (% of income)",
     "horizon": "Months of projected subscriptions",
-    "autoValidate": "Validate items with a complete alias automatically"
+    "autoValidate": "Validate items with a complete alias automatically",
+    "askPeriod": "Ask for the month when the app opens"
   },
   "recurrence": {
     "description": "Description",
@@ -446,10 +464,42 @@
     "memberFilter": "Show only member",
     "everyone": "All members",
     "chart": "Expense by category chart",
-    "openCategory": "See entries of {{category}}",
+    "openCategory": "See every item of {{category}}",
     "totalsByMember": "Total expense by member",
     "previousBalance": "Previous balance",
     "carriedOut": "Carried over"
+  },
+  "leftover": {
+    "title": "What was left in {{period}}",
+    "left": "Left",
+    "missing": "Short by",
+    "ofIncome": "{{percent}} of income",
+    "overIncome": "{{percent}} above income",
+    "spent": "Spent {{amount}} ({{percent}})",
+    "income": "Income {{amount}}",
+    "noIncome": "No income this month: nothing to measure the leftover against.",
+    "bar": "Spent {{spent}} of income, {{left}} left",
+    "chart_one": "Leftover of the last month",
+    "chart_other": "Leftover of the last {{count}} months; click a month to open it"
+  },
+  "categoryItems": {
+    "title": "Items of {{category}}",
+    "empty": "No item in this category this month.",
+    "date": "Date",
+    "description": "Description",
+    "subtotal": "Subtotal",
+    "total_one": "Total of {{count}} item",
+    "total_other": "Total of {{count}} items",
+    "sources": {
+      "FIXED": "Fixed expenses",
+      "VARIABLE": "Variable expenses",
+      "CARD": "Card entries"
+    },
+    "open": {
+      "FIXED": "Open expenses",
+      "VARIABLE": "Open expenses",
+      "CARD": "Open card entries"
+    }
   },
   "carryOver": {
     "button": "Carry over unpaid balance",
@@ -467,6 +517,23 @@
     "members": "Members",
     "selectAll": "All",
     "options": "Options",
+    "custom": {
+      "title": "Customize this export",
+      "changed": "changed",
+      "hint": "Applies to this export and the deliveries sent from here only; the template does not change. Header and footer take the template variables, such as {{member.name}}.",
+      "header": "Header (title)",
+      "footer": "Footer",
+      "fromTemplate": "Use the template text",
+      "blocks": "Blocks",
+      "chooseBlocks": "Choose the blocks and their order here",
+      "columns": "Table columns",
+      "columnNames": {
+        "DATE": "Date",
+        "INSTALLMENT": "Installment",
+        "SHARE": "Share (%)"
+      },
+      "reset": "Back to the template"
+    },
     "showCategories": "Show categories",
     "useAlias": "Use renamed descriptions (alias)",
     "includeFuture": "Include future installments",
@@ -558,7 +625,69 @@
     "advanced": "Advanced mode (HTML/CSS)",
     "advancedCss": "Extra CSS",
     "advancedHtml": "Header HTML",
-    "advancedHint": "Scripts, external links and events are removed; only the variables above are accepted.",
+    "advancedHint": "Scripts, images, external links and events are removed; only the placeholders and variables of the reference below are accepted.",
+    "guide": {
+      "copy": "Copy guide for an LLM",
+      "copyHint": "Copies a text with the rules, classes and ids, the current template and a sample statement, to ask an LLM for a template. Only sample data is used.",
+      "copied": "Guide copied ({{count}} characters). Paste it into the LLM and describe the style at the end.",
+      "downloaded": "Could not copy; the guide was saved as a file.",
+      "apply": "Apply JSON",
+      "applyTitle": "Apply a template in JSON",
+      "applyLabel": "Paste the LLM answer (the JSON may come inside a code block)",
+      "applyHint": "Valid fields replace the ones in the editor; the logo is kept. Nothing is saved until you click Save: check the preview first.",
+      "applyButton": "Apply to the preview",
+      "applied": "JSON applied. Check the preview and save.",
+      "appliedIgnoring": "JSON applied; ignored: {{fields}}. Check the preview and save.",
+      "errors": {
+        "invalidJson": "No valid JSON was found in the pasted text.",
+        "notObject": "The JSON must be an object with the template fields."
+      },
+      "title": "Guide to write a statement template for Planejamento Mensal",
+      "task": "Write a template for the monthly statement of one member in the Planejamento Mensal app. The app renders the statement as HTML and turns it into an A4 PDF and an image. The data (tables, amounts, dates) is generated by the app; the template sets colours, font, texts, which blocks appear, extra CSS and, optionally, a full layout that places the parts of the statement.",
+      "answer": "Answer format",
+      "answerHint": "Answer with a single JSON object in this format, without comments. Leave out the fields you do not want to change; use null in advancedCss, advancedHtml or layoutHtml to not use them.",
+      "rules": "Rules",
+      "ruleHtml": "advancedHtml (replaces the standard header): only the tags {{tags}}; only the attributes {{attributes}}. Scripts, links, images and events are removed.",
+      "ruleLayout": "layoutHtml (replaces the whole statement body): the same tags plus {{tags}}; attributes {{attributes}}.",
+      "ruleCss": "advancedCss is added to the standard CSS (shown in the sample HTML below). A CSS with any of these is dropped whole: {{forbidden}}.",
+      "ruleSizes": "Maximum sizes in characters: advancedCss {{css}}, advancedHtml {{header}}, layoutHtml {{layout}}.",
+      "rulePdf": "The PDF is rendered by OpenHTMLtoPDF: CSS 2.1 with part of CSS 3. Do not use flexbox, grid, CSS variables, external fonts or JavaScript; prefer tables, floats, margins, borders and colours. A4 page with 16 mm × 14 mm margins.",
+      "ruleFonts": "font accepts only: {{fonts}}.",
+      "ruleBlocks": "blocks lists the blocks shown, in order, without repeats, at least one: {{blocks}}.",
+      "rulePlaceholders": "In layoutHtml, each part of the statement comes in through its placeholder: {{placeholders}}. The order comes from the layout; a block missing from blocks stays empty; any other placeholder is refused.",
+      "ruleVariables": "Variables accepted in the texts, advancedHtml and layoutHtml: {{variables}}. Any other is refused.",
+      "ruleTexts": "texts holds the texts of each language ({{languages}}): header (title), footer, message (note block text), emailSubject, emailBody and whatsapp. Write each language in its own language.",
+      "ruleHeader": "With an empty advancedHtml the standard header uses the header text; with an empty layoutHtml the statement follows the order of blocks.",
+      "ruleLogo": "primaryColor and secondaryColor use the #RRGGBB format. The logo stays in the app: do not send the logo field.",
+      "selectors": "Classes and ids of the standard statement",
+      "standardLayout": "Standard layout (starting point for layoutHtml)",
+      "current": "Current template",
+      "sample": "HTML rendered today, with sample data",
+      "sampleHint": "This is the statement the current template renders with made-up data; it shows the standard CSS, the classes and the table structure.",
+      "request": "What I want",
+      "requestHint": "(Describe here the style you want for the statement.)"
+    },
+    "layout": {
+      "html": "Full layout (HTML)",
+      "empty": "Empty: the statement uses the standard layout.",
+      "hint": "Fill it in to replace the whole statement body. Start from the standard layout and move, wrap or remove the placeholders of the parts.",
+      "active": "The full layout replaces the statement body: each part appears where its placeholder is, and parts without a placeholder are left out.",
+      "startFromStandard": "Start from the standard layout",
+      "confirmReplace": "Replace the current layout with the standard one?",
+      "remove": "Remove full layout",
+      "blocksIgnored": "With a full layout, the order comes from the layout placeholders; unticked blocks stay empty.",
+      "reference": "Layout reference",
+      "placeholders": "Statement parts (click to insert into the layout)",
+      "variables": "Variables (click to insert into the layout)",
+      "insert": "Insert into the layout",
+      "selectors_one": "{{count}} class or id of the statement",
+      "selectors_other": "{{count}} classes and ids of the statement",
+      "searchSelectors": "Search class or id",
+      "selector": "Selector",
+      "marks": "What it marks",
+      "useInCss": "Use in CSS",
+      "useInCssFor": "Use {{selector}} in CSS"
+    },
     "preview": "Live preview",
     "previewData": "Data",
     "sampleData": "Sample data",
@@ -615,6 +744,33 @@
     "exportJson": "Export all data (JSON)",
     "exportCsv": "Export all data (CSV)",
     "eject": "Close the app before removing the drive, so no write is left half done."
+  },
+  "database": {
+    "hint": "Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.",
+    "when": "Copied on",
+    "reason": "Reason",
+    "reasons": {
+      "start": "App start",
+      "before-update": "Before an update",
+      "manual": "Made by you",
+      "before-restore": "Before a restore",
+      "other": "Other"
+    },
+    "open": "Open to check",
+    "openFor": "Open the backup of {{backup}} to check it",
+    "openNow": "open now",
+    "restore": "Restore",
+    "restoreFor": "Restore the backup of {{backup}}",
+    "confirmRestore": "Replace the live data with the backup of {{backup}}? The current data is backed up first, in data/backups.",
+    "restored": "Backup of {{backup}} restored; the previous data is kept in data/backups.",
+    "opened": "Showing the backup of {{backup}}.",
+    "backToLive": "Back to the live data.",
+    "viewing": "You are checking the backup of {{backup}}.",
+    "viewingHint": "It is a copy: what you change here is dropped when you go back to the live data.",
+    "goLive": "Back to the live data"
+  },
+  "export": {
+    "done": "Export finished: {{file}}"
   },
   "update": {
     "title": "Updates",

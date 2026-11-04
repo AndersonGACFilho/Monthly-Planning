@@ -12,12 +12,14 @@ import { useMemberMap } from '../../shared/hooks/useLookups';
 import { useBillingPeriod } from '../../shared/state/billingPeriod';
 import { useSettingsMap } from '../settings/GeneralSettings';
 import { CategoryBreakdown } from './CategoryBreakdown';
+import { LeftoverChart } from './LeftoverChart';
 import { MemberTotalsTable } from './MemberTotalsTable';
 
 const TONES = { NONE: 'success', WARNING: 'warning', DANGER: 'danger' } as const;
 
 /**
- * Tab 1, overview of the billing period: indicators with alert (RF-10, RF-16), expense by category
+ * Tab 1, overview of the billing period: indicators with alert (RF-10, RF-16), what was left of the income in
+ * this and the last months, expense by category
  * (RF-12), totals by member (RF-13) and card (RF-14), what is committed ahead (RF-17), who owes whom
  * (RF-27) and the pending block (RF-79a); an optional member filter narrows everything (RF-15).
  *
@@ -80,6 +82,14 @@ export function OverviewPage() {
           value={summary?.percentSpent == null ? t('overview.noIncome') : formatPercent(summary.percentSpent)}
         />
       </div>
+
+      <LeftoverChart
+        period={period}
+        member={member}
+        income={summary?.income}
+        expense={summary?.expense}
+        balance={summary?.balance}
+      />
 
       {(summary?.pendingCount ?? 0) > 0 && (
         <div className="panel flex flex-wrap items-center justify-between gap-2 border-amber-500">

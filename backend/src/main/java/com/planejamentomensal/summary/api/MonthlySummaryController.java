@@ -60,6 +60,7 @@ public class MonthlySummaryController {
         model.add(linkTo(methodOn(MonthlySummaryController.class).summaryByMember(billingPeriod)).withRel(Relations.BY_MEMBER));
         model.add(linkTo(methodOn(MonthlySummaryController.class).summaryByCategory(billingPeriod, member))
                 .withRel(Relations.BY_CATEGORY).expand());
+        model.add(Link.of("/api/summaries/" + period + "/category-items{?category,member}", "category-items"));
         model.add(Link.of("/api/card-bills?billingPeriod=" + period, "card-bills"));
         model.add(Link.of("/api/summaries/" + period + "/workbook", Relations.EXPORT_XLSX));
         model.add(Link.of("/api/summaries/" + period + "/carry-overs", "carry-overs"));
@@ -90,6 +91,22 @@ public class MonthlySummaryController {
             @RequestParam(required = false) Long member) {
         return service.summary(BillingPeriod.parse(billingPeriod), member).categories().stream()
                 .map(MonthlySummaryModel.CategoryRow::of).toList();
+    }
+
+    /**
+     * Returns every record behind the total of one category: fixed and variable expenses and card entries
+     * (RF-12, RF-38).
+     *
+     * @param billingPeriod period, {@code yyyy-MM}
+     * @param category      category; omitted for "not classified"
+     * @param member        member filter, optional
+     * @return the items, by source and then by date
+     */
+    @GetMapping("/api/summaries/{billingPeriod}/category-items")
+    public List<MonthlySummaryModel.CategoryItemRow> categoryItems(@PathVariable String billingPeriod,
+            @RequestParam(required = false) Long category, @RequestParam(required = false) Long member) {
+        return service.categoryItems(BillingPeriod.parse(billingPeriod), category, member).stream()
+                .map(MonthlySummaryModel.CategoryItemRow::of).toList();
     }
 
     /**
