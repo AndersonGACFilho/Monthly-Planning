@@ -387,6 +387,7 @@
     "unconfirmed_one": "{{count}} não confirmado fora do total",
     "unconfirmed_other": "{{count}} não confirmados fora do total",
     "markPaid": "Marcar fatura como paga",
+    "confirmPayOpen": "A fatura ainda está aberta: compras importadas depois continuam entrando nela. Marcar como paga mesmo assim?",
     "import": "Importar fatura",
     "open": "Ver lançamentos de {{card}}",
     "fileTotal": "Total do arquivo {{amount}}"

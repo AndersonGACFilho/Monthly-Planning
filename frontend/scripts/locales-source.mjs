@@ -386,6 +386,10 @@ export default {
     unconfirmed_one: ['{{count}} não confirmado fora do total', '{{count}} unconfirmed left out of the total'],
     unconfirmed_other: ['{{count}} não confirmados fora do total', '{{count}} unconfirmed left out of the total'],
     markPaid: ['Marcar fatura como paga', 'Mark bill as paid'],
+    confirmPayOpen: [
+      'A fatura ainda está aberta: compras importadas depois continuam entrando nela. Marcar como paga mesmo assim?',
+      'The bill is still open: purchases imported later still go into it. Mark it as paid anyway?',
+    ],
     import: ['Importar fatura', 'Import bill'],
     open: ['Ver lançamentos de {{card}}', 'Show entries of {{card}}'],
     fileTotal: ['Total do arquivo {{amount}}', 'File total {{amount}}'],

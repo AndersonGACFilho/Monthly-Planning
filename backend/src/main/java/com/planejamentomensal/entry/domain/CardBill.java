@@ -109,13 +109,13 @@ public class CardBill {
     }
 
     /**
-     * Marks a closed bill as paid (RF-36).
+     * Marks the bill as paid, also while it is still open (RF-36, IMP-66); a later closed file keeps it paid.
      *
-     * @throws IllegalStateException if the bill is not closed
+     * @throws IllegalStateException if the bill is already paid
      */
     public void markPaid() {
-        if (status != BillStatus.CLOSED) {
-            throw new IllegalStateException("Only closed bills can be paid");
+        if (status == BillStatus.PAID) {
+            throw new IllegalStateException("The bill is already paid");
         }
         status = BillStatus.PAID;
     }

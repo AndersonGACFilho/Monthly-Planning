@@ -35,8 +35,8 @@ public enum Relations implements LinkRelation {
     UNDO("undo", "Undo a whole confirmed import batch (RF-72)."),
     /** Import a bill file into an open card bill. */
     IMPORT("import", "Import a bill file into this card bill (RF-60)."),
-    /** Mark a closed card bill as paid. */
-    MARK_PAID("mark-paid", "Mark a closed card bill or a fixed expense as paid (RF-32, RF-36)."),
+    /** Mark a card bill or a fixed expense as paid. */
+    MARK_PAID("mark-paid", "Mark a card bill, open or closed, or a fixed expense as paid (RF-32, RF-36, IMP-66)."),
 
     /** Mark an income received. */
     MARK_RECEIVED("mark-received", "Mark an expected income as received (RF-24)."),

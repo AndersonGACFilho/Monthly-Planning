@@ -387,6 +387,7 @@
     "unconfirmed_one": "{{count}} unconfirmed left out of the total",
     "unconfirmed_other": "{{count}} unconfirmed left out of the total",
     "markPaid": "Mark bill as paid",
+    "confirmPayOpen": "The bill is still open: purchases imported later still go into it. Mark it as paid anyway?",
     "import": "Import bill",
     "open": "Show entries of {{card}}",
     "fileTotal": "File total {{amount}}"
