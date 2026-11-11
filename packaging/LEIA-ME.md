@@ -50,6 +50,14 @@ O atalho vale só para o computador onde foi criado e aponta para esta pasta:
 Feche o app e espere a janela sumir. Assim nenhuma gravação fica pela metade. Se o SSD sair com o app aberto, o app
 avisa que não consegue gravar; reconecte e abra de novo.
 
+## Quando algo der errado
+
+Em **Ajustes → Diagnóstico**, ligue o **Modo debug** e repita o que deu erro. O aviso de erro passa a mostrar o código,
+o número da requisição e o endereço, com o botão **Copiar detalhes**, e fica na tela até ser fechado. O app grava os
+detalhes no log, `data/logs/backend.log`, que abre pelo botão **Abrir pasta do log**; o número da requisição do aviso
+aparece nas linhas do log daquele erro. Mande o que foi copiado e esse arquivo para quem for ajudar, e desligue o modo
+depois: ele continua ligado entre aberturas do app.
+
 ## Atualizar
 
 O app procura uma versão nova toda vez que abre (sem internet, ele só segue sem avisar). Quando há uma, aparece um
@@ -92,6 +100,10 @@ Windows and Linux.
   that computer only and does not open while the drive is unplugged; if the drive gets another letter or mount
   path, Settings offers *Fix shortcut*. Updates keep it working; *Remove from the system menu* deletes all of it.
 - **Removing the drive:** close the app first.
+- **When something goes wrong:** turn on *Settings → Diagnostics → Debug mode* and repeat what failed. Error notices
+  then show the code, the request number and the address with *Copy details*, and stay until closed. The details go
+  to `data/logs/backend.log` (*Open log folder*), where the request number of the notice marks the lines of that
+  error. Turn the mode off afterwards; it stays on between starts.
 - **Updating:** when a new version exists the app shows a notice at the top of the window. *Update* downloads it and
   checks it; *Restart now* (or simply the next start) installs it, backs up and migrates the database, and goes back
   to the previous version if the new one does not open. It is never forced, and `data/` is never changed. The

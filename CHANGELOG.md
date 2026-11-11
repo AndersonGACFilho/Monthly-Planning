@@ -6,6 +6,22 @@ milestones.
 
 ## Unreleased
 
+- **Deleting incomes works again**: deleting an income or fixed expense failed with an error as soon as one of its
+  months had been shown. One with a received or paid month is now ended from a chosen month: earlier months stay,
+  later months not yet received or paid are removed. Each month row offers delete or end, without opening the list
+  of rules.
+- **Future expenses in the statement**: the block formerly called *future installments* lists, for each of the next
+  three months, the member's installments and subscriptions and the fixed expenses paid outside the card, with the
+  month total. The XLSX and CSV formats carry the same lines. Statements sent before show as outdated.
+- **Subscription categories**: a category can be marked as subscription. A single card purchase classified in it
+  becomes a subscription `*` and is projected into the next months; the overview and the statement summary show the
+  subscriptions total, fixed expenses in those categories included. Existing categories start unmarked.
+- **Pay a bill before it closes**: an open card bill can be marked as paid, after a confirmation; importing the
+  closed bill later keeps it paid.
+- **Debug mode**: *Settings → Diagnostics* turns on detailed logs and error notices with code, request number and
+  address to copy; interface errors also reach the log. Every error now carries a request number found in
+  `data/logs/backend.log`, unexpected errors no longer show a misleading "could not reach the local service", and a
+  screen that fails to open offers to reload.
 - **In-app updates**: the app looks for a new version when it opens and shows a notice with the release notes. On
   request it downloads the release, checks its SHA-256, and installs it when the app restarts, going back to the
   previous version if the new one does not open. `data/` is kept as it is. This is the last update installed by

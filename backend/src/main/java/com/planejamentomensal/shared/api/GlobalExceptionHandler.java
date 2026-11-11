@@ -230,7 +230,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (problem.getStatus() >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             LOG.error("Request failed with {} {}", problem.getStatus(), problem.getTitle(), e);
         } else {
-            LOG.debug("Request refused with {} {}: {}", problem.getStatus(), problem.getTitle(), problem.getDetail(), e);
+            LOG.debug("Request refused with {} {}: {} ({})", problem.getStatus(), problem.getTitle(), problem.getDetail(), e.toString());
         }
         return problem;
     }
