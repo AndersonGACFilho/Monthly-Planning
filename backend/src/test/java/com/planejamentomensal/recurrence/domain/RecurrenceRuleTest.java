@@ -80,6 +80,26 @@ class RecurrenceRuleTest {
     }
 
     @Test
+    @DisplayName("IMP-63: ending a rule from a period keeps it up to the period before")
+    void endBefore() {
+        RecurrenceRule rule = new RecurrenceRule(RuleKind.INCOME, details(Recurrence.MONTHLY, 1, null));
+        rule.endBefore(DEC);
+        assertThat(rule.validUntil()).isEqualTo(NOV);
+        assertThat(rule.appliesTo(NOV)).isTrue();
+        assertThat(rule.appliesTo(DEC)).isFalse();
+    }
+
+    @Test
+    @DisplayName("IMP-63: ending never extends an earlier end, and cannot end before the start")
+    void endBeforeLimits() {
+        RecurrenceRule rule = new RecurrenceRule(RuleKind.INCOME, details(Recurrence.MONTHLY, 1, NOV));
+        rule.endBefore(BillingPeriod.of(2027, 3));
+        assertThat(rule.validUntil()).isEqualTo(NOV);
+        assertThatThrownBy(() -> rule.endBefore(OCT))
+                .isInstanceOf(InvalidInputException.class).hasFieldOrPropertyWithValue("code", "rule-end-before-start");
+    }
+
+    @Test
     @DisplayName("RF-22: an occurrence follows the default amount until it is changed for its period")
     void occurrenceAmount() {
         RecurrenceRule rule = new RecurrenceRule(RuleKind.INCOME, details(Recurrence.MONTHLY, 1, null));

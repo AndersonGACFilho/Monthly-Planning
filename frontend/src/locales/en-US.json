@@ -335,7 +335,10 @@
     "linkedEntry": "Linked to the card entry",
     "waitingChoice": "More than one possible entry: choose it in the review queue",
     "notLinked": "No card entry yet",
-    "inBill": "in the bill"
+    "inBill": "in the bill",
+    "actions": "Actions",
+    "endFrom": "End from {{period}}",
+    "confirmEnd": "{{action}}? Earlier months stay as they are and later months not yet received or paid are removed."
   },
   "income": {
     "title": "Incomes",

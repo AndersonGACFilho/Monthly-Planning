@@ -2428,6 +2428,40 @@
         "tags" : [ "recurrence-rule-controller" ]
       }
     },
+    "/api/recurrence-rules/{id}/end" : {
+      "post" : {
+        "description" : "Ends a rule with received or paid months from a period on; later months still expected are removed (IMP-63).",
+        "operationId" : "endRecurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EndRequest"
+              }
+            }
+          },
+          "description" : "first period without the rule",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Ends a rule with received or paid months from a period on; later months still expected are removed (IMP-63).",
+        "tags" : [ "recurrence-rule-controller" ]
+      }
+    },
     "/api/review-queue" : {
       "get" : {
         "description" : "Lists pending items, filtered by card, billing period and import batch (RF-79).",
@@ -5457,6 +5491,18 @@
             "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
           }
         }
+      },
+      "EndRequest" : {
+        "type" : "object",
+        "description" : "First billing period without an ended income or fixed expense (IMP-63).",
+        "properties" : {
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period, <code>yyyy-MM</code>",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          }
+        },
+        "required" : [ "billingPeriod" ]
       },
       "EntityModelMapStringString" : {
         "type" : "object",

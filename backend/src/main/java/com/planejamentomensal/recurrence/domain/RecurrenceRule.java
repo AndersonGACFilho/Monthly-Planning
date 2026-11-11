@@ -139,6 +139,22 @@ public class RecurrenceRule {
     }
 
     /**
+     * Ends the rule so its last period is the one before {@code period}; an earlier end is kept (IMP-63).
+     *
+     * @param period first period without the rule
+     * @throws InvalidInputException with code {@code rule-end-before-start} if nothing would be left
+     */
+    public void endBefore(BillingPeriod period) {
+        if (period.compareTo(validFrom) <= 0) {
+            throw new InvalidInputException("rule-end-before-start", validFrom, period);
+        }
+        BillingPeriod last = period.previous();
+        if (validUntil == null || last.compareTo(validUntil) < 0) {
+            this.validUntil = last;
+        }
+    }
+
+    /**
      * Activates or inactivates the rule; inactive rules stop generating occurrences.
      *
      * @param newActive new state

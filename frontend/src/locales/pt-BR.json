@@ -335,7 +335,10 @@
     "linkedEntry": "Vinculada ao lançamento do cartão",
     "waitingChoice": "Mais de um lançamento possível: escolha na fila de validação",
     "notLinked": "Ainda sem lançamento no cartão",
-    "inBill": "na fatura"
+    "inBill": "na fatura",
+    "actions": "Ações",
+    "endFrom": "Encerrar a partir de {{period}}",
+    "confirmEnd": "{{action}}? Os meses anteriores ficam como estão e os seguintes ainda não recebidos ou pagos são removidos."
   },
   "income": {
     "title": "Rendas",

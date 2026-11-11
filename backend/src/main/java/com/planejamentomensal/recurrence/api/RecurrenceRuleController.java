@@ -1,11 +1,13 @@
 package com.planejamentomensal.recurrence.api;
 
+import com.planejamentomensal.recurrence.application.EndRecurrenceUseCase;
 import com.planejamentomensal.recurrence.application.RecurrenceCommands;
 import com.planejamentomensal.recurrence.domain.RecurrenceRule;
 import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.api.ActivePatch;
 import com.planejamentomensal.shared.api.ETags;
 import com.planejamentomensal.shared.api.RootLinkContributor;
+import com.planejamentomensal.shared.domain.BillingPeriod;
 import jakarta.validation.Valid;
 import java.util.Comparator;
 import java.util.List;
@@ -36,16 +38,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecurrenceRuleController {
 
     private final RecurrenceCommands commands;
+    private final EndRecurrenceUseCase ending;
     private final RecurrenceRuleModelAssembler assembler;
 
     /**
      * Creates the controller.
      *
      * @param commands  rule commands
+     * @param ending    ends rules with history
      * @param assembler HAL assembler
      */
-    public RecurrenceRuleController(RecurrenceCommands commands, RecurrenceRuleModelAssembler assembler) {
+    public RecurrenceRuleController(RecurrenceCommands commands, EndRecurrenceUseCase ending,
+            RecurrenceRuleModelAssembler assembler) {
         this.commands = commands;
+        this.ending = ending;
         this.assembler = assembler;
     }
 
@@ -130,6 +136,19 @@ public class RecurrenceRuleController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeRecurrenceRule(@PathVariable long id) {
         commands.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Ends a rule with received or paid months from a period on; later months still expected are removed (IMP-63).
+     *
+     * @param id      rule id
+     * @param request first period without the rule
+     * @return 204
+     */
+    @PostMapping("/{id}/end")
+    public ResponseEntity<Void> endRecurrenceRule(@PathVariable long id, @Valid @RequestBody EndRequest request) {
+        ending.end(id, BillingPeriod.parse(request.billingPeriod()));
         return ResponseEntity.noContent().build();
     }
 

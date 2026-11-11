@@ -17,6 +17,8 @@ public enum Relations implements LinkRelation {
     DELETE("delete", "Delete the resource; only offered when nothing depends on it."),
     /** Make an inactive resource active again. */
     ACTIVATE("activate", "Make the resource active again (PATCH with active=true)."),
+    /** End an income or fixed expense with history from a period on. */
+    END("end", "End an income or fixed expense that has received or paid months from a billing period on (IMP-63)."),
     /** Inactivate a resource that cannot be deleted. */
     INACTIVATE("inactivate", "Inactivate the resource (PATCH with active=false); used when it has history (RF-01)."),
     /** Rename the description of a bill entry (create or replace its alias). */

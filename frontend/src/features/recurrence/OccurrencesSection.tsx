@@ -12,12 +12,13 @@ import { ifMatch } from '../../api/requestOptions';
 import { reportError } from '../../app/queryClient';
 import { MoneyInput } from '../../shared/components/MoneyInput';
 import { MoneyText } from '../../shared/components/MoneyText';
-import { ActiveToggle, DeleteButton } from '../../shared/components/ResourceActions';
-import { formatMoney, fromCents, toCents } from '../../shared/format';
+import { ActiveToggle } from '../../shared/components/ResourceActions';
+import { formatMoney, fromCents, shiftPeriod, toCents } from '../../shared/format';
 import { embedded, linkOf } from '../../shared/hal';
 import { useMemberMap } from '../../shared/hooks/useLookups';
 import { useSaved } from '../../shared/hooks/useSaved';
 import { RecurrenceRuleForm, type RuleKind } from './RecurrenceRuleForm';
+import { RuleRemoval } from './RuleRemoval';
 
 /** Props of {@link OccurrencesSection}. */
 export interface OccurrencesSectionProps {
@@ -42,6 +43,7 @@ export function OccurrencesSection({ kind, period }: OccurrencesSectionProps) {
   const members = useMemberMap();
   const occurrences = embedded<OccurrenceModel>(data, 'occurrences');
   const rules = embedded<RecurrenceRuleModel>(ruleData, 'recurrenceRules');
+  const ruleById = new Map(rules.map((rule) => [rule.id, rule]));
   const [form, setForm] = useState<{ rule?: RecurrenceRuleModel; oneOff?: boolean } | null>(null);
   const [showRules, setShowRules] = useState(false);
   const counted = occurrences.filter((o) => o.paymentMethod !== 'CARD');
@@ -92,12 +94,15 @@ export function OccurrencesSection({ kind, period }: OccurrencesSectionProps) {
                 {t('recurrence.amount')}
               </th>
               <th scope="col">{t('recurrence.status')}</th>
+              <th scope="col">
+                <span className="sr-only">{t('recurrence.actions')}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {occurrences.length === 0 && (
               <tr>
-                <td colSpan={5} className="text-(--color-text-muted)">
+                <td colSpan={6} className="text-(--color-text-muted)">
                   {t('recurrence.noneThisPeriod')}
                 </td>
               </tr>
@@ -118,6 +123,9 @@ export function OccurrencesSection({ kind, period }: OccurrencesSectionProps) {
                 <td>
                   <StatusCell occurrence={o} income={income} />
                 </td>
+                <td>
+                  <RuleRemovalCell rule={ruleById.get(o.ruleId)} occurrence={o} period={period} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -129,6 +137,7 @@ export function OccurrencesSection({ kind, period }: OccurrencesSectionProps) {
               <td className="text-right font-semibold">
                 <MoneyText value={total} />
               </td>
+              <td />
               <td />
             </tr>
           </tfoot>
@@ -153,7 +162,7 @@ export function OccurrencesSection({ kind, period }: OccurrencesSectionProps) {
                     <Pencil size={16} aria-hidden />
                   </button>
                   <ActiveToggle resource={rule} />
-                  <DeleteButton resource={rule} />
+                  <RuleRemoval rule={rule} from={period} />
                 </span>
               </li>
             ))}
@@ -284,4 +293,15 @@ function StatusCell({ occurrence, income }: { occurrence: OccurrenceModel; incom
       <Check size={14} aria-hidden /> {income ? t('income.markReceived') : t('fixedExpense.markPaid')}
     </button>
   );
+}
+
+/**
+ * Removes the rule behind a month (IMP-63): a received or paid month is kept, so the rule ends from the next one.
+ *
+ * @param props - the rule, the occurrence and the billing period shown
+ * @returns the cell content
+ */
+function RuleRemovalCell({ rule, occurrence, period }: { rule?: RecurrenceRuleModel; occurrence: OccurrenceModel; period: string }) {
+  if (!rule) return null;
+  return <RuleRemoval rule={rule} from={occurrence.status === 'DONE' ? shiftPeriod(period, 1) : period} />;
 }

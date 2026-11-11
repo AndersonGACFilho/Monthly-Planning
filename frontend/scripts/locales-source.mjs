@@ -332,6 +332,12 @@ export default {
     waitingChoice: ['Mais de um lançamento possível: escolha na fila de validação', 'More than one possible entry: choose it in the review queue'],
     notLinked: ['Ainda sem lançamento no cartão', 'No card entry yet'],
     inBill: ['na fatura', 'in the bill'],
+    actions: ['Ações', 'Actions'],
+    endFrom: ['Encerrar a partir de {{period}}', 'End from {{period}}'],
+    confirmEnd: [
+      '{{action}}? Os meses anteriores ficam como estão e os seguintes ainda não recebidos ou pagos são removidos.',
+      '{{action}}? Earlier months stay as they are and later months not yet received or paid are removed.',
+    ],
   },
   income: {
     title: ['Rendas', 'Incomes'],
