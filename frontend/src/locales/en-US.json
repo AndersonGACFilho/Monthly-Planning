@@ -39,7 +39,10 @@
   },
   "error": {
     "unexpected": "Something went wrong.",
-    "network": "Could not reach the local service."
+    "network": "Could not reach the local service.",
+    "copyDetails": "Copy details",
+    "screenFailed": "This screen failed to open. Reload to go on.",
+    "reload": "Reload"
   },
   "period": {
     "label": "Billing period",
@@ -278,6 +281,13 @@
     "pendingLinks": "Card-paid fixed expenses with more than one possible entry",
     "chooseLink": "Choose the entry",
     "linkCandidate": "{{date}} · {{description}} · {{amount}}"
+  },
+  "diagnostics": {
+    "title": "Diagnostics",
+    "debugMode": "Debug mode",
+    "debugModeHint": "To trace errors: the app writes details to the log and every error notice shows its code, request number and address, with a button to copy them. Leave it off in normal use.",
+    "logFolder": "Log folder",
+    "openLogFolder": "Open log folder"
   },
   "settings": {
     "general": "General",

@@ -42,6 +42,9 @@ export default {
   error: {
     unexpected: ['Algo deu errado.', 'Something went wrong.'],
     network: ['Não foi possível falar com o serviço local.', 'Could not reach the local service.'],
+    copyDetails: ['Copiar detalhes', 'Copy details'],
+    screenFailed: ['Esta tela falhou ao abrir. Recarregue para continuar.', 'This screen failed to open. Reload to go on.'],
+    reload: ['Recarregar', 'Reload'],
   },
   period: {
     label: ['Competência', 'Billing period'],
@@ -277,6 +280,16 @@ export default {
     pendingLinks: ['Despesas fixas no cartão com mais de um lançamento possível', 'Card-paid fixed expenses with more than one possible entry'],
     chooseLink: ['Escolha o lançamento', 'Choose the entry'],
     linkCandidate: ['{{date}} · {{description}} · {{amount}}', '{{date}} · {{description}} · {{amount}}'],
+  },
+  diagnostics: {
+    title: ['Diagnóstico', 'Diagnostics'],
+    debugMode: ['Modo debug', 'Debug mode'],
+    debugModeHint: [
+      'Para rastrear erros: o app grava detalhes no log e cada aviso de erro mostra código, número da requisição e endereço, com botão para copiar. Deixe desligado no uso normal.',
+      'To trace errors: the app writes details to the log and every error notice shows its code, request number and address, with a button to copy them. Leave it off in normal use.',
+    ],
+    logFolder: ['Pasta do log', 'Log folder'],
+    openLogFolder: ['Abrir pasta do log', 'Open log folder'],
   },
   settings: {
     general: ['Geral', 'General'],

@@ -64,6 +64,9 @@ management:
       access: unrestricted
 
 logging:
+  pattern:
+    # Request id of each line, to find in the log the error a notice showed (RNF-11)
+    correlation: "[%X{requestId:-}] "
   level:
     # The PDF renderer logs every font load at INFO
     com.openhtmltopdf: WARN

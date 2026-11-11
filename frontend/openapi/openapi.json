@@ -33,6 +33,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Debug mode and interface errors (RNF-11).",
+    "name" : "diagnostics-controller"
+  }, {
     "description" : "Database the app works on: the live data or a copy of a backup opened to check it, and restoring a backup as the\n live data (IMP-58, POR-12).",
     "name" : "database-controller"
   }, {
@@ -1326,6 +1329,79 @@
         },
         "summary" : "Makes a backup the live data, after backing the live data up.",
         "tags" : [ "database-controller" ]
+      }
+    },
+    "/api/diagnostics" : {
+      "get" : {
+        "description" : "Returns the debug mode and the log folder.",
+        "operationId" : "diagnostics",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosticsModel"
+                }
+              }
+            },
+            "description" : "diagnostics"
+          }
+        },
+        "summary" : "Returns the debug mode and the log folder.",
+        "tags" : [ "diagnostics-controller" ]
+      },
+      "put" : {
+        "description" : "Turns the debug mode on or off; the log levels change at once.",
+        "operationId" : "changeDiagnostics",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiagnosticsRequest"
+              }
+            }
+          },
+          "description" : "new mode",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosticsModel"
+                }
+              }
+            },
+            "description" : "diagnostics after the change"
+          }
+        },
+        "summary" : "Turns the debug mode on or off; the log levels change at once.",
+        "tags" : [ "diagnostics-controller" ]
+      }
+    },
+    "/api/diagnostics/client-errors" : {
+      "post" : {
+        "description" : "Writes an error of the interface to the backend log; line breaks of the single-line fields are dropped so a\n message cannot fake other log lines.",
+        "operationId" : "reportClientError",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ClientErrorRequest"
+              }
+            }
+          },
+          "description" : "the error",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Writes an error of the interface to the backend log; line breaks of the single-line fields are dropped so a\n message cannot fake other log lines.",
+        "tags" : [ "diagnostics-controller" ]
       }
     },
     "/api/history" : {
@@ -5121,6 +5197,37 @@
           }
         }
       },
+      "ClientErrorRequest" : {
+        "type" : "object",
+        "description" : "An error of the interface to write to the backend log (RNF-11).",
+        "properties" : {
+          "detail" : {
+            "type" : "string",
+            "description" : "stack trace or extra detail, optional",
+            "maxLength" : 20000,
+            "minLength" : 0
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "error message",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "requestId" : {
+            "type" : "string",
+            "description" : "request id of the failed call, optional",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "screen where it happened, optional",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "message" ]
+      },
       "CollectionModelAliasModel" : {
         "type" : "object",
         "properties" : {
@@ -5497,6 +5604,33 @@
             "type" : "string",
             "description" : "Result.",
             "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
+          }
+        }
+      },
+      "DiagnosticsModel" : {
+        "type" : "object",
+        "description" : "Debug mode and where the log is written (RNF-11).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "debugMode" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> while the debug mode is on."
+          },
+          "logFolder" : {
+            "type" : "string",
+            "description" : "Folder of the backend log, to open from the settings."
+          }
+        }
+      },
+      "DiagnosticsRequest" : {
+        "type" : "object",
+        "description" : "New debug mode (RNF-11).",
+        "properties" : {
+          "debugMode" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> to turn it on"
           }
         }
       },

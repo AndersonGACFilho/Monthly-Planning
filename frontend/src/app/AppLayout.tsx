@@ -10,6 +10,7 @@ import { Toaster } from '../shared/components/Toaster';
 import { EXTRA_SCREENS, MAIN_TABS, type NavItem } from './navigation';
 import { DatabaseBanner } from './DatabaseBanner';
 import { StartupPeriodDialog } from './StartupPeriodDialog';
+import { useDebugModeSync } from './useDebugModeSync';
 import { useStartup } from './useStartup';
 
 /**
@@ -25,6 +26,7 @@ export function AppLayout() {
   useShortcuts();
   const { t } = useTranslation();
   useStartup();
+  useDebugModeSync();
   return (
     // The frame has the window height and never scrolls; only the content (and, in very short windows, the menu)
     // scrolls, so the menu always reaches the bottom of the window

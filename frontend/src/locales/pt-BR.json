@@ -39,7 +39,10 @@
   },
   "error": {
     "unexpected": "Algo deu errado.",
-    "network": "Não foi possível falar com o serviço local."
+    "network": "Não foi possível falar com o serviço local.",
+    "copyDetails": "Copiar detalhes",
+    "screenFailed": "Esta tela falhou ao abrir. Recarregue para continuar.",
+    "reload": "Recarregar"
   },
   "period": {
     "label": "Competência",
@@ -278,6 +281,13 @@
     "pendingLinks": "Despesas fixas no cartão com mais de um lançamento possível",
     "chooseLink": "Escolha o lançamento",
     "linkCandidate": "{{date}} · {{description}} · {{amount}}"
+  },
+  "diagnostics": {
+    "title": "Diagnóstico",
+    "debugMode": "Modo debug",
+    "debugModeHint": "Para rastrear erros: o app grava detalhes no log e cada aviso de erro mostra código, número da requisição e endereço, com botão para copiar. Deixe desligado no uso normal.",
+    "logFolder": "Pasta do log",
+    "openLogFolder": "Abrir pasta do log"
   },
   "settings": {
     "general": "Geral",

@@ -8,23 +8,58 @@ export interface Problem {
   status: number;
   detail?: string;
   code?: string;
+  /** Id of the request in the backend log (RNF-11). */
+  requestId?: string;
   errors?: { field: string; message: string }[];
 }
+
+/** The call a problem answered, to trace it in the backend log (RNF-11). */
+export interface FailedRequest {
+  method: string;
+  url: string;
+  requestId: string;
+}
+
+/** Header that carries the id of a request in both directions (RNF-11). */
+export const REQUEST_ID_HEADER = 'X-Request-Id';
 
 /** Error thrown when the API answers with a problem; carries the localized texts from the backend. */
 export class ProblemError extends Error {
   /**
    * @param problem - problem body sent by the API
+   * @param request - the call that failed
    */
-  constructor(readonly problem: Problem) {
+  constructor(
+    readonly problem: Problem,
+    readonly request: FailedRequest,
+  ) {
     super(problem.detail ?? problem.title ?? `HTTP ${problem.status}`);
     this.name = 'ProblemError';
   }
 }
 
+function newRequestId(): string {
+  return `ui-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function parseJson(text: string): unknown {
+  try {
+    return text ? JSON.parse(text) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function problemOf(response: Response, text: string, method: string, url: string, sentId: string): ProblemError {
+  const body = parseJson(text) as Problem | undefined;
+  const problem = body?.status ? body : { status: response.status };
+  const requestId = problem.requestId ?? response.headers.get(REQUEST_ID_HEADER) ?? sentId;
+  return new ProblemError(problem, { method, url, requestId });
+}
+
 /**
- * Calls the local API: adds the session token, the interface language and the HAL media type, and turns
- * error responses into {@link ProblemError}. Used by every generated hook (Orval mutator, API-12).
+ * Calls the local API: adds the session token, the interface language, the HAL media type and a request id
+ * (RNF-11), and turns error responses into {@link ProblemError}. Used by every generated hook (Orval mutator, API-12).
  *
  * @param url - path such as `/api/members`, or an absolute link taken from `_links`
  * @param init - fetch options
@@ -37,14 +72,15 @@ export async function apiFetch<T>(url: string, init: RequestInit = {}): Promise<
   headers.set('X-Session-Token', token);
   headers.set('Accept-Language', i18n.language);
   if (!headers.has('Accept')) headers.set('Accept', 'application/hal+json, application/problem+json');
+  const requestId = newRequestId();
+  headers.set(REQUEST_ID_HEADER, requestId);
   const target = /^https?:\/\//.test(url) ? url : `${baseUrl}${url}`;
   const response = await fetch(target, { ...init, headers });
   const text = await response.text();
-  const body: unknown = text ? JSON.parse(text) : undefined;
   if (!response.ok) {
-    throw new ProblemError((body as Problem | undefined) ?? { status: response.status });
+    throw problemOf(response, text, init.method ?? 'GET', url, requestId);
   }
-  return body as T;
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 /**
@@ -68,10 +104,12 @@ export async function apiFetchBlob(url: string): Promise<Blob> {
 export async function apiFetchFile(url: string): Promise<{ blob: Blob; fileName: string | null }> {
   const { baseUrl, token } = await getBackendConfig();
   const target = /^https?:\/\//.test(url) ? url : `${baseUrl}${url}`;
-  const response = await fetch(target, { headers: { 'X-Session-Token': token, 'Accept-Language': i18n.language } });
+  const requestId = newRequestId();
+  const response = await fetch(target, {
+    headers: { 'X-Session-Token': token, 'Accept-Language': i18n.language, [REQUEST_ID_HEADER]: requestId },
+  });
   if (!response.ok) {
-    const text = await response.text();
-    throw new ProblemError(text ? (JSON.parse(text) as Problem) : { status: response.status });
+    throw problemOf(response, await response.text(), 'GET', url, requestId);
   }
   const disposition = response.headers.get('Content-Disposition') ?? '';
   const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];

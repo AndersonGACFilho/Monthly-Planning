@@ -33,7 +33,20 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * Registers the session token filter before any other filter, for every path.
+     * Registers the request id filter first, so even a rejected request carries its id (RNF-11).
+     *
+     * @return the filter registration
+     */
+    @Bean
+    public FilterRegistrationBean<RequestIdFilter> requestIdFilter() {
+        FilterRegistrationBean<RequestIdFilter> registration = new FilterRegistrationBean<>(new RequestIdFilter());
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 5);
+        registration.addUrlPatterns("/*");
+        return registration;
+    }
+
+    /**
+     * Registers the session token filter right after the request id, for every path.
      *
      * @param token session token passed by the shell ({@code app.session-token})
      * @return the filter registration
@@ -52,6 +65,7 @@ public class WebConfiguration implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .exposedHeaders(HttpHeaders.ETAG, HttpHeaders.LOCATION, HttpHeaders.CONTENT_DISPOSITION);
+                .exposedHeaders(HttpHeaders.ETAG, HttpHeaders.LOCATION, HttpHeaders.CONTENT_DISPOSITION,
+                        RequestIdFilter.HEADER);
     }
 }

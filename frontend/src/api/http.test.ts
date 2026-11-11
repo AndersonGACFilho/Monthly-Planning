@@ -37,6 +37,25 @@ describe('apiFetch', () => {
     expect((error as ProblemError).message).toBe('Não existe member com id 7.');
   });
 
+  it('RNF-11: each call sends a request id, and a problem keeps the request it answered', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('{"status":500,"title":"Erro inesperado","code":"internal-error","requestId":"srv-1"}', { status: 500 }),
+    );
+    const error = (await apiFetch('/api/summaries/2026-11', { method: 'POST' }).catch((e: unknown) => e)) as ProblemError;
+    expect(new Headers(fetchMock.mock.calls[0]![1]?.headers).get('X-Request-Id')).toMatch(/^ui-[a-z0-9]+$/);
+    expect(error.request).toEqual({ method: 'POST', url: '/api/summaries/2026-11', requestId: 'srv-1' });
+  });
+
+  it('RNF-11: an error answer that is not JSON still becomes a ProblemError', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('<html>Bad gateway</html>', { status: 502, headers: { 'X-Request-Id': 'srv-2' } }),
+    );
+    const error = (await apiFetch('/api').catch((e: unknown) => e)) as ProblemError;
+    expect(error).toBeInstanceOf(ProblemError);
+    expect(error.problem.status).toBe(502);
+    expect(error.request.requestId).toBe('srv-2');
+  });
+
   it('API-08: absolute links from _links are used as they are', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(''));
     await expect(apiFetch('http://127.0.0.1:9999/api/profile')).resolves.toBeUndefined();

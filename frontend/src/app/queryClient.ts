@@ -1,16 +1,24 @@
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import { reportClientError } from '../api/generated/endpoints/diagnostics-controller/diagnostics-controller';
 import { ProblemError } from '../api/http';
-import i18n from '../i18n/i18n';
+import { useDebugMode } from '../shared/state/debugMode';
 import { useNotifications } from '../shared/state/notifications';
+import { describeError, describeThrown } from './errorNotice';
 
 function notify(error: unknown): void {
-  const push = useNotifications.getState().push;
-  if (error instanceof ProblemError) {
-    const fieldErrors = error.problem.errors?.map((e) => `${e.field}: ${e.message}`).join('; ');
-    push({ kind: 'error', title: error.problem.title ?? i18n.t('error.unexpected'), detail: fieldErrors || error.problem.detail });
-  } else {
-    push({ kind: 'error', title: i18n.t('error.network') });
+  console.error(error);
+  const debug = useDebugMode.getState().enabled;
+  useNotifications.getState().push(describeError(error, debug));
+  if (debug && !(error instanceof ProblemError)) {
+    sendToLog(error);
   }
+}
+
+/** Writes an interface error to the backend log; the backend logs its own problems already (RNF-11). */
+function sendToLog(error: unknown): void {
+  const [message, ...stack] = describeThrown(error).split('\n');
+  reportClientError({ message: message ?? String(error), detail: stack.join('\n') || undefined, url: window.location.pathname })
+    .catch(() => undefined);
 }
 
 /**
@@ -28,7 +36,8 @@ export function createQueryClient(): QueryClient {
 }
 
 /**
- * Shows an error from a direct API call (outside a mutation hook) through the same interceptor.
+ * Shows an error from a direct API call (outside a mutation hook), a render error or an unhandled one through the
+ * same interceptor; in debug mode interface errors also reach the backend log (RNF-11).
  *
  * @param error - thrown error
  */
