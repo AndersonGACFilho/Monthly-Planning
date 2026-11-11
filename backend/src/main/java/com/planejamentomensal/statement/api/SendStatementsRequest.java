@@ -22,7 +22,7 @@ import java.util.Set;
  * @param channel        channel
  * @param showCategories show categories
  * @param useAlias       use aliases
- * @param includeFuture  include future installments
+ * @param includeFuture  include the expenses of the next periods
  * @param language       language for all, optional (I18N-09)
  * @param templateId     template, optional
  * @param note           free note, optional

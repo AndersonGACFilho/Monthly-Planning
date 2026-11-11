@@ -14,7 +14,7 @@ public enum StatementBlock {
     FIXED_EXPENSES,
     /** Variable expenses. */
     VARIABLE_EXPENSES,
-    /** Installments committed in the next months. */
+    /** Future expenses: installments, subscriptions and fixed expenses of the next months (IMP-64). */
     COMMITTED,
     /** PIX data for the payment. */
     PAYMENT,

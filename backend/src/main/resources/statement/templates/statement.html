@@ -20,6 +20,7 @@
     .num { text-align: right; white-space: nowrap; }
     .pending td { background: #fff7d6; }
     .subtotal td { font-weight: bold; border-top: 1px solid #dde1e6; }
+    .future-month td { font-weight: bold; background: #f6f8fa; }
     .card-title { font-weight: bold; margin-top: 8px; }
     .summary { width: 100%; border-collapse: collapse; }
     .summary td { padding: 4px 6px; }
@@ -154,13 +155,18 @@
         </table>
       </div>
 
-      <div class="block" id="block-committed" th:case="'COMMITTED'" th:if="${!s.committed.isEmpty()}">
-        <h2 th:text="${labels.committed}">Committed</h2>
+      <div class="block" id="block-committed" th:case="'COMMITTED'" th:if="${!s.future.isEmpty()}">
+        <h2 th:text="${labels.committed}">Future expenses</h2>
         <table class="lines">
-          <tbody>
-            <tr th:each="c : ${s.committed}">
-              <td th:text="${f.period(c.billingPeriod)}">period</td>
-              <td class="num" th:text="${f.money(c.amount)}">0</td>
+          <tbody th:each="p : ${s.future}">
+            <tr class="future-month">
+              <td th:colspan="${columns['INSTALLMENT'] ? 2 : 1}" th:text="${f.period(p.billingPeriod)}">period</td>
+              <td class="num" th:text="${f.money(p.total)}">0</td>
+            </tr>
+            <tr th:each="line : ${p.lines}">
+              <td th:text="${line.description}">description</td>
+              <td th:if="${columns['INSTALLMENT']}" th:text="${line.installment}"></td>
+              <td class="num" th:text="${f.money(line.amount)}">0</td>
             </tr>
           </tbody>
         </table>

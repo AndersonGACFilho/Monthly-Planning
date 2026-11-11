@@ -18,7 +18,7 @@ import java.util.List;
  * @param cards           card entries grouped by card
  * @param fixedExpenses   fixed expenses of the member not paid by card
  * @param variableExpenses variable expenses of the member
- * @param committed       installments committed in the next periods (empty when not included)
+ * @param future          expenses of the next periods: installments and fixed expenses (empty when not included)
  * @param income          incomes of the member
  * @param cardTotal       sum of the card groups
  * @param fixedTotal      sum of the fixed expenses
@@ -34,7 +34,7 @@ import java.util.List;
  */
 public record MemberStatement(long memberId, String memberCode, String memberName, boolean main, BillingPeriod billingPeriod,
         LocalDate issuedOn, List<CardGroup> cards, List<ExpenseLine> fixedExpenses, List<ExpenseLine> variableExpenses,
-        List<CommittedPeriod> committed, Money income, Money cardTotal, Money fixedTotal, Money variableTotal,
+        List<FuturePeriod> future, Money income, Money cardTotal, Money fixedTotal, Money variableTotal,
         Carry previousBalance, Carry carriedOut, Money total, LocalDate dueDate, String pixKey, List<String> pendingItems, StatementOptions options) {
 
     /**
@@ -94,11 +94,23 @@ public record MemberStatement(long memberId, String memberCode, String memberNam
     }
 
     /**
-     * Installments of the member committed in a future period.
+     * What the member will owe in a future period, line by line (IMP-64).
      *
      * @param billingPeriod period
-     * @param amount        member share of the projected installments
+     * @param lines         installments, subscriptions and fixed expenses of the period
+     * @param total         sum of the lines
      */
-    public record CommittedPeriod(BillingPeriod billingPeriod, Money amount) {
+    public record FuturePeriod(BillingPeriod billingPeriod, List<FutureLine> lines, Money total) {
+    }
+
+    /**
+     * One expense of a future period.
+     *
+     * @param description description shown
+     * @param installment installment notation of a card line ({@code 02/10}, {@code *}), or {@code null} for a fixed
+     *                    expense
+     * @param amount      member share
+     */
+    public record FutureLine(String description, String installment, Money amount) {
     }
 }

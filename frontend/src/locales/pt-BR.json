@@ -540,7 +540,7 @@
     },
     "showCategories": "Mostrar categorias",
     "useAlias": "Usar nomes renomeados (alias)",
-    "includeFuture": "Incluir parcelas futuras",
+    "includeFuture": "Incluir gastos futuros",
     "language": "Idioma",
     "memberLanguage": "Idioma de cada cota",
     "template": "Template",
@@ -612,7 +612,7 @@
       "CARDS": "Lançamentos no cartão",
       "FIXED_EXPENSES": "Despesas fixas",
       "VARIABLE_EXPENSES": "Despesas dinâmicas",
-      "COMMITTED": "Parcelas futuras",
+      "COMMITTED": "Gastos futuros",
       "PAYMENT": "Pagamento (PIX)",
       "NOTE": "Observação"
     },

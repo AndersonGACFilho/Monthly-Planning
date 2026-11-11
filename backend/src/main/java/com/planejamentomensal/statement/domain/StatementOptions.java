@@ -5,7 +5,7 @@ package com.planejamentomensal.statement.domain;
  *
  * @param showCategories show the category of each line
  * @param useAlias       show the displayed description (alias) instead of the original one
- * @param includeFuture  include the installments committed in the next periods
+ * @param includeFuture  include the expenses of the next periods
  * @since 1.0
  */
 public record StatementOptions(boolean showCategories, boolean useAlias, boolean includeFuture) {

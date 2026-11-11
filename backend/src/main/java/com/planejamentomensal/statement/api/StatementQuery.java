@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @param showCategories show the category of each line
  * @param useAlias       show the displayed description instead of the original one
- * @param includeFuture  include the installments committed in the next periods
+ * @param includeFuture  include the expenses of the next periods
  * @param language       language of this export, or empty for the member's
  * @param template       template, or empty for the member's or the default
  * @param note           free note, or empty for the template's message

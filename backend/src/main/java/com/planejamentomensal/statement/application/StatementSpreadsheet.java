@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 /**
  * The statement as a spreadsheet or CSV, for members who check it line by line (RF-84). Both list the same rows:
  * section, card, date, description, installment, category, share and amount; what was carried into the next period
- * comes last, apart from the lines (RF-28).
+ * comes after the lines (RF-28), and the future expenses come last, with their period in the card column (IMP-64).
  *
  * @since 1.0
  */
@@ -64,19 +64,7 @@ public class StatementSpreadsheet {
                 head.createCell(i).setCellValue(headers.get(i));
             }
             for (Line line : lines(statement, format)) {
-                Row row = sheet.createRow(r++);
-                row.createCell(0).setCellValue(line.section());
-                row.createCell(1).setCellValue(line.card());
-                if (line.date() != null) {
-                    row.createCell(2).setCellValue(line.date());
-                    row.getCell(2).setCellStyle(date);
-                }
-                row.createCell(3).setCellValue(line.description());
-                row.createCell(4).setCellValue(line.installment());
-                row.createCell(5).setCellValue(line.category());
-                row.createCell(6).setCellValue(line.share());
-                row.createCell(7).setCellValue(line.amount().amount().doubleValue());
-                row.getCell(7).setCellStyle(money);
+                writeLine(sheet.createRow(r++), line, date, money);
             }
             Row total = sheet.createRow(++r);
             total.createCell(6).setCellValue(label("total", format.locale()));
@@ -87,6 +75,10 @@ public class StatementSpreadsheet {
                 carried.createCell(6).setCellValue(carriedOutLabel(statement, format));
                 carried.createCell(7).setCellValue(statement.carriedOut().amount().amount().doubleValue());
                 carried.getCell(7).setCellStyle(money);
+            }
+            r++;
+            for (Line line : futureLines(statement, format)) {
+                writeLine(sheet.createRow(++r), line, date, money);
             }
             for (int i = 0; i < headers.size(); i++) {
                 sheet.autoSizeColumn(i);
@@ -112,16 +104,16 @@ public class StatementSpreadsheet {
         csv.append(String.join(String.valueOf(separator), headers(format.locale()).stream().map(StatementSpreadsheet::quote).toList()))
                 .append("\r\n");
         for (Line line : lines(statement, format)) {
-            List<String> cells = List.of(line.section(), line.card(), line.date() == null ? "" : format.date(line.date()),
-                    line.description(), line.installment(), line.category(), line.share(), number(line.amount(), format));
-            csv.append(String.join(String.valueOf(separator), cells.stream().map(StatementSpreadsheet::quote).toList()))
-                    .append("\r\n");
+            appendCsv(csv, separator, line, format);
         }
         if (statement.carriedOut() != null) {
             List<String> cells = List.of(carriedOutLabel(statement, format), "", "", "", "", "", "",
                     number(statement.carriedOut().amount(), format));
             csv.append(String.join(String.valueOf(separator), cells.stream().map(StatementSpreadsheet::quote).toList()))
                     .append("\r\n");
+        }
+        for (Line line : futureLines(statement, format)) {
+            appendCsv(csv, separator, line, format);
         }
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -145,6 +137,34 @@ public class StatementSpreadsheet {
                     "", "", "", s.previousBalance().amount()));
         }
         return lines;
+    }
+
+    private List<Line> futureLines(MemberStatement s, StatementFormat format) {
+        String section = label("committed", format.locale());
+        return s.future().stream().flatMap(p -> p.lines().stream().map(l -> new Line(section, format.period(p.billingPeriod()),
+                null, l.description(), nullToEmpty(l.installment()), "", "", l.amount()))).toList();
+    }
+
+    private static void writeLine(Row row, Line line, CellStyle date, CellStyle money) {
+        row.createCell(0).setCellValue(line.section());
+        row.createCell(1).setCellValue(line.card());
+        if (line.date() != null) {
+            row.createCell(2).setCellValue(line.date());
+            row.getCell(2).setCellStyle(date);
+        }
+        row.createCell(3).setCellValue(line.description());
+        row.createCell(4).setCellValue(line.installment());
+        row.createCell(5).setCellValue(line.category());
+        row.createCell(6).setCellValue(line.share());
+        row.createCell(7).setCellValue(line.amount().amount().doubleValue());
+        row.getCell(7).setCellStyle(money);
+    }
+
+    private static void appendCsv(StringBuilder csv, char separator, Line line, StatementFormat format) {
+        List<String> cells = List.of(line.section(), line.card(), line.date() == null ? "" : format.date(line.date()),
+                line.description(), line.installment(), line.category(), line.share(), number(line.amount(), format));
+        csv.append(String.join(String.valueOf(separator), cells.stream().map(StatementSpreadsheet::quote).toList()))
+                .append("\r\n");
     }
 
     private String carriedOutLabel(MemberStatement s, StatementFormat format) {

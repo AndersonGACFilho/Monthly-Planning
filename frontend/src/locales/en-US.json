@@ -540,7 +540,7 @@
     },
     "showCategories": "Show categories",
     "useAlias": "Use renamed descriptions (alias)",
-    "includeFuture": "Include future installments",
+    "includeFuture": "Include future expenses",
     "language": "Language",
     "memberLanguage": "Each member’s language",
     "template": "Template",
@@ -612,7 +612,7 @@
       "CARDS": "Card entries",
       "FIXED_EXPENSES": "Fixed expenses",
       "VARIABLE_EXPENSES": "Variable expenses",
-      "COMMITTED": "Future installments",
+      "COMMITTED": "Future expenses",
       "PAYMENT": "Payment (PIX)",
       "NOTE": "Note"
     },

@@ -2893,7 +2893,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3027,7 +3027,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3162,7 +3162,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3296,7 +3296,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3431,7 +3431,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3566,7 +3566,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -7111,7 +7111,7 @@
           },
           "includeFuture" : {
             "type" : "boolean",
-            "description" : "include future installments"
+            "description" : "include the expenses of the next periods"
           },
           "language" : {
             "type" : "string",

@@ -2,6 +2,7 @@ package com.planejamentomensal.recurrence.application;
 
 import com.planejamentomensal.recurrence.domain.Occurrence;
 import com.planejamentomensal.recurrence.domain.OccurrenceStatus;
+import com.planejamentomensal.recurrence.domain.RecurrenceRule;
 import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.Money;
@@ -38,5 +39,17 @@ public record OccurrenceView(long id, long ruleId, boolean income, String descri
                 o.rule().description(), o.rule().memberId(), o.rule().categoryId(), o.rule().paymentMethod(),
                 o.billingPeriod(), o.amount(), o.status() == OccurrenceStatus.DONE,
                 o.linkedEntryId(), o.rule().day());
+    }
+
+    /**
+     * Builds the view of a period the rule has not generated yet, with its default amount (IMP-64).
+     *
+     * @param rule   rule
+     * @param period period
+     * @return its view, with id 0
+     */
+    static OccurrenceView projected(RecurrenceRule rule, BillingPeriod period) {
+        return new OccurrenceView(0, rule.id(), rule.kind() == RuleKind.INCOME, rule.description(), rule.memberId(),
+                rule.categoryId(), rule.paymentMethod(), period, rule.defaultAmount(), false, null, rule.day());
     }
 }
