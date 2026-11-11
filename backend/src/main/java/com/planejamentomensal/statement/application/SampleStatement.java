@@ -36,8 +36,8 @@ public final class SampleStatement {
                 new CardLine(day.plusDays(9), "Farmácia", "02/03", Money.of("45.90"), null, "Saúde", false),
                 new CardLine(day.plusDays(15), "Streaming", "*", Money.of("21.90"), null, "Lazer", true));
         CardGroup card = new CardGroup("Itaú", List.of("1234"), period.atDay(10), lines, Money.of("130.20"));
-        List<ExpenseLine> fixed = List.of(new ExpenseLine(null, "Plano de saúde", Money.of("300.00"), "Saúde"));
-        List<ExpenseLine> variable = List.of(new ExpenseLine(period.atDay(4), "Feira", Money.of("35.00"), "Mercado"));
+        List<ExpenseLine> fixed = List.of(new ExpenseLine(null, "Plano de saúde", Money.of("300.00"), "Saúde", false));
+        List<ExpenseLine> variable = List.of(new ExpenseLine(period.atDay(4), "Feira", Money.of("35.00"), "Mercado", false));
         List<FuturePeriod> future = List.of(new FuturePeriod(period.next(), List.of(
                 new FutureLine("Farmácia", "03/03", Money.of("45.90")),
                 new FutureLine("Plano de saúde", null, Money.of("300.00"))), Money.of("345.90")));

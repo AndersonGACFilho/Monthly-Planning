@@ -144,7 +144,9 @@ public class ReviewQueue {
             }
             purchases.save(purchase);
             if (edit.subscription() && purchase.type() == PurchaseType.SINGLE) {
-                ledger.makeSubscription(purchase.id());
+                ledger.makeSubscription(null, purchase.id());
+            } else {
+                ledger.followSubscriptionCategory(null, purchase);
             }
             return item(purchase).orElseThrow();
         }).toList();

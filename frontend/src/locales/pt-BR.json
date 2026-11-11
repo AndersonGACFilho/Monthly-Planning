@@ -138,7 +138,9 @@
     "searchIconHint": "Buscar em inglês: car, house, coffee…",
     "noIcon": "Nenhum ícone encontrado.",
     "moreIcons": "Mostrando {{shown}} de {{total}} ícones. Refine a busca para ver outros.",
-    "system": "Sistema"
+    "system": "Sistema",
+    "subscription": "Assinatura",
+    "subscriptionHint": "Compras à vista no cartão classificadas nesta categoria viram assinaturas e são projetadas nos próximos meses."
   },
   "entry": {
     "date": "Data",
@@ -438,6 +440,7 @@
     "percentSpent": "% da renda gasta",
     "incomeHint": "{{main}} de rendas + {{reimbursements}} de reembolsos",
     "expenseHint": "Fixas {{fixed}} · Dinâmicas {{variable}} · Cartões {{card}}",
+    "subscriptions": "Assinaturas {{amount}}",
     "noIncome": "sem renda",
     "alertWarning": "Atenção: gastos acima de {{percent}}% da renda.",
     "alertDanger": "Gastos acima de {{percent}}% da renda.",

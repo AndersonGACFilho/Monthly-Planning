@@ -20,6 +20,7 @@ import java.util.List;
  * @param fixedTotal        fixed expenses not paid by card
  * @param variableTotal     variable expenses
  * @param cardTotal         card bills (RF-11)
+ * @param subscriptionTotal subscriptions: card subscriptions and expenses in subscription categories (IMP-65)
  * @param categories        expense by category (RF-12)
  * @param members           totals by member (RF-13, RF-25)
  * @param cards             totals by card (RF-14, RF-36, RF-37)
@@ -31,7 +32,7 @@ import java.util.List;
  * @since 1.0
  */
 public record MonthlySummary(BillingPeriod billingPeriod, Long memberId, Indicators indicators, Money mainIncome,
-        Money reimbursements, Money fixedTotal, Money variableTotal, Money cardTotal, List<CategoryTotal> categories,
+        Money reimbursements, Money fixedTotal, Money variableTotal, Money cardTotal, Money subscriptionTotal, List<CategoryTotal> categories,
         List<MemberTotal> members, List<CardBillSummary> cards, List<PeriodAmount> committedNext,
         List<Settlement> settlements, int pendingCount, Money pendingAmount, int unconfirmedCount) {
 }

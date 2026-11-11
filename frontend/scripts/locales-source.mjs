@@ -135,6 +135,11 @@ export default {
     noIcon: ['Nenhum ícone encontrado.', 'No icon found.'],
     moreIcons: ['Mostrando {{shown}} de {{total}} ícones. Refine a busca para ver outros.', 'Showing {{shown}} of {{total}} icons. Refine the search to see others.'],
     system: ['Sistema', 'System'],
+    subscription: ['Assinatura', 'Subscription'],
+    subscriptionHint: [
+      'Compras à vista no cartão classificadas nesta categoria viram assinaturas e são projetadas nos próximos meses.',
+      'Single card purchases in this category become subscriptions and are projected into the next months.',
+    ],
   },
   entry: {
     date: ['Data', 'Date'],
@@ -440,6 +445,7 @@ export default {
     percentSpent: ['% da renda gasta', '% of income spent'],
     incomeHint: ['{{main}} de rendas + {{reimbursements}} de reembolsos', '{{main}} incomes + {{reimbursements}} reimbursements'],
     expenseHint: ['Fixas {{fixed}} · Dinâmicas {{variable}} · Cartões {{card}}', 'Fixed {{fixed}} · Variable {{variable}} · Cards {{card}}'],
+    subscriptions: ['Assinaturas {{amount}}', 'Subscriptions {{amount}}'],
     noIncome: ['sem renda', 'no income'],
     alertWarning: ['Atenção: gastos acima de {{percent}}% da renda.', 'Warning: spending above {{percent}}% of income.'],
     alertDanger: ['Gastos acima de {{percent}}% da renda.', 'Spending above {{percent}}% of income.'],

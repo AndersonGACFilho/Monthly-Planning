@@ -138,7 +138,9 @@
     "searchIconHint": "Search: car, house, coffee…",
     "noIcon": "No icon found.",
     "moreIcons": "Showing {{shown}} of {{total}} icons. Refine the search to see others.",
-    "system": "System"
+    "system": "System",
+    "subscription": "Subscription",
+    "subscriptionHint": "Single card purchases in this category become subscriptions and are projected into the next months."
   },
   "entry": {
     "date": "Date",
@@ -438,6 +440,7 @@
     "percentSpent": "% of income spent",
     "incomeHint": "{{main}} incomes + {{reimbursements}} reimbursements",
     "expenseHint": "Fixed {{fixed}} · Variable {{variable}} · Cards {{card}}",
+    "subscriptions": "Subscriptions {{amount}}",
     "noIncome": "no income",
     "alertWarning": "Warning: spending above {{percent}}% of income.",
     "alertDanger": "Spending above {{percent}}% of income.",

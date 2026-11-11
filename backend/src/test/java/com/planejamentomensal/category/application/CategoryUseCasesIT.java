@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.planejamentomensal.category.domain.Category;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.NotFoundException;
 import com.planejamentomensal.shared.domain.StaleVersionException;
@@ -48,23 +49,24 @@ class CategoryUseCasesIT {
     @Test
     @DisplayName("RF-06: edit checks the version and keeps one level of subcategories")
     void edit() {
-        Category parent = save.create("Casa", null, "#000000", "house");
-        Category child = save.create("Luz", parent.id(), "#000000", "bolt");
-        Category edited = save.update(child.id(), "Energia", parent.id(), "#111111", "zap", child.version());
+        Category parent = save.create(new CategoryDetails("Casa", null, "#000000", "house", false));
+        Category child = save.create(new CategoryDetails("Luz", parent.id(), "#000000", "bolt", false));
+        Category edited = save.update(child.id(), new CategoryDetails("Energia", parent.id(), "#111111", "zap", false),
+                child.version());
         assertThat(edited.name()).isEqualTo("Energia");
-        assertThatThrownBy(() -> save.update(child.id(), "X", null, "#111111", "zap", 99L))
+        assertThatThrownBy(() -> save.update(child.id(), new CategoryDetails("X", null, "#111111", "zap", false), 99L))
                 .isInstanceOf(StaleVersionException.class);
-        assertThatThrownBy(() -> save.update(parent.id(), "Casa", child.id(), "#000000", "house", null))
+        assertThatThrownBy(() -> save.update(parent.id(), new CategoryDetails("Casa", child.id(), "#000000", "house", false), null))
                 .isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> save.create("Y", 9999L, "#000000", "x")).isInstanceOf(BusinessRuleException.class);
-        assertThatThrownBy(() -> save.create("Y", queries.unclassifiedId(), "#000000", "x"))
+        assertThatThrownBy(() -> save.create(new CategoryDetails("Y", 9999L, "#000000", "x", false))).isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> save.create(new CategoryDetails("Y", queries.unclassifiedId(), "#000000", "x", false)))
                 .isInstanceOf(BusinessRuleException.class);
     }
 
     @Test
     @DisplayName("RF-07: categories with entries cannot be deleted")
     void referencedCannotBeDeleted() {
-        Category used = save.create("Lazer", null, "#000000", "party-popper");
+        Category used = save.create(new CategoryDetails("Lazer", null, "#000000", "party-popper", false));
         REFERENCED.add(used.id());
         assertThat(queries.isDeletable(used.id())).isFalse();
         assertThatThrownBy(() -> save.delete(used.id())).isInstanceOf(BusinessRuleException.class);

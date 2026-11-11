@@ -83,9 +83,18 @@ public class CategoryQueries {
     public long unclassifiedId() {
         return categories.findFirstBySystemTrue()
                 .orElseGet(() -> categories.saveAndFlush(new Category(
-                        name(InitialCategories.UNCLASSIFIED.key(), language()), null,
-                        InitialCategories.UNCLASSIFIED.color(), InitialCategories.UNCLASSIFIED.icon(), true)))
+                        InitialCategories.UNCLASSIFIED.details(name(InitialCategories.UNCLASSIFIED.key(), language())), true)))
                 .id();
+    }
+
+    /**
+     * Tells whether single card purchases in a category are subscriptions (IMP-65).
+     *
+     * @param id category id, or {@code null}
+     * @return {@code true} for an existing category marked as subscription
+     */
+    public boolean isSubscription(Long id) {
+        return id != null && categories.findById(id).map(Category::subscription).orElse(false);
     }
 
     /**

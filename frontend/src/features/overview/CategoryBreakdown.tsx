@@ -71,6 +71,7 @@ export function CategoryBreakdown({ rows, period, member }: CategoryBreakdownPro
                     >
                       <CategoryIcon icon={category?.icon} color={category?.color ?? UNCLASSIFIED_COLOR} />
                       {name}
+                      {category?.subscription && <span className="badge">{t('category.subscription')}</span>}
                     </button>
                   </th>
                   <td className="text-right">

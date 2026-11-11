@@ -1,5 +1,7 @@
 package com.planejamentomensal.summary.application;
 
+import com.planejamentomensal.category.application.CategoryQueries;
+import com.planejamentomensal.category.application.CategoryView;
 import com.planejamentomensal.entry.application.EntryRow;
 import com.planejamentomensal.member.application.MemberQueries;
 import com.planejamentomensal.shared.application.Setting;
@@ -17,6 +19,7 @@ import com.planejamentomensal.summary.domain.Indicators;
 import com.planejamentomensal.summary.domain.MemberKindInfo;
 import com.planejamentomensal.summary.domain.MemberTotalsCalculator;
 import com.planejamentomensal.summary.domain.SettlementCalculator;
+import com.planejamentomensal.summary.domain.SubscriptionTotalsCalculator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -41,20 +44,24 @@ public class MonthlySummaryService {
     private final CardBillSummaries cards;
     private final MemberQueries members;
     private final Settings settings;
+    private final CategoryQueries categories;
 
     /**
      * Creates the service.
      *
-     * @param data     period data
-     * @param cards    card totals
-     * @param members  member queries
-     * @param settings alert thresholds
+     * @param data       period data
+     * @param cards      card totals
+     * @param members    member queries
+     * @param settings   alert thresholds
+     * @param categories categories marked as subscription
      */
-    public MonthlySummaryService(PeriodData data, CardBillSummaries cards, MemberQueries members, Settings settings) {
+    public MonthlySummaryService(PeriodData data, CardBillSummaries cards, MemberQueries members, Settings settings,
+            CategoryQueries categories) {
         this.data = data;
         this.cards = cards;
         this.members = members;
         this.settings = settings;
+        this.categories = categories;
     }
 
     /**
@@ -86,7 +93,7 @@ public class MonthlySummaryService {
         List<MemberKindInfo> shownMembers = memberId == null ? all : all.stream().filter(m -> m.id() == memberId).toList();
 
         return new MonthlySummary(period, memberId, indicators, totals.mainIncome(), totals.reimbursements(), totals.fixed(),
-                totals.variable(), totals.card(),
+                totals.variable(), totals.card(), SubscriptionTotalsCalculator.total(lines, subscriptionCategories()),
                 CategoryTotalsCalculator.calculate(lines, previous.expenses().stream().filter(lineFilter).toList()),
                 MemberTotalsCalculator.calculate(shownMembers, current.incomes(), current.expenses(), current.carries()),
                 cards.build(period, current.entries(), future, entryFilter),
@@ -110,6 +117,10 @@ public class MonthlySummaryService {
         List<ExpenseLine> lines = data.collect(period).expenses().stream()
                 .filter(l -> memberId == null || l.memberId() == memberId).toList();
         return CategoryItemsCalculator.calculate(lines, categoryId);
+    }
+
+    private Set<Long> subscriptionCategories() {
+        return categories.all().stream().filter(CategoryView::subscription).map(CategoryView::id).collect(Collectors.toSet());
     }
 
     private static Money sum(List<Money> amounts) {

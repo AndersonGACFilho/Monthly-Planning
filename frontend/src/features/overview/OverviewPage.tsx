@@ -66,11 +66,16 @@ export function OverviewPage() {
         <SummaryCard
           title={t('overview.expense')}
           value={<MoneyText value={summary?.expense} />}
-          hint={t('overview.expenseHint', {
-            fixed: formatMoney(summary?.fixedTotal),
-            variable: formatMoney(summary?.variableTotal),
-            card: formatMoney(summary?.cardTotal),
-          })}
+          hint={[
+            t('overview.expenseHint', {
+              fixed: formatMoney(summary?.fixedTotal),
+              variable: formatMoney(summary?.variableTotal),
+              card: formatMoney(summary?.cardTotal),
+            }),
+            (summary?.subscriptionTotal ?? 0) > 0 && t('overview.subscriptions', { amount: formatMoney(summary?.subscriptionTotal) }),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         />
         <SummaryCard
           title={t('overview.balance')}

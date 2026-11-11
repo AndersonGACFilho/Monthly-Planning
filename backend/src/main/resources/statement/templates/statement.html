@@ -65,6 +65,10 @@
             <td th:text="${labels.totalDue}">Total due</td>
             <td class="num big" th:text="${f.money(s.total)}">0</td>
           </tr>
+          <tr th:if="${!s.subscriptionTotal().isZero()}">
+            <td th:text="${labels.subscriptions}">Subscriptions</td>
+            <td class="num" th:text="${f.money(s.subscriptionTotal())}">0</td>
+          </tr>
           <tr th:if="${s.dueDate != null}">
             <td th:text="${labels.dueDate}">Due</td>
             <td class="num" th:text="${f.date(s.dueDate)}">date</td>

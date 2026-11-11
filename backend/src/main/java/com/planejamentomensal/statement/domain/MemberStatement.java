@@ -5,6 +5,7 @@ import com.planejamentomensal.shared.domain.Money;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Statement of one member in one billing period (RF-82): what the member owes, line by line.
@@ -44,6 +45,19 @@ public record MemberStatement(long memberId, String memberCode, String memberNam
      */
     public Money balance() {
         return income.minus(total).plus(carriedOut == null ? Money.ZERO : carriedOut.amount());
+    }
+
+    /**
+     * Returns the subscriptions of the period: card subscriptions {@code *} and expenses in subscription categories
+     * (IMP-65).
+     *
+     * @return total of the subscriptions
+     */
+    public Money subscriptionTotal() {
+        Money card = cards.stream().flatMap(g -> g.lines().stream()).filter(l -> "*".equals(l.installment()))
+                .map(CardLine::amount).reduce(Money.ZERO, Money::plus);
+        return Stream.concat(fixedExpenses.stream(), variableExpenses.stream())
+                .filter(ExpenseLine::subscription).map(ExpenseLine::amount).reduce(card, Money::plus);
     }
 
     /**
@@ -87,10 +101,11 @@ public record MemberStatement(long memberId, String memberCode, String memberNam
      *
      * @param date        date, or {@code null} for fixed expenses
      * @param description description
-     * @param amount      amount
-     * @param category    category name, or {@code null}
+     * @param amount       amount
+     * @param category     category name, or {@code null}
+     * @param subscription {@code true} when its category is marked as subscription (IMP-65)
      */
-    public record ExpenseLine(LocalDate date, String description, Money amount, String category) {
+    public record ExpenseLine(LocalDate date, String description, Money amount, String category, boolean subscription) {
     }
 
     /**

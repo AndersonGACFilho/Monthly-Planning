@@ -1,6 +1,7 @@
 package com.planejamentomensal.category.application;
 
 import com.planejamentomensal.category.domain.Category;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.Versions;
 import java.util.List;
@@ -33,39 +34,33 @@ public class SaveCategoryUseCase {
     /**
      * Creates a category.
      *
-     * @param name     name
-     * @param parentId parent, or {@code null}
-     * @param color    colour
-     * @param icon     icon
+     * @param details category data
      * @return the stored category
      * @throws BusinessRuleException with code {@code category-parent-invalid} for a nested or system parent
      */
     @Transactional
-    public Category create(String name, Long parentId, String color, String icon) {
-        validateParent(parentId, null);
-        return categories.saveAndFlush(new Category(name, parentId, color, icon, false));
+    public Category create(CategoryDetails details) {
+        validateParent(details.parentId(), null);
+        return categories.saveAndFlush(new Category(details, false));
     }
 
     /**
      * Edits a category.
      *
      * @param id              category id
-     * @param name            name
-     * @param parentId        parent, or {@code null}
-     * @param color           colour
-     * @param icon            icon
+     * @param details         new data
      * @param expectedVersion version the client edited, or {@code null}
      * @return the updated category
      */
     @Transactional
-    public Category update(long id, String name, Long parentId, String color, String icon, Long expectedVersion) {
+    public Category update(long id, CategoryDetails details, Long expectedVersion) {
         Category category = queries.get(id);
         Versions.check(expectedVersion, category.version());
-        validateParent(parentId, id);
-        if (parentId != null && categories.countByParentId(id) > 0) {
-            throw new BusinessRuleException("category-parent-invalid", parentId);
+        validateParent(details.parentId(), id);
+        if (details.parentId() != null && categories.countByParentId(id) > 0) {
+            throw new BusinessRuleException("category-parent-invalid", details.parentId());
         }
-        category.update(name, parentId, color, icon);
+        category.update(details);
         return categories.saveAndFlush(category);
     }
 
@@ -99,7 +94,7 @@ public class SaveCategoryUseCase {
         }
         return InitialCategories.ALL.stream()
                 .map(entry -> categories.saveAndFlush(
-                        new Category(queries.name(entry.key(), locale), null, entry.color(), entry.icon(), false)))
+                        new Category(entry.details(queries.name(entry.key(), locale)), false)))
                 .toList();
     }
 

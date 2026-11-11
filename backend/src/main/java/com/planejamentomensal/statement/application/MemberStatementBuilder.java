@@ -34,10 +34,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -114,7 +116,13 @@ public class MemberStatementBuilder {
         Map<Long, CardView> cardById = new HashMap<>();
         cards.all().forEach(c -> cardById.put(c.id(), c));
         Map<Long, String> categoryNames = new HashMap<>();
-        categories.all().forEach(c -> categoryNames.put(c.id(), c.name()));
+        Set<Long> subscriptionCategories = new HashSet<>();
+        categories.all().forEach(c -> {
+            categoryNames.put(c.id(), c.name());
+            if (c.subscription()) {
+                subscriptionCategories.add(c.id());
+            }
+        });
 
         Map<Long, List<CardLine>> linesByCard = new LinkedHashMap<>();
         List<String> pending = new ArrayList<>();
@@ -152,12 +160,14 @@ public class MemberStatementBuilder {
         List<ExpenseLine> fixed = occurrences.stream()
                 .filter(o -> !o.income() && o.paymentMethod() != PaymentMethod.CARD)
                 .map(o -> new ExpenseLine(null, o.description(), o.amount(),
-                        options.showCategories() ? categoryNames.get(o.categoryId()) : null))
+                        options.showCategories() ? categoryNames.get(o.categoryId()) : null,
+                        subscriptionCategories.contains(o.categoryId())))
                 .toList();
         List<ExpenseLine> variable = expenses.views(period).stream().filter(e -> e.memberId() == memberId)
                 .sorted(Comparator.comparing(ExpenseView::expenseDate))
                 .map(e -> new ExpenseLine(e.expenseDate(), e.description(), e.amount(),
-                        options.showCategories() ? categoryNames.get(e.categoryId()) : null))
+                        options.showCategories() ? categoryNames.get(e.categoryId()) : null,
+                        subscriptionCategories.contains(e.categoryId())))
                 .toList();
         Money income = sum(occurrences.stream().filter(OccurrenceView::income).map(OccurrenceView::amount).toList());
         List<FuturePeriod> future = options.includeFuture()

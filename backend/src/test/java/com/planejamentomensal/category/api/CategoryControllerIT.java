@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,6 +69,24 @@ class CategoryControllerIT {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("category-parent-invalid"));
         mockMvc.perform(authorized(delete(child))).andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("IMP-65: a category is marked as subscription and the initial \"Subscriptions\" comes marked")
+    void subscription() throws Exception {
+        mockMvc.perform(authorized(post("/api/categories/defaults")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"language\":\"pt-BR\"}"))
+                .andExpect(jsonPath("$._embedded.categories[?(@.name == 'Assinaturas')].subscription").value(true))
+                .andExpect(jsonPath("$._embedded.categories[?(@.name == 'Mercado')].subscription").value(false));
+        var created = mockMvc.perform(authorized(post("/api/categories")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Streaming\",\"color\":\"#6366f1\",\"icon\":\"repeat\",\"subscription\":true}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.subscription").value(true))
+                .andReturn();
+        String location = created.getResponse().getHeader(HttpHeaders.LOCATION);
+        mockMvc.perform(authorized(put(location)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Streaming\",\"color\":\"#6366f1\",\"icon\":\"repeat\"}"))
+                .andExpect(jsonPath("$.subscription").value(false));
     }
 
     @Test

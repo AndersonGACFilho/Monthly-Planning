@@ -111,6 +111,21 @@ describe('OverviewPage', () => {
     expect(screen.getByText(/de reembolsos/)).toBeInTheDocument();
   });
 
+  it('IMP-65: the expense shows the subscriptions and subscription categories are marked', async () => {
+    server.use(
+      http.get(`${base}/api/summaries/2026-11`, () =>
+        HttpResponse.json(summary({ subscriptionTotal: 99.8, categories: [{ categoryId: 6, amount: 99.8, percentOfTotal: 100 }] })),
+      ),
+      http.get(`${base}/api/categories`, () =>
+        HttpResponse.json({ _embedded: { categories: [{ id: 6, name: 'Streaming', color: '#6366f1', icon: 'repeat', subscription: true }] } }),
+      ),
+    );
+    renderWithProviders(<OverviewPage />);
+    expect(await screen.findByText(/Assinaturas R\$\s99,80/)).toBeInTheDocument();
+    const row = await screen.findByRole('rowheader', { name: /Streaming/ });
+    expect(within(row).getByText('Assinatura')).toBeInTheDocument();
+  });
+
   it('RF-12, UI-07: category chart and table with share and variation', async () => {
     server.use(http.get(`${base}/api/summaries/2026-11`, () => HttpResponse.json(summary())));
     renderWithProviders(<OverviewPage />);

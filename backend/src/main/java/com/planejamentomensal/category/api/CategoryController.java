@@ -94,8 +94,7 @@ public class CategoryController {
      */
     @PostMapping
     public ResponseEntity<CategoryModel> createCategory(@Valid @RequestBody CategoryRequest request) {
-        Category category = save.create(request.name().strip(), request.parentId(), request.color().toUpperCase(),
-                request.icon());
+        Category category = save.create(request.toDetails());
         CategoryModel model = assembler.toModel(category);
         return ResponseEntity.created(model.getRequiredLink("self").toUri()).eTag(ETags.of(category.version()))
                 .body(model);
@@ -112,8 +111,7 @@ public class CategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoryModel> replaceCategory(@PathVariable long id, @Valid @RequestBody CategoryRequest request,
             @RequestHeader(value = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
-        Category category = save.update(id, request.name().strip(), request.parentId(), request.color().toUpperCase(),
-                request.icon(), ETags.expectedVersion(ifMatch));
+        Category category = save.update(id, request.toDetails(), ETags.expectedVersion(ifMatch));
         return ETags.ok(assembler.toModel(category), category.version());
     }
 

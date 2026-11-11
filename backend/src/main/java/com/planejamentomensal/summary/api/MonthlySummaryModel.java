@@ -126,6 +126,8 @@ public class MonthlySummaryModel extends RepresentationModel<MonthlySummaryModel
     public final BigDecimal variableTotal;
     /** Card bills. */
     public final BigDecimal cardTotal;
+    /** Subscriptions: card subscriptions and expenses in subscription categories (IMP-65). */
+    public final BigDecimal subscriptionTotal;
     /** Expense by category, largest first. */
     public final List<CategoryRow> categories;
     /** Totals by member. */
@@ -162,6 +164,7 @@ public class MonthlySummaryModel extends RepresentationModel<MonthlySummaryModel
         this.fixedTotal = s.fixedTotal().amount();
         this.variableTotal = s.variableTotal().amount();
         this.cardTotal = s.cardTotal().amount();
+        this.subscriptionTotal = s.subscriptionTotal().amount();
         this.categories = s.categories().stream().map(CategoryRow::of).toList();
         this.members = s.members().stream().map(MemberRow::of).toList();
         this.cards = cards;

@@ -3,6 +3,8 @@ package com.planejamentomensal.summary.application;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
+import com.planejamentomensal.category.application.SaveCategoryUseCase;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.entry.application.LedgerFixture;
@@ -45,6 +47,7 @@ class MonthlySummaryServiceTest {
     @Autowired private VariableExpenseCommands expenses;
     @Autowired private MonthlySummaryService service;
     @Autowired private CardBillSummaries cardSummaries;
+    @Autowired private SaveCategoryUseCase categories;
 
     private LedgerFixture f;
 
@@ -95,6 +98,19 @@ class MonthlySummaryServiceTest {
                 .containsExactly("90.00", "90.00", "0.00");
         assertThat(s.pendingCount()).isEqualTo(4);
         assertThat(s.pendingAmount()).isEqualTo(Money.of("445.90"));
+    }
+
+    @Test
+    @DisplayName("IMP-65: the overview totals card subscriptions and fixed expenses in subscription categories")
+    void subscriptions() {
+        long streaming = categories.create(new CategoryDetails("Streaming", null, "#6366F1", "repeat", true)).id();
+        recurrence.create(RuleKind.FIXED_EXPENSE, new RuleDetails("Globoplay", f.main, streaming, null, Money.of("24.90"),
+                Recurrence.MONTHLY, 1, 10, OCT, null, PaymentMethod.BOLETO));
+        assertThat(service.summary(NOV, null).subscriptionTotal()).isEqualTo(Money.of("24.90"));
+        BillEntry netflix = purchase("NETFLIX PREMIUM", "44.90", NOV, null, null);
+        entryCommands.classify(netflix.id(), streaming, false, null, null, null);
+        assertThat(service.summary(NOV, null).subscriptionTotal()).isEqualTo(Money.of("69.80"));
+        assertThat(service.summary(NOV, f.thirdParty).subscriptionTotal()).isEqualTo(Money.ZERO);
     }
 
     @Test

@@ -5045,6 +5045,10 @@
             "format" : "int64",
             "description" : "Parent category."
           },
+          "subscription" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when single card purchases in it are subscriptions (IMP-65)."
+          },
           "system" : {
             "type" : "boolean",
             "description" : "<code>true</code> for \"not classified\"."
@@ -5082,6 +5086,10 @@
             "type" : "integer",
             "format" : "int64",
             "description" : "parent category for a subcategory, optional"
+          },
+          "subscription" : {
+            "type" : "boolean",
+            "description" : "single card purchases in it are subscriptions (IMP-65); <code>false</code> when missing"
           }
         },
         "required" : [ "color", "icon", "name" ]
@@ -6473,6 +6481,10 @@
             "items" : {
               "$ref" : "#/components/schemas/SettlementRow"
             }
+          },
+          "subscriptionTotal" : {
+            "type" : "number",
+            "description" : "Subscriptions: card subscriptions and expenses in subscription categories (IMP-65)."
           },
           "unconfirmedCount" : {
             "type" : "integer",

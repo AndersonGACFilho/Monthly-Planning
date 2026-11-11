@@ -97,7 +97,7 @@ class LedgerScenariosIT {
     void subscriptions() {
         BillingPeriod now = BillingPeriod.ofDueDate(LocalDate.now());
         BillEntry charge = ledger.addPurchase(1L, f.purchase("MP *PARAMOUNTPLUS", "29.66", LocalDate.now().minusDays(5), now, null, null, "PURCHASE"));
-        ledger.makeSubscription(charge.purchase().id());
+        ledger.makeSubscription(null, charge.purchase().id());
         List<BillEntry> projected = entries.findByPurchaseIdAndStatus(charge.purchase().id(), EntryStatus.PROJECTED);
         assertThat(projected).hasSize(12);
         assertThat(projected.getFirst().installmentLabel()).isEqualTo("*");

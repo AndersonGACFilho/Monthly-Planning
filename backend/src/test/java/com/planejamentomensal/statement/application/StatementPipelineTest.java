@@ -6,6 +6,8 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
 import com.planejamentomensal.carryover.application.CarryOverCommands;
+import com.planejamentomensal.category.application.SaveCategoryUseCase;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.expense.application.VariableExpenseCommands;
@@ -16,6 +18,7 @@ import com.planejamentomensal.recurrence.domain.Recurrence;
 import com.planejamentomensal.recurrence.domain.RuleDetails;
 import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.domain.Money;
+import com.planejamentomensal.shared.domain.PaymentMethod;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.StatementFingerprint;
 import com.planejamentomensal.statement.domain.StatementOptions;
@@ -49,6 +52,7 @@ class StatementPipelineTest {
     @Autowired private MemberStatementBuilder builder;
     @Autowired private StatementService service;
     @Autowired private CarryOverCommands carryOvers;
+    @Autowired private SaveCategoryUseCase categories;
 
     private StatementFixture s;
 
@@ -90,6 +94,18 @@ class StatementPipelineTest {
         assertThat(st.future().get(1).lines()).extracting(MemberStatement.FutureLine::description).containsExactly("Plano de saúde");
         assertThat(st.future().get(2).total()).isEqualTo(Money.of("300.00"));
         assertThat(builder.build(s.f.main, NOV, StatementOptions.DEFAULT).future()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("IMP-65: the summary shows the subscriptions of the member when there are any")
+    void subscriptions() {
+        assertThat(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT).subscriptionTotal()).isEqualTo(Money.ZERO);
+        long streaming = categories.create(new CategoryDetails("Streaming", null, "#6366F1", "repeat", true)).id();
+        recurrence.create(RuleKind.FIXED_EXPENSE, new RuleDetails("Globoplay", s.f.thirdParty, streaming, null,
+                Money.of("24.90"), Recurrence.MONTHLY, 1, 10, NOV, null, PaymentMethod.BOLETO));
+        assertThat(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT).subscriptionTotal()).isEqualTo(Money.of("24.90"));
+        PreparedStatement pt = service.prepare(new StatementRequest(s.f.thirdParty, NOV, StatementOptions.DEFAULT, null, null, null));
+        assertThat(pt.rendered().html()).contains("Assinaturas", "R$ 24,90");
     }
 
     @Test
