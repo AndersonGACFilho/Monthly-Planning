@@ -24,12 +24,13 @@ export function DatabaseExportButton() {
   return (
     <button
       type="button"
-      className="button"
+      className="button whitespace-nowrap"
       disabled={busy || !live}
       title={live ? t('database.exportHint') : t('database.exportBlocked')}
       onClick={() => void exportDatabase()}
     >
-      <DatabaseBackup size={16} aria-hidden /> {t('database.export')}
+      <DatabaseBackup size={16} aria-hidden />
+      <span className="sr-only wide:not-sr-only">{t('database.export')}</span>
     </button>
   );
 }

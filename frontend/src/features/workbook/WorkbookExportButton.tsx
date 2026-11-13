@@ -40,8 +40,16 @@ export function WorkbookExportButton() {
 
   return (
     <div className="relative">
-      <button type="button" className="button" disabled={busy} onClick={() => setOpen(!open)} aria-expanded={open}>
-        <FileSpreadsheet size={16} aria-hidden /> {t('workbook.export')}
+      <button
+        type="button"
+        className="button whitespace-nowrap"
+        disabled={busy}
+        title={t('workbook.export')}
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <FileSpreadsheet size={16} aria-hidden />
+        <span className="sr-only wide:not-sr-only">{t('workbook.export')}</span>
       </button>
       {open && (
         <div className="panel absolute right-0 z-20 mt-2 flex w-80 flex-col gap-3 shadow-lg" role="dialog" aria-label={t('workbook.title')}>
