@@ -35,7 +35,10 @@ describe('DatabaseExportButton', () => {
     renderWithProviders(<DatabaseExportButton />);
     fireEvent.click(await screen.findByRole('button', { name: 'Exportar banco' }));
     await waitFor(() => expect(formats).toEqual(['db']));
-    expect(desktop.downloadFile).toHaveBeenCalledWith(expect.any(Blob), 'planejamento-mensal-2026-11-13.db');
+    // The body comes from the fetch Blob of the Node in use, not jsdom's, so only its presence and the name are checked
+    const [body, name] = vi.mocked(desktop.downloadFile).mock.calls[0]!;
+    expect(body.size).toBe('SQLite format 3'.length);
+    expect(name).toBe('planejamento-mensal-2026-11-13.db');
     await waitFor(() =>
       expect(useNotifications.getState().notices.map((n) => n.title)).toContain(
         'Exportação concluída: planejamento-mensal-2026-11-13.db',
