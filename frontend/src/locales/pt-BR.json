@@ -39,7 +39,10 @@
   },
   "error": {
     "unexpected": "Algo deu errado.",
-    "network": "Não foi possível falar com o serviço local."
+    "network": "Não foi possível falar com o serviço local.",
+    "copyDetails": "Copiar detalhes",
+    "screenFailed": "Esta tela falhou ao abrir. Recarregue para continuar.",
+    "reload": "Recarregar"
   },
   "period": {
     "label": "Competência",
@@ -138,7 +141,9 @@
     "searchIconHint": "Buscar em inglês: car, house, coffee…",
     "noIcon": "Nenhum ícone encontrado.",
     "moreIcons": "Mostrando {{shown}} de {{total}} ícones. Refine a busca para ver outros.",
-    "system": "Sistema"
+    "system": "Sistema",
+    "subscription": "Assinatura",
+    "subscriptionHint": "Compras à vista no cartão classificadas nesta categoria viram assinaturas e são projetadas nos próximos meses."
   },
   "entry": {
     "date": "Data",
@@ -277,6 +282,13 @@
     "chooseLink": "Escolha o lançamento",
     "linkCandidate": "{{date}} · {{description}} · {{amount}}"
   },
+  "diagnostics": {
+    "title": "Diagnóstico",
+    "debugMode": "Modo debug",
+    "debugModeHint": "Para rastrear erros: o app grava detalhes no log e cada aviso de erro mostra código, número da requisição e endereço, com botão para copiar. Deixe desligado no uso normal.",
+    "logFolder": "Pasta do log",
+    "openLogFolder": "Abrir pasta do log"
+  },
   "settings": {
     "general": "Geral",
     "language": "Idioma",
@@ -335,7 +347,10 @@
     "linkedEntry": "Vinculada ao lançamento do cartão",
     "waitingChoice": "Mais de um lançamento possível: escolha na fila de validação",
     "notLinked": "Ainda sem lançamento no cartão",
-    "inBill": "na fatura"
+    "inBill": "na fatura",
+    "actions": "Ações",
+    "endFrom": "Encerrar a partir de {{period}}",
+    "confirmEnd": "{{action}}? Os meses anteriores ficam como estão e os seguintes ainda não recebidos ou pagos são removidos."
   },
   "income": {
     "title": "Rendas",
@@ -384,6 +399,7 @@
     "unconfirmed_one": "{{count}} não confirmado fora do total",
     "unconfirmed_other": "{{count}} não confirmados fora do total",
     "markPaid": "Marcar fatura como paga",
+    "confirmPayOpen": "A fatura ainda está aberta: compras importadas depois continuam entrando nela. Marcar como paga mesmo assim?",
     "import": "Importar fatura",
     "open": "Ver lançamentos de {{card}}",
     "fileTotal": "Total do arquivo {{amount}}"
@@ -434,6 +450,7 @@
     "percentSpent": "% da renda gasta",
     "incomeHint": "{{main}} de rendas + {{reimbursements}} de reembolsos",
     "expenseHint": "Fixas {{fixed}} · Dinâmicas {{variable}} · Cartões {{card}}",
+    "subscriptions": "Assinaturas {{amount}}",
     "noIncome": "sem renda",
     "alertWarning": "Atenção: gastos acima de {{percent}}% da renda.",
     "alertDanger": "Gastos acima de {{percent}}% da renda.",
@@ -536,7 +553,7 @@
     },
     "showCategories": "Mostrar categorias",
     "useAlias": "Usar nomes renomeados (alias)",
-    "includeFuture": "Incluir parcelas futuras",
+    "includeFuture": "Incluir gastos futuros",
     "language": "Idioma",
     "memberLanguage": "Idioma de cada cota",
     "template": "Template",
@@ -608,7 +625,7 @@
       "CARDS": "Lançamentos no cartão",
       "FIXED_EXPENSES": "Despesas fixas",
       "VARIABLE_EXPENSES": "Despesas dinâmicas",
-      "COMMITTED": "Parcelas futuras",
+      "COMMITTED": "Gastos futuros",
       "PAYMENT": "Pagamento (PIX)",
       "NOTE": "Observação"
     },
@@ -743,9 +760,15 @@
     "list": "Cópias em data/backups",
     "exportJson": "Exportar todos os dados (JSON)",
     "exportCsv": "Exportar todos os dados (CSV)",
+    "exportDb": "Exportar banco (.db)",
+    "importDb": "Importar banco (.db)",
     "eject": "Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade."
   },
   "database": {
+    "export": "Exportar banco",
+    "exportHint": "Salva o banco inteiro num arquivo .db, uma cópia completa que abre em qualquer leitor de SQLite (Ctrl+Shift+E).",
+    "exportBlocked": "Volte aos dados reais para exportar o banco.",
+    "imported": "Banco importado e aberto para conferir. Use Restaurar para torná-lo os dados reais.",
     "hint": "Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.",
     "when": "Data da cópia",
     "reason": "Motivo",
@@ -754,6 +777,7 @@
       "before-update": "Antes de atualizar",
       "manual": "Feita por você",
       "before-restore": "Antes de restaurar",
+      "imported": "Importado",
       "other": "Outra"
     },
     "open": "Abrir para conferir",
@@ -807,7 +831,7 @@
   },
   "shortcuts": {
     "title": "Atalhos",
-    "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência"
+    "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+Shift+E exportar banco · Ctrl+F buscar · Alt+←/→ competência"
   },
   "registry": {
     "hint": "Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.",

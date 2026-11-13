@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import * as databaseController from '../../api/generated/endpoints/database-controller/database-controller';
 import i18n from '../../i18n/i18n';
 import { useNotifications } from '../../shared/state/notifications';
 import { renderWithProviders } from '../../test/render';
@@ -21,6 +22,7 @@ describe('SettingsPage', () => {
       http.get(`${base}/api/categories`, () => HttpResponse.json({})),
       http.get(`${base}/api/backups`, () => HttpResponse.json(['planejamento-mensal-2026-11-01T10-00-00-000-start.db'])),
       http.get(`${base}/api/database`, () => HttpResponse.json({ live: true })),
+      http.get(`${base}/api/diagnostics`, () => HttpResponse.json({ debugMode: false, logFolder: '/app/data/logs' })),
     );
   });
 
@@ -87,7 +89,23 @@ describe('SettingsPage', () => {
     delete document.documentElement.dataset.theme;
   });
 
-  it('POR-12, RNF-07: back up now writes to data/backups; all data can be exported', async () => {
+  it('IMP-72: a database file is imported and opened to check, with a way back to the live data', async () => {
+    const imported = vi
+      .spyOn(databaseController, 'importDatabase')
+      .mockResolvedValue({ live: false, backup: 'planejamento-mensal-2026-11-13T10-44-50-123-imported.db' });
+    renderWithProviders(<SettingsPage />);
+    const file = new File(['SQLite format 3'], 'copia.db');
+    fireEvent.change(await screen.findByLabelText('Importar banco (.db)'), { target: { files: [file] } });
+    await waitFor(() => expect(imported).toHaveBeenCalledWith({ file }));
+    await waitFor(() =>
+      expect(useNotifications.getState().notices.map((n) => n.title)).toContain(
+        'Banco importado e aberto para conferir. Use Restaurar para torná-lo os dados reais.',
+      ),
+    );
+    imported.mockRestore();
+  });
+
+  it('POR-12, RNF-07, IMP-69: back up now writes to data/backups; all data and the database file can be exported', async () => {
     let backup: unknown;
     let exported = '';
     server.use(
@@ -110,5 +128,8 @@ describe('SettingsPage', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Exportar todos os dados (CSV)' }));
     await waitFor(() => expect(exported).toBe('csv'));
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar banco (.db)' }));
+    await waitFor(() => expect(exported).toBe('db'));
   });
 });

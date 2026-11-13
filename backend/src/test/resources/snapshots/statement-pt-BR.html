@@ -20,6 +20,7 @@
     .num { text-align: right; white-space: nowrap; }
     .pending td { background: #fff7d6; }
     .subtotal td { font-weight: bold; border-top: 1px solid #dde1e6; }
+    .future-month td { font-weight: bold; background: #f6f8fa; }
     .card-title { font-weight: bold; margin-top: 8px; }
     .summary { width: 100%; border-collapse: collapse; }
     .summary td { padding: 4px 6px; }
@@ -60,6 +61,10 @@
           <tr>
             <td>Total devido</td>
             <td class="num big">R$ 465,20</td>
+          </tr>
+          <tr>
+            <td>Assinaturas</td>
+            <td class="num">R$ 21,90</td>
           </tr>
           <tr>
             <td>Vencimento</td>
@@ -231,12 +236,22 @@
       
 
       <div class="block" id="block-committed">
-        <h2>Parcelas futuras</h2>
+        <h2>Gastos futuros</h2>
         <table class="lines">
           <tbody>
+            <tr class="future-month">
+              <td colspan="2">Dezembro de 2026</td>
+              <td class="num">R$ 345,90</td>
+            </tr>
             <tr>
-              <td>Dezembro de 2026</td>
+              <td>Farmácia</td>
+              <td>03/03</td>
               <td class="num">R$ 45,90</td>
+            </tr>
+            <tr>
+              <td>Plano de saúde</td>
+              <td></td>
+              <td class="num">R$ 300,00</td>
             </tr>
           </tbody>
         </table>

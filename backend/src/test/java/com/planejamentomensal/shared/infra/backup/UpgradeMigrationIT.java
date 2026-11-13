@@ -37,6 +37,21 @@ class UpgradeMigrationIT {
             }
 
             @Override
+            public byte[] copy() {
+                return new byte[0];
+            }
+
+            @Override
+            public Path importCopy(byte[] content) {
+                return dir.resolve("imported.db");
+            }
+
+            @Override
+            public void delete(Path backup) {
+                // nothing kept
+            }
+
+            @Override
             public List<Path> list() {
                 return List.of();
             }

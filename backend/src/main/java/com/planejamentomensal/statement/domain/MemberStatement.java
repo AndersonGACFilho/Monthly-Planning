@@ -5,6 +5,7 @@ import com.planejamentomensal.shared.domain.Money;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Statement of one member in one billing period (RF-82): what the member owes, line by line.
@@ -18,7 +19,7 @@ import java.util.List;
  * @param cards           card entries grouped by card
  * @param fixedExpenses   fixed expenses of the member not paid by card
  * @param variableExpenses variable expenses of the member
- * @param committed       installments committed in the next periods (empty when not included)
+ * @param future          expenses of the next periods: installments and fixed expenses (empty when not included)
  * @param income          incomes of the member
  * @param cardTotal       sum of the card groups
  * @param fixedTotal      sum of the fixed expenses
@@ -34,7 +35,7 @@ import java.util.List;
  */
 public record MemberStatement(long memberId, String memberCode, String memberName, boolean main, BillingPeriod billingPeriod,
         LocalDate issuedOn, List<CardGroup> cards, List<ExpenseLine> fixedExpenses, List<ExpenseLine> variableExpenses,
-        List<CommittedPeriod> committed, Money income, Money cardTotal, Money fixedTotal, Money variableTotal,
+        List<FuturePeriod> future, Money income, Money cardTotal, Money fixedTotal, Money variableTotal,
         Carry previousBalance, Carry carriedOut, Money total, LocalDate dueDate, String pixKey, List<String> pendingItems, StatementOptions options) {
 
     /**
@@ -44,6 +45,19 @@ public record MemberStatement(long memberId, String memberCode, String memberNam
      */
     public Money balance() {
         return income.minus(total).plus(carriedOut == null ? Money.ZERO : carriedOut.amount());
+    }
+
+    /**
+     * Returns the subscriptions of the period: card subscriptions {@code *} and expenses in subscription categories
+     * (IMP-65).
+     *
+     * @return total of the subscriptions
+     */
+    public Money subscriptionTotal() {
+        Money card = cards.stream().flatMap(g -> g.lines().stream()).filter(l -> "*".equals(l.installment()))
+                .map(CardLine::amount).reduce(Money.ZERO, Money::plus);
+        return Stream.concat(fixedExpenses.stream(), variableExpenses.stream())
+                .filter(ExpenseLine::subscription).map(ExpenseLine::amount).reduce(card, Money::plus);
     }
 
     /**
@@ -87,18 +101,31 @@ public record MemberStatement(long memberId, String memberCode, String memberNam
      *
      * @param date        date, or {@code null} for fixed expenses
      * @param description description
-     * @param amount      amount
-     * @param category    category name, or {@code null}
+     * @param amount       amount
+     * @param category     category name, or {@code null}
+     * @param subscription {@code true} when its category is marked as subscription (IMP-65)
      */
-    public record ExpenseLine(LocalDate date, String description, Money amount, String category) {
+    public record ExpenseLine(LocalDate date, String description, Money amount, String category, boolean subscription) {
     }
 
     /**
-     * Installments of the member committed in a future period.
+     * What the member will owe in a future period, line by line (IMP-64).
      *
      * @param billingPeriod period
-     * @param amount        member share of the projected installments
+     * @param lines         installments, subscriptions and fixed expenses of the period
+     * @param total         sum of the lines
      */
-    public record CommittedPeriod(BillingPeriod billingPeriod, Money amount) {
+    public record FuturePeriod(BillingPeriod billingPeriod, List<FutureLine> lines, Money total) {
+    }
+
+    /**
+     * One expense of a future period.
+     *
+     * @param description description shown
+     * @param installment installment notation of a card line ({@code 02/10}, {@code *}), or {@code null} for a fixed
+     *                    expense
+     * @param amount      member share
+     */
+    public record FutureLine(String description, String installment, Money amount) {
     }
 }

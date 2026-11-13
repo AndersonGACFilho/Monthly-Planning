@@ -2,9 +2,12 @@ package com.planejamentomensal.statement.application;
 
 import static com.planejamentomensal.statement.application.StatementFixture.NOV;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
 import com.planejamentomensal.carryover.application.CarryOverCommands;
+import com.planejamentomensal.category.application.SaveCategoryUseCase;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.expense.application.VariableExpenseCommands;
@@ -15,6 +18,7 @@ import com.planejamentomensal.recurrence.domain.Recurrence;
 import com.planejamentomensal.recurrence.domain.RuleDetails;
 import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.domain.Money;
+import com.planejamentomensal.shared.domain.PaymentMethod;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.StatementFingerprint;
 import com.planejamentomensal.statement.domain.StatementOptions;
@@ -48,6 +52,7 @@ class StatementPipelineTest {
     @Autowired private MemberStatementBuilder builder;
     @Autowired private StatementService service;
     @Autowired private CarryOverCommands carryOvers;
+    @Autowired private SaveCategoryUseCase categories;
 
     private StatementFixture s;
 
@@ -70,7 +75,6 @@ class StatementPipelineTest {
         assertThat(st.fixedTotal()).isEqualTo(Money.of("300.00"));
         assertThat(st.variableTotal()).isEqualTo(Money.of("25.50"));
         assertThat(st.total()).isEqualTo(Money.of("455.50"));
-        assertThat(st.committed()).singleElement().satisfies(c -> assertThat(c.amount()).isEqualTo(Money.of("80.00")));
         assertThat(st.dueDate()).isNotNull();
         assertThat(st.pendingItems()).hasSize(2);
         MemberStatement house = builder.build(s.f.main, NOV, StatementOptions.DEFAULT);
@@ -78,10 +82,37 @@ class StatementPipelineTest {
     }
 
     @Test
+    @DisplayName("IMP-64: future expenses list the installments and fixed expenses of each of the next 3 months")
+    void futureExpenses() {
+        MemberStatement st = builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT);
+        assertThat(st.future()).extracting(MemberStatement.FuturePeriod::billingPeriod)
+                .containsExactly(NOV.plusMonths(1), NOV.plusMonths(2), NOV.plusMonths(3));
+        assertThat(st.future().getFirst().lines()).extracting(MemberStatement.FutureLine::description, MemberStatement.FutureLine::installment)
+                .containsExactly(tuple("FARMACIA", "02/02"),
+                        tuple("Plano de saúde", null));
+        assertThat(st.future().getFirst().total()).isEqualTo(Money.of("380.00"));
+        assertThat(st.future().get(1).lines()).extracting(MemberStatement.FutureLine::description).containsExactly("Plano de saúde");
+        assertThat(st.future().get(2).total()).isEqualTo(Money.of("300.00"));
+        assertThat(builder.build(s.f.main, NOV, StatementOptions.DEFAULT).future()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("IMP-65: the summary shows the subscriptions of the member when there are any")
+    void subscriptions() {
+        assertThat(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT).subscriptionTotal()).isEqualTo(Money.ZERO);
+        long streaming = categories.create(new CategoryDetails("Streaming", null, "#6366F1", "repeat", true)).id();
+        recurrence.create(RuleKind.FIXED_EXPENSE, new RuleDetails("Globoplay", s.f.thirdParty, streaming, null,
+                Money.of("24.90"), Recurrence.MONTHLY, 1, 10, NOV, null, PaymentMethod.BOLETO));
+        assertThat(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT).subscriptionTotal()).isEqualTo(Money.of("24.90"));
+        PreparedStatement pt = service.prepare(new StatementRequest(s.f.thirdParty, NOV, StatementOptions.DEFAULT, null, null, null));
+        assertThat(pt.rendered().html()).contains("Assinaturas", "R$ 24,90");
+    }
+
+    @Test
     @DisplayName("RF-83, RF-93: options hide future installments; the fingerprint ignores the issue date but not the content")
     void options() {
         MemberStatement noFuture = builder.build(s.f.thirdParty, NOV, new StatementOptions(false, true, false));
-        assertThat(noFuture.committed()).isEmpty();
+        assertThat(noFuture.future()).isEmpty();
         assertThat(noFuture.cards().getFirst().lines()).allMatch(l -> l.category() == null);
         assertThat(StatementFingerprint.of(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT)))
                 .isEqualTo(StatementFingerprint.of(builder.build(s.f.thirdParty, NOV, StatementOptions.DEFAULT)))
@@ -94,7 +125,7 @@ class StatementPipelineTest {
         PreparedStatement pt = service.prepare(new StatementRequest(s.f.thirdParty, NOV, StatementOptions.DEFAULT, null, null, null));
         assertThat(pt.rendered().language()).isEqualTo("pt-BR");
         assertThat(pt.rendered().html()).contains("Total devido", "R$ 455,50", "Novembro de 2026", "Lançamentos no cartão",
-                "Parcelas futuras", "Alguns lançamentos ainda estão pendentes");
+                "Gastos futuros", "Alguns lançamentos ainda estão pendentes");
         assertThat(pt.rendered().subject()).isEqualTo("Extrato Novembro de 2026: R$ 455,50");
         PreparedStatement en = service.prepare(new StatementRequest(s.f.thirdParty, NOV, StatementOptions.DEFAULT, "en-US", null, null));
         assertThat(en.rendered().html()).contains("Total due", "R$455.50", "November 2026", "Card entries");
@@ -126,7 +157,8 @@ class StatementPipelineTest {
             assertThat(book.getSheetAt(0).getRow(3).getCell(3).getStringCellValue()).isEqualTo("MERCADO BOM");
         }
         String csv = new String(service.csv(pt), java.nio.charset.StandardCharsets.UTF_8);
-        assertThat(csv).contains("\"MERCADO BOM\"", "\"50,00\"", "\"Remédio\"");
+        assertThat(csv).contains("\"MERCADO BOM\"", "\"50,00\"", "\"Remédio\"",
+                "\"Gastos futuros\";\"Dezembro de 2026\";\"\";\"Plano de saúde\"");
     }
 
     @Test

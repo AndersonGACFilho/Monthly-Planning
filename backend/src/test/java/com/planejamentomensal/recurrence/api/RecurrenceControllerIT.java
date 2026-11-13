@@ -105,6 +105,25 @@ class RecurrenceControllerIT {
     }
 
     @Test
+    @DisplayName("IMP-63: a rule with history offers end instead of delete, and cannot end before a received month")
+    void endLinks() throws Exception {
+        String location = rule("INCOME", "Aluguel recebido", "MONTHLY", "1200.00", "");
+        mockMvc.perform(authorized(get(location))).andExpect(jsonPath("$._links.end").doesNotExist());
+        long id = firstOccurrence("2026-10", "INCOME");
+        mockMvc.perform(authorized(post("/api/occurrences/" + id + "/status")).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"done\":true,\"date\":\"2026-10-06\"}"));
+        mockMvc.perform(authorized(get(location)))
+                .andExpect(jsonPath("$._links.delete").doesNotExist())
+                .andExpect(jsonPath("$._links.end.href").exists());
+        mockMvc.perform(authorized(post(location + "/end")).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"billingPeriod\":\"2026-10\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("rule-received-after-end"));
+        mockMvc.perform(authorized(post(location + "/end")).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     @DisplayName("RF-23: a one-off income appears only in its period")
     void oneOff() throws Exception {
         rule("INCOME", "Venda bicicleta", "ONCE", "700.00", ",\"incomeType\":\"OTHER\"");

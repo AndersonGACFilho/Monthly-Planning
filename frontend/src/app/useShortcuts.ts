@@ -4,15 +4,24 @@ import { useUiStore } from '../shared/state/ui';
 
 /**
  * Keyboard shortcuts of the window (UI-01): Ctrl+N new card entry, Ctrl+I import, Ctrl+E export the monthly
- * spreadsheet, Ctrl+F search on the current screen. Alt+←/→ (billing period) lives in the period selector.
+ * spreadsheet, Ctrl+Shift+E export the database (IMP-69), Ctrl+F search on the current screen. Alt+←/→ (billing
+ * period) lives in the period selector.
  */
 export function useShortcuts(): void {
   const navigate = useNavigate();
   const setExportOpen = useUiStore((state) => state.setExportOpen);
+  const requestDatabaseExport = useUiStore((state) => state.requestDatabaseExport);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey) return;
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
       const key = event.key.toLowerCase();
+      if (event.shiftKey) {
+        if (key === 'e') {
+          event.preventDefault();
+          requestDatabaseExport();
+        }
+        return;
+      }
       if (key === 'n') {
         event.preventDefault();
         navigate('/entries?new=1');
@@ -33,5 +42,5 @@ export function useShortcuts(): void {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [navigate, setExportOpen]);
+  }, [navigate, setExportOpen, requestDatabaseExport]);
 }

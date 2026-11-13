@@ -86,6 +86,7 @@ public record AppPaths(Path home) implements DataFolders {
      *
      * @return {@code <home>/data/logs}
      */
+    @Override
     public Path logs() {
         return data().resolve("logs");
     }

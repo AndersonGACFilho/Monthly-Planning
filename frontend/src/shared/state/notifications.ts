@@ -6,6 +6,10 @@ export interface Notice {
   kind: 'error' | 'success';
   title: string;
   detail?: string;
+  /** Technical details to copy, shown in debug mode (RNF-11). */
+  details?: string;
+  /** Stays on screen until closed (RNF-11). */
+  sticky?: boolean;
 }
 
 interface NotificationState {

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
 import com.planejamentomensal.category.application.SaveCategoryUseCase;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.entry.application.EntryCommands;
 import com.planejamentomensal.entry.application.EntryLedger;
 import com.planejamentomensal.entry.application.LedgerFixture;
@@ -60,9 +61,9 @@ class HistoryServiceTest {
     @BeforeEach
     void setUp() {
         f = new LedgerFixture(members, cards, "7");
-        house = categories.create("Casa histórico", null, "#888888", "tag").id();
-        market = categories.create("Mercado histórico", house, "#888888", "tag").id();
-        leisure = categories.create("Lazer histórico", null, "#888888", "tag").id();
+        house = categories.create(new CategoryDetails("Casa histórico", null, "#888888", "tag", false)).id();
+        market = categories.create(new CategoryDetails("Mercado histórico", house, "#888888", "tag", false)).id();
+        leisure = categories.create(new CategoryDetails("Lazer histórico", null, "#888888", "tag", false)).id();
         recurrence.create(RuleKind.INCOME, new RuleDetails("Salário", f.main, null, IncomeType.SALARY, Money.of("10000.00"),
                 Recurrence.MONTHLY, 1, 5, OCT, null, null));
         purchase("MERCADO", "100.00", OCT, market, f.main);

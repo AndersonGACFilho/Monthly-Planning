@@ -19,6 +19,10 @@ pub const EXIT_LOCK_ORPHANED: i32 = 11;
 
 const STARTUP_TIMEOUT: Duration = Duration::from_secs(120);
 const SHUTDOWN_TIMEOUT: Duration = Duration::from_secs(20);
+/// Size above which the backend log moves aside at start (IMP-70).
+const LOG_MAX_BYTES: u64 = 5 * 1024 * 1024;
+/// Old logs kept next to `backend.log`: `backend.1.log` (newest) to `backend.3.log`.
+const LOGS_KEPT: u32 = 3;
 
 /// What the window needs to call the API; returned by the `backend_config` command.
 #[derive(Clone, Debug, Serialize)]
@@ -69,7 +73,12 @@ impl Backend {
         let logs = data.join("logs");
         fs::create_dir_all(&temp)?;
         fs::create_dir_all(&logs)?;
-        let log = OpenOptions::new().create(true).append(true).open(logs.join("backend.log"))?;
+        let log_path = logs.join("backend.log");
+        if let Err(error) = rotate_log(&log_path, LOG_MAX_BYTES, LOGS_KEPT) {
+            // a log that cannot move aside keeps growing, which must not stop the app
+            eprintln!("backend log not rotated: {error}");
+        }
+        let log = OpenOptions::new().create(true).append(true).open(&log_path)?;
 
         let mut command = Command::new(app_home::java_executable(home));
         command
@@ -154,6 +163,29 @@ pub fn log_file(home: &Path) -> PathBuf {
     app_home::data_dir(home).join("logs").join("backend.log")
 }
 
+/// Moves a log larger than `max_bytes` to `<name>.1.log`, shifting older ones up to `<name>.<kept>.log` and dropping
+/// the oldest, so the debug mode can never fill the drive (IMP-70). A small or missing log stays as it is.
+fn rotate_log(log: &Path, max_bytes: u64, kept: u32) -> io::Result<()> {
+    match fs::metadata(log) {
+        Ok(meta) if meta.len() > max_bytes => {}
+        Ok(_) => return Ok(()),
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+    }
+    let stem = log.file_stem().and_then(|s| s.to_str()).unwrap_or("backend");
+    let numbered = |n: u32| log.with_file_name(format!("{stem}.{n}.log"));
+    let oldest = numbered(kept);
+    if oldest.exists() {
+        fs::remove_file(oldest)?;
+    }
+    for n in (1..kept).rev() {
+        if numbered(n).exists() {
+            fs::rename(numbered(n), numbered(n + 1))?;
+        }
+    }
+    fs::rename(log, numbered(1))
+}
+
 #[cfg(windows)]
 fn hide_console(command: &mut Command) {
     use std::os::windows::process::CommandExt;
@@ -185,6 +217,33 @@ fn jvm_options(temp: &Path, native: Option<&Path>) -> Vec<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn imp_70_a_large_log_moves_aside_and_the_oldest_is_dropped() {
+        let dir = tempfile::tempdir().unwrap();
+        let log = dir.path().join("backend.log");
+        fs::write(&log, [b'x'; 11]).unwrap();
+        fs::write(dir.path().join("backend.1.log"), "one").unwrap();
+        fs::write(dir.path().join("backend.2.log"), "two").unwrap();
+        fs::write(dir.path().join("backend.3.log"), "three").unwrap();
+        rotate_log(&log, 10, 3).unwrap();
+        assert!(!log.exists());
+        assert_eq!(fs::read(dir.path().join("backend.1.log")).unwrap().len(), 11);
+        assert_eq!(fs::read_to_string(dir.path().join("backend.2.log")).unwrap(), "one");
+        assert_eq!(fs::read_to_string(dir.path().join("backend.3.log")).unwrap(), "two");
+        assert_eq!(fs::read_dir(dir.path()).unwrap().count(), 3);
+    }
+
+    #[test]
+    fn imp_70_a_small_or_missing_log_stays_as_it_is() {
+        let dir = tempfile::tempdir().unwrap();
+        let log = dir.path().join("backend.log");
+        rotate_log(&log, 10, 3).unwrap();
+        fs::write(&log, "short").unwrap();
+        rotate_log(&log, 10, 3).unwrap();
+        assert_eq!(fs::read_to_string(&log).unwrap(), "short");
+        assert!(!dir.path().join("backend.1.log").exists());
+    }
 
     #[test]
     fn por_03_jvm_writes_nothing_outside_and_unpacks_natives_where_programs_run() {

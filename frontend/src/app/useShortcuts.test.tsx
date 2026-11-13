@@ -23,10 +23,10 @@ function Probe() {
 describe('useShortcuts', () => {
   beforeEach(() => {
     useBillingPeriodStore.setState({ period: '2026-11' });
-    useUiStore.setState({ exportOpen: false });
+    useUiStore.setState({ exportOpen: false, databaseExportRequests: 0 });
   });
 
-  it('UI-01: Ctrl+N, Ctrl+I, Ctrl+E, Ctrl+F and Alt+arrows reach their actions', () => {
+  it('UI-01, IMP-69: Ctrl+N, Ctrl+I, Ctrl+E, Ctrl+Shift+E, Ctrl+F and Alt+arrows reach their actions', () => {
     render(
       <QueryClientProvider client={createQueryClient()}>
         <MemoryRouter>
@@ -42,6 +42,8 @@ describe('useShortcuts', () => {
     expect(screen.getByTestId('where')).toHaveTextContent('/import');
     fireEvent.keyDown(window, { key: 'e', ctrlKey: true });
     expect(useUiStore.getState().exportOpen).toBe(true);
+    fireEvent.keyDown(window, { key: 'E', ctrlKey: true, shiftKey: true });
+    expect(useUiStore.getState().databaseExportRequests).toBe(1);
     fireEvent.keyDown(window, { key: 'f', ctrlKey: true });
     expect(document.activeElement).toBe(screen.getByLabelText('busca'));
     fireEvent.keyDown(window, { key: 'ArrowRight', altKey: true });

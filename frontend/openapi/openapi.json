@@ -33,6 +33,9 @@
     "description" : "Members (contas / cotas): people or cost centres that own incomes, expenses and entries (RF-01, RF-20,\n RF-80).",
     "name" : "member-controller"
   }, {
+    "description" : "Debug mode and interface errors (RNF-11).",
+    "name" : "diagnostics-controller"
+  }, {
     "description" : "Database the app works on: the live data or a copy of a backup opened to check it, and restoring a backup as the\n live data (IMP-58, POR-12).",
     "name" : "database-controller"
   }, {
@@ -60,7 +63,7 @@
     "description" : "Card totals of a billing period with closing, due date and status (RF-36, RF-37, IMP-31).",
     "name" : "card-bill-controller"
   }, {
-    "description" : "Backups of the database and export of all data (POR-12, RNF-07).",
+    "description" : "Backups of the database and export of all data (POR-12, RNF-07, IMP-69).",
     "name" : "backup-controller"
   }, {
     "description" : "Aliases and the descriptions they group (RF-46 to RF-49, RN-24).",
@@ -1213,10 +1216,10 @@
     },
     "/api/data-export" : {
       "get" : {
-        "description" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "description" : "Exports all data as JSON, as a ZIP of CSV files or as the SQLite database file (RNF-07, IMP-69). The database\n file, like a backup, is refused while a backup is open.",
         "operationId" : "exportData",
         "parameters" : [ {
-          "description" : "<code>json</code> or <code>csv</code>",
+          "description" : "<code>json</code>, <code>csv</code> or <code>db</code>",
           "in" : "query",
           "name" : "format",
           "required" : false,
@@ -1234,6 +1237,12 @@
                   "format" : "byte"
                 }
               },
+              "application/vnd.sqlite3" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              },
               "application/zip" : {
                 "schema" : {
                   "type" : "string",
@@ -1244,7 +1253,7 @@
             "description" : "the file"
           }
         },
-        "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "summary" : "Exports all data as JSON, as a ZIP of CSV files or as the SQLite database file (RNF-07, IMP-69).",
         "tags" : [ "backup-controller" ]
       }
     },
@@ -1297,6 +1306,43 @@
         "tags" : [ "database-controller" ]
       }
     },
+    "/api/database/imports" : {
+      "post" : {
+        "description" : "Imports a database file, such as an exported one, and opens a copy of it to check (IMP-72); restoring it is the\n user's next step, so the live data never change here.",
+        "operationId" : "importDatabase",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "Itaú bill as PDF or XLSX"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use: the imported copy"
+          }
+        },
+        "summary" : "Imports a database file, such as an exported one, and opens a copy of it to check (IMP-72); restoring it is the\n user's next step, so the live data never change here.",
+        "tags" : [ "database-controller" ]
+      }
+    },
     "/api/database/restores" : {
       "post" : {
         "description" : "Makes a backup the live data, after backing the live data up.",
@@ -1326,6 +1372,79 @@
         },
         "summary" : "Makes a backup the live data, after backing the live data up.",
         "tags" : [ "database-controller" ]
+      }
+    },
+    "/api/diagnostics" : {
+      "get" : {
+        "description" : "Returns the debug mode and the log folder.",
+        "operationId" : "diagnostics",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosticsModel"
+                }
+              }
+            },
+            "description" : "diagnostics"
+          }
+        },
+        "summary" : "Returns the debug mode and the log folder.",
+        "tags" : [ "diagnostics-controller" ]
+      },
+      "put" : {
+        "description" : "Turns the debug mode on or off; the log levels change at once.",
+        "operationId" : "changeDiagnostics",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/DiagnosticsRequest"
+              }
+            }
+          },
+          "description" : "new mode",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DiagnosticsModel"
+                }
+              }
+            },
+            "description" : "diagnostics after the change"
+          }
+        },
+        "summary" : "Turns the debug mode on or off; the log levels change at once.",
+        "tags" : [ "diagnostics-controller" ]
+      }
+    },
+    "/api/diagnostics/client-errors" : {
+      "post" : {
+        "description" : "Writes an error of the interface to the backend log; line breaks of the single-line fields are dropped so a\n message cannot fake other log lines.",
+        "operationId" : "reportClientError",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ClientErrorRequest"
+              }
+            }
+          },
+          "description" : "the error",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Writes an error of the interface to the backend log; line breaks of the single-line fields are dropped so a\n message cannot fake other log lines.",
+        "tags" : [ "diagnostics-controller" ]
       }
     },
     "/api/history" : {
@@ -2428,6 +2547,40 @@
         "tags" : [ "recurrence-rule-controller" ]
       }
     },
+    "/api/recurrence-rules/{id}/end" : {
+      "post" : {
+        "description" : "Ends a rule with received or paid months from a period on; later months still expected are removed (IMP-63).",
+        "operationId" : "endRecurrenceRule",
+        "parameters" : [ {
+          "description" : "rule id",
+          "in" : "path",
+          "name" : "id",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/EndRequest"
+              }
+            }
+          },
+          "description" : "first period without the rule",
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "204"
+          }
+        },
+        "summary" : "Ends a rule with received or paid months from a period on; later months still expected are removed (IMP-63).",
+        "tags" : [ "recurrence-rule-controller" ]
+      }
+    },
     "/api/review-queue" : {
       "get" : {
         "description" : "Lists pending items, filtered by card, billing period and import batch (RF-79).",
@@ -2859,7 +3012,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -2993,7 +3146,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3128,7 +3281,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3262,7 +3415,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3397,7 +3550,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -3532,7 +3685,7 @@
             "type" : "boolean"
           }
         }, {
-          "description" : "include the installments committed in the next periods",
+          "description" : "include the expenses of the next periods",
           "in" : "query",
           "name" : "includeFuture",
           "required" : false,
@@ -5011,6 +5164,10 @@
             "format" : "int64",
             "description" : "Parent category."
           },
+          "subscription" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> when single card purchases in it are subscriptions (IMP-65)."
+          },
           "system" : {
             "type" : "boolean",
             "description" : "<code>true</code> for \"not classified\"."
@@ -5048,6 +5205,10 @@
             "type" : "integer",
             "format" : "int64",
             "description" : "parent category for a subcategory, optional"
+          },
+          "subscription" : {
+            "type" : "boolean",
+            "description" : "single card purchases in it are subscriptions (IMP-65); <code>false</code> when missing"
           }
         },
         "required" : [ "color", "icon", "name" ]
@@ -5078,6 +5239,37 @@
             "description" : "change from the previous period in percent, or <code>null</code>"
           }
         }
+      },
+      "ClientErrorRequest" : {
+        "type" : "object",
+        "description" : "An error of the interface to write to the backend log (RNF-11).",
+        "properties" : {
+          "detail" : {
+            "type" : "string",
+            "description" : "stack trace or extra detail, optional",
+            "maxLength" : 20000,
+            "minLength" : 0
+          },
+          "message" : {
+            "type" : "string",
+            "description" : "error message",
+            "maxLength" : 2000,
+            "minLength" : 0
+          },
+          "requestId" : {
+            "type" : "string",
+            "description" : "request id of the failed call, optional",
+            "maxLength" : 64,
+            "minLength" : 0
+          },
+          "url" : {
+            "type" : "string",
+            "description" : "screen where it happened, optional",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "message" ]
       },
       "CollectionModelAliasModel" : {
         "type" : "object",
@@ -5457,6 +5649,45 @@
             "enum" : [ "SENT", "AWAITING_USER", "FAILED" ]
           }
         }
+      },
+      "DiagnosticsModel" : {
+        "type" : "object",
+        "description" : "Debug mode and where the log is written (RNF-11).",
+        "properties" : {
+          "_links" : {
+            "$ref" : "#/components/schemas/Links"
+          },
+          "debugMode" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> while the debug mode is on."
+          },
+          "logFolder" : {
+            "type" : "string",
+            "description" : "Folder of the backend log, to open from the settings."
+          }
+        }
+      },
+      "DiagnosticsRequest" : {
+        "type" : "object",
+        "description" : "New debug mode (RNF-11).",
+        "properties" : {
+          "debugMode" : {
+            "type" : "boolean",
+            "description" : "<code>true</code> to turn it on"
+          }
+        }
+      },
+      "EndRequest" : {
+        "type" : "object",
+        "description" : "First billing period without an ended income or fixed expense (IMP-63).",
+        "properties" : {
+          "billingPeriod" : {
+            "type" : "string",
+            "description" : "period, <code>yyyy-MM</code>",
+            "pattern" : "^\\d{4}-\\d{2}$"
+          }
+        },
+        "required" : [ "billingPeriod" ]
       },
       "EntityModelMapStringString" : {
         "type" : "object",
@@ -6428,6 +6659,10 @@
               "$ref" : "#/components/schemas/SettlementRow"
             }
           },
+          "subscriptionTotal" : {
+            "type" : "number",
+            "description" : "Subscriptions: card subscriptions and expenses in subscription categories (IMP-65)."
+          },
           "unconfirmedCount" : {
             "type" : "integer",
             "format" : "int32",
@@ -7065,7 +7300,7 @@
           },
           "includeFuture" : {
             "type" : "boolean",
-            "description" : "include future installments"
+            "description" : "include the expenses of the next periods"
           },
           "language" : {
             "type" : "string",

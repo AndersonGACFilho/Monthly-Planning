@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Copy, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Notice, useNotifications } from '../state/notifications';
@@ -8,7 +8,8 @@ export const NOTICE_TIMEOUT: Record<Notice['kind'], number> = { success: 4000, e
 
 /**
  * Shows API errors and confirmations in the corner of the window (IMP-15). Each notice closes by itself
- * after {@link NOTICE_TIMEOUT}, except while the pointer or the focus is on it.
+ * after {@link NOTICE_TIMEOUT}, except while the pointer or the focus is on it, or when it is sticky; technical
+ * details of the debug mode can be copied (RNF-11).
  *
  * @returns the notice stack
  */
@@ -34,10 +35,10 @@ function Toast({ notice, dismiss }: { notice: Notice; dismiss: (id: number) => v
   const [held, setHeld] = useState(false);
 
   useEffect(() => {
-    if (held) return undefined;
+    if (held || notice.sticky) return undefined;
     const timer = setTimeout(() => dismiss(notice.id), NOTICE_TIMEOUT[notice.kind]);
     return () => clearTimeout(timer);
-  }, [held, notice.id, notice.kind, dismiss]);
+  }, [held, notice.id, notice.kind, notice.sticky, dismiss]);
 
   return (
     <div
@@ -55,6 +56,18 @@ function Toast({ notice, dismiss }: { notice: Notice; dismiss: (id: number) => v
       <div className="flex-1">
         <p className="font-medium">{notice.title}</p>
         {notice.detail && <p>{notice.detail}</p>}
+        {notice.details && (
+          <>
+            <pre className="mt-1 max-h-32 overflow-auto text-xs whitespace-pre-wrap opacity-80">{notice.details}</pre>
+            <button
+              type="button"
+              className="mt-1 inline-flex items-center gap-1 text-xs underline"
+              onClick={() => void navigator.clipboard.writeText(`${notice.title}\n${notice.details}`)}
+            >
+              <Copy size={12} aria-hidden /> {t('error.copyDetails')}
+            </button>
+          </>
+        )}
       </div>
       <button type="button" onClick={() => dismiss(notice.id)} aria-label={t('action.close')}>
         <X size={16} aria-hidden />

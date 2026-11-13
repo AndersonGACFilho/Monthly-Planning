@@ -13,6 +13,7 @@ import { TemplatesPage } from '../features/templates/TemplatesPage';
 import { PlaceholderPage } from '../shared/components/PlaceholderPage';
 import type { ReactElement } from 'react';
 import { AppLayout } from './AppLayout';
+import { RouteError } from './ErrorBoundary';
 import { EXTRA_SCREENS, MAIN_TABS } from './navigation';
 
 /** Real pages by path; the rest are placeholders until their milestone. */
@@ -32,17 +33,18 @@ const PAGES: Record<string, ReactElement> = {
 
 /**
  * Routes of the app. The overview is the index route, so the app opens straight on it (RNF-10).
- * Each placeholder is replaced by its real page in the milestone that builds it.
+ * Each placeholder is replaced by its real page in the milestone that builds it. A screen that fails shows
+ * {@link RouteError} inside the layout (RNF-11).
  */
 export const routes: RouteObject[] = [
   {
     path: '/',
     element: <AppLayout />,
-    children: [...MAIN_TABS, ...EXTRA_SCREENS].map((item) =>
-      item.path === '/'
-        ? { index: true, element: PAGES[item.path] ?? <PlaceholderPage titleKey={item.labelKey} /> }
-        : { path: item.path.slice(1), element: PAGES[item.path] ?? <PlaceholderPage titleKey={item.labelKey} /> },
-    ),
+    children: [...MAIN_TABS, ...EXTRA_SCREENS].map((item) => ({
+      ...(item.path === '/' ? { index: true } : { path: item.path.slice(1) }),
+      element: PAGES[item.path] ?? <PlaceholderPage titleKey={item.labelKey} />,
+      errorElement: <RouteError />,
+    })),
   },
 ];
 

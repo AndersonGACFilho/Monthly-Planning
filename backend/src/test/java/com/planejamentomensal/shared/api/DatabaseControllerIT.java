@@ -51,7 +51,7 @@ class DatabaseControllerIT {
     }
 
     @Test
-    @DisplayName("IMP-58, POR-12: a backup opens as a copy to check it, refuses a new backup and the live data comes back intact")
+    @DisplayName("IMP-58, POR-12, IMP-69: a backup opens as a copy to check it, refuses a new backup or database export and the live data comes back intact")
     void viewBackup() throws Exception {
         horizon("5");
         String backup = backups.backup("manual").getFileName().toString();
@@ -64,6 +64,9 @@ class DatabaseControllerIT {
         mockMvc.perform(authorized(get("/api/settings"))).andExpect(jsonPath("$.projection-horizon-months").value("5"));
         horizon("9");
         mockMvc.perform(authorized(post("/api/backups")).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("backup-open"));
+        mockMvc.perform(authorized(get("/api/data-export")).param("format", "db"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("backup-open"));
 

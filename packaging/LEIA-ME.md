@@ -35,8 +35,14 @@ O atalho vale só para o computador onde foi criado e aponta para esta pasta:
 ## Cópias de segurança
 
 - A cada abertura o app copia o banco para `data/backups/` e guarda as 10 últimas.
+- **Exportar banco**, no topo da janela (ou Ctrl+Shift+E), baixa o banco inteiro num arquivo
+  `planejamento-mensal-<data>.db`: uma cópia completa e consistente, para guardar em outro lugar ou abrir em qualquer
+  leitor de SQLite.
+- **Importar banco (.db)**, em **Ajustes → Cópias de segurança e dados**, traz de volta um arquivo exportado (ou
+  qualquer banco do app): ele é conferido, guardado em `data/backups/` como "Importado" (fora da limpeza automática) e
+  aberto para conferir, com a faixa amarela. Nada muda nos dados reais até você clicar em **Restaurar**.
 - Em **Ajustes → Cópias de segurança e dados** dá para fazer uma cópia agora (na pasta ou em outro lugar) e
-  exportar todos os dados em JSON ou CSV.
+  exportar todos os dados em JSON, CSV ou como o banco (.db).
 - **Conferir uma cópia:** na lista de cópias, **Abrir para conferir** mostra aquela cópia em todo o app, com uma
   faixa amarela no topo. É uma cópia da cópia: o arquivo do backup não muda, e o que for alterado enquanto ela está
   aberta é descartado ao clicar em **Voltar aos dados reais**.
@@ -49,6 +55,15 @@ O atalho vale só para o computador onde foi criado e aponta para esta pasta:
 
 Feche o app e espere a janela sumir. Assim nenhuma gravação fica pela metade. Se o SSD sair com o app aberto, o app
 avisa que não consegue gravar; reconecte e abra de novo.
+
+## Quando algo der errado
+
+Em **Ajustes → Diagnóstico**, ligue o **Modo debug** e repita o que deu erro. O aviso de erro passa a mostrar o código,
+o número da requisição e o endereço, com o botão **Copiar detalhes**, e fica na tela até ser fechado. O app grava os
+detalhes no log, `data/logs/backend.log`, que abre pelo botão **Abrir pasta do log** (passando de 5 MB, ele vira
+`backend.1.log` na abertura seguinte e só os três anteriores ficam); o número da requisição do aviso
+aparece nas linhas do log daquele erro. Mande o que foi copiado e esse arquivo para quem for ajudar, e desligue o modo
+depois: ele continua ligado entre aberturas do app.
 
 ## Atualizar
 
@@ -82,6 +97,10 @@ Windows and Linux.
 
 - **Open:** `PlanejamentoMensal.exe` on Windows; `PlanejamentoMensal.AppImage` on Linux, or `sh start-linux.sh` when the
   AppImage cannot run (no FUSE, or a drive mounted `noexec`).
+- **Export database:** the button at the top of the window (or Ctrl+Shift+E) downloads the whole database as one
+  `planejamento-mensal-<date>.db` file, a full and consistent copy. *Import database (.db)* in *Settings → Backups
+  and data* brings such a file back: it is checked, kept in `data/backups/` as "Imported" (out of the automatic
+  cleanup) and opened to check; the live data change only when you click *Restore*.
 - **Backups:** one copy per start in `data/backups/` (latest 10 kept); more in *Settings → Backups and data*. Each copy
   can be opened to check it (changes made there are dropped when you go back to the live data) or restored; restoring
   saves the current data as a new backup first. Without the app, close it and replace `data/planejamento-mensal.db`
@@ -92,6 +111,11 @@ Windows and Linux.
   that computer only and does not open while the drive is unplugged; if the drive gets another letter or mount
   path, Settings offers *Fix shortcut*. Updates keep it working; *Remove from the system menu* deletes all of it.
 - **Removing the drive:** close the app first.
+- **When something goes wrong:** turn on *Settings → Diagnostics → Debug mode* and repeat what failed. Error notices
+  then show the code, the request number and the address with *Copy details*, and stay until closed. The details go
+  to `data/logs/backend.log` (*Open log folder*), where the request number of the notice marks the lines of that
+  error; over 5 MB it becomes `backend.1.log` at the next start, and only the three previous logs are kept. Turn
+  the mode off afterwards; it stays on between starts.
 - **Updating:** when a new version exists the app shows a notice at the top of the window. *Update* downloads it and
   checks it; *Restart now* (or simply the next start) installs it, backs up and migrates the database, and goes back
   to the previous version if the new one does not open. It is never forced, and `data/` is never changed. The

@@ -92,6 +92,17 @@ class EntryEntitiesTest {
     }
 
     @Test
+    @DisplayName("IMP-66: an open bill can be paid, stays paid when the closed file arrives and is not paid twice")
+    void payOpenBill() {
+        CardBill bill = new CardBill(1, BillingPeriod.of(2026, 11));
+        bill.markPaid();
+        assertThat(bill.status()).isEqualTo(BillStatus.PAID);
+        bill.recordFile(LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 9), Money.of("12000.00"), true);
+        assertThat(bill.status()).isEqualTo(BillStatus.PAID);
+        assertThatThrownBy(bill::markPaid).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
     @DisplayName("RF-36, RN-22: bills record file dates, become closed and then paid")
     void billLifeCycle() {
         CardBill bill = withId(new CardBill(1, BillingPeriod.of(2026, 11)), 3);
@@ -100,7 +111,6 @@ class EntryEntitiesTest {
         bill.recordFile(null, LocalDate.of(2026, 11, 9), Money.of("11916.21"), false);
         assertThat(bill.partial()).isTrue();
         assertThat(bill.status()).isEqualTo(BillStatus.OPEN);
-        assertThatThrownBy(bill::markPaid).isInstanceOf(IllegalStateException.class);
         BatchChange before = BatchChange.billChanged(3L, bill);
         bill.recordFile(LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 9), Money.of("12000.00"), true);
         assertThat(bill.status()).isEqualTo(BillStatus.CLOSED);

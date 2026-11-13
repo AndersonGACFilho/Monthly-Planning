@@ -1,6 +1,7 @@
 package com.planejamentomensal.recurrence.application;
 
 import com.planejamentomensal.recurrence.domain.Occurrence;
+import com.planejamentomensal.recurrence.domain.OccurrenceStatus;
 import com.planejamentomensal.recurrence.domain.RuleKind;
 import com.planejamentomensal.shared.domain.BillingPeriod;
 import java.util.List;
@@ -37,6 +38,40 @@ public interface OccurrenceRepository {
      * @return occurrences
      */
     List<Occurrence> findByRuleId(long ruleId);
+
+    /**
+     * Tells whether a rule has an occurrence in a status, without loading the occurrences.
+     *
+     * @param ruleId rule
+     * @param status status looked for
+     * @return {@code true} if one exists
+     */
+    boolean existsByRuleIdAndStatus(long ruleId, OccurrenceStatus status);
+
+    /**
+     * Tells whether a rule has an occurrence in a status from a period on.
+     *
+     * @param ruleId rule
+     * @param status status looked for
+     * @param from   first period looked at
+     * @return {@code true} if one exists
+     */
+    boolean existsByRuleIdAndStatusAndBillingPeriodGreaterThanEqual(long ruleId, OccurrenceStatus status, BillingPeriod from);
+
+    /**
+     * Removes every occurrence of a rule and clears the persistence context, so the rule can be removed next.
+     *
+     * @param ruleId rule
+     */
+    void deleteByRuleId(long ruleId);
+
+    /**
+     * Removes the occurrences of a rule from a period on that were not received or paid (IMP-63).
+     *
+     * @param ruleId rule
+     * @param from   first period removed
+     */
+    void deleteExpectedFrom(long ruleId, BillingPeriod from);
 
     /**
      * Lists the card-paid fixed expenses waiting for the user's choice of entry (RN-30).

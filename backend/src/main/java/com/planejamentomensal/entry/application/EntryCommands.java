@@ -34,6 +34,7 @@ public class EntryCommands {
     private final PurchaseRepository purchases;
     private final BillEntryRepository entries;
     private final AliasService aliases;
+    private final EntryLedger ledger;
 
     /**
      * Creates the commands.
@@ -42,13 +43,15 @@ public class EntryCommands {
      * @param purchases purchase storage
      * @param entries   entry storage
      * @param aliases   alias service
+     * @param ledger    ledger, for subscription categories
      */
     public EntryCommands(EntryQueries queries, PurchaseRepository purchases, BillEntryRepository entries,
-            AliasService aliases) {
+            AliasService aliases, EntryLedger ledger) {
         this.queries = queries;
         this.purchases = purchases;
         this.entries = entries;
         this.aliases = aliases;
+        this.ledger = ledger;
     }
 
     /**
@@ -77,6 +80,7 @@ public class EntryCommands {
         purchase.classify(clearCategory ? null : categoryId != null ? categoryId : purchase.categoryId(), newSplits,
                 note != null ? (note.isBlank() ? null : note.strip()) : purchase.note(), true);
         purchases.save(purchase);
+        ledger.followSubscriptionCategory(null, purchase);
         return queries.get(entryId);
     }
 

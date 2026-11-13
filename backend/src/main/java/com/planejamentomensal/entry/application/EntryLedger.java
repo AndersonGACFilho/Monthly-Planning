@@ -1,5 +1,6 @@
 package com.planejamentomensal.entry.application;
 
+import com.planejamentomensal.category.application.CategoryQueries;
 import com.planejamentomensal.entry.domain.BatchChange;
 import com.planejamentomensal.entry.domain.BillEntry;
 import com.planejamentomensal.entry.domain.CardBill;
@@ -48,23 +49,26 @@ public class EntryLedger {
     private final BillEntryRepository entries;
     private final BatchChangeRepository changes;
     private final Settings settings;
+    private final CategoryQueries categories;
 
     /**
      * Creates the ledger.
      *
-     * @param bills     bill storage
-     * @param purchases purchase storage
-     * @param entries   entry storage
-     * @param changes   batch log storage
-     * @param settings  user settings (projection horizon)
+     * @param bills      bill storage
+     * @param purchases  purchase storage
+     * @param entries    entry storage
+     * @param changes    batch log storage
+     * @param settings   user settings (projection horizon)
+     * @param categories categories marked as subscription
      */
     public EntryLedger(CardBillRepository bills, PurchaseRepository purchases, BillEntryRepository entries,
-            BatchChangeRepository changes, Settings settings) {
+            BatchChangeRepository changes, Settings settings, CategoryQueries categories) {
         this.bills = bills;
         this.purchases = purchases;
         this.entries = entries;
         this.changes = changes;
         this.settings = settings;
+        this.categories = categories;
     }
 
     /**
@@ -138,6 +142,7 @@ public class EntryLedger {
                         EntryStatus.PROJECTED, EntryKeyFactory.installmentKey(purchaseKey, next.installmentNumber(), null));
             }
         }
+        followSubscriptionCategory(batchId, created);
         return entry;
     }
 
@@ -260,17 +265,31 @@ public class EntryLedger {
     }
 
     /**
+     * Turns a single purchase into a subscription when its category is marked as one (IMP-65); unmarking a category
+     * never turns subscriptions back.
+     *
+     * @param batchId  batch that logs the projected charges, or {@code null}
+     * @param purchase purchase whose category was just set
+     */
+    public void followSubscriptionCategory(Long batchId, Purchase purchase) {
+        if (purchase.canBecomeSubscription() && categories.isSubscription(purchase.categoryId())) {
+            makeSubscription(batchId, purchase.id());
+        }
+    }
+
+    /**
      * Turns a purchase into a subscription and projects its charges (RN-09, RN-23).
      *
+     * @param batchId    batch that logs the projected charges, or {@code null}
      * @param purchaseId purchase
      */
-    public void makeSubscription(long purchaseId) {
+    public void makeSubscription(Long batchId, long purchaseId) {
         Purchase purchase = purchases.findById(purchaseId).orElseThrow(() -> new NotFoundException("purchase", purchaseId));
         purchase.changeType(PurchaseType.SUBSCRIPTION);
         purchases.save(purchase);
         entries.findByPurchaseIdOrderByEntryDate(purchaseId).stream()
                 .max(java.util.Comparator.comparing((BillEntry e) -> e.cardBill().billingPeriod()))
-                .ifPresent(last -> projectSubscription(null, purchase, last.cardBill().billingPeriod(), last.entryDate(),
+                .ifPresent(last -> projectSubscription(batchId, purchase, last.cardBill().billingPeriod(), last.entryDate(),
                         last.amount()));
     }
 

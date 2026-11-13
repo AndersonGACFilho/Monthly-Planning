@@ -39,6 +39,9 @@ public class Category {
     @Column(name = "system_category", nullable = false)
     private boolean system;
 
+    @Column(nullable = false)
+    private boolean subscription;
+
     @Version
     private long version;
 
@@ -51,33 +54,26 @@ public class Category {
     /**
      * Creates a category.
      *
-     * @param name     name
-     * @param parentId parent category, or {@code null}
-     * @param color    colour as {@code #RRGGBB}
-     * @param icon     icon name from the interface icon set
-     * @param system   {@code true} only for "not classified"
+     * @param details editable data
+     * @param system  {@code true} only for "not classified"
      */
-    public Category(String name, Long parentId, String color, String icon, boolean system) {
-        this.name = name;
-        this.parentId = parentId;
-        this.color = color;
-        this.icon = icon;
+    public Category(CategoryDetails details, boolean system) {
         this.system = system;
+        update(details);
     }
 
     /**
-     * Changes the editable data; the system flag never changes.
+     * Changes the editable data; the system flag never changes, and the system category has no parent and is never a
+     * subscription.
      *
-     * @param newName     name
-     * @param newParentId parent, or {@code null}
-     * @param newColor    colour
-     * @param newIcon     icon
+     * @param details new data
      */
-    public void update(String newName, Long newParentId, String newColor, String newIcon) {
-        this.name = newName;
-        this.parentId = system ? null : newParentId;
-        this.color = newColor;
-        this.icon = newIcon;
+    public void update(CategoryDetails details) {
+        this.name = details.name();
+        this.parentId = system ? null : details.parentId();
+        this.color = details.color();
+        this.icon = details.icon();
+        this.subscription = !system && details.subscription();
     }
 
     /**
@@ -132,6 +128,15 @@ public class Category {
      */
     public boolean system() {
         return system;
+    }
+
+    /**
+     * Tells whether single card purchases in this category are subscriptions (IMP-65).
+     *
+     * @return subscription flag
+     */
+    public boolean subscription() {
+        return subscription;
     }
 
     /**

@@ -1,20 +1,25 @@
 package com.planejamentomensal.shared.api;
 
 import static com.planejamentomensal.shared.api.ApiTestSupport.authorized;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.planejamentomensal.shared.api.web.RequestIdFilter;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ExtendWith(OutputCaptureExtension.class)
 @Import(GlobalExceptionHandlerIT.ProbeController.class)
 class GlobalExceptionHandlerIT {
 
@@ -43,6 +49,33 @@ class GlobalExceptionHandlerIT {
         void create(@Valid @RequestBody Probe probe) {
             throw new BusinessRuleException("not-found", "probe", probe.name());
         }
+
+        @PostMapping("/api/test-failures")
+        void fail() {
+            throw new IllegalStateException("probe failure");
+        }
+    }
+
+    @Test
+    @DisplayName("RNF-11: an unexpected error is a localized 500 with its request id, logged with the stack trace")
+    void unexpectedErrorIsLogged(CapturedOutput output) throws Exception {
+        mockMvc.perform(authorized(post("/api/test-failures")).header(RequestIdFilter.HEADER, "probe-500")
+                        .header(HttpHeaders.ACCEPT_LANGUAGE, "pt-BR"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("internal-error"))
+                .andExpect(jsonPath("$.requestId").value("probe-500"));
+        assertThat(output).contains("[probe-500]", "IllegalStateException: probe failure", "at com.planejamentomensal");
+    }
+
+    @Test
+    @DisplayName("RNF-11: every problem carries the request id of its response")
+    void problemHasRequestId() throws Exception {
+        var result = mockMvc.perform(authorized(post("/api/test-probes"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"x\"}"))
+                .andExpect(jsonPath("$.requestId").exists())
+                .andReturn();
+        assertThat(result.getResponse().getContentAsString()).contains(result.getResponse().getHeader(RequestIdFilter.HEADER));
     }
 
     @Test

@@ -5,8 +5,9 @@ import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.statement.domain.MemberStatement;
 import com.planejamentomensal.statement.domain.MemberStatement.CardGroup;
 import com.planejamentomensal.statement.domain.MemberStatement.CardLine;
-import com.planejamentomensal.statement.domain.MemberStatement.CommittedPeriod;
 import com.planejamentomensal.statement.domain.MemberStatement.ExpenseLine;
+import com.planejamentomensal.statement.domain.MemberStatement.FutureLine;
+import com.planejamentomensal.statement.domain.MemberStatement.FuturePeriod;
 import com.planejamentomensal.statement.domain.StatementOptions;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,11 +36,13 @@ public final class SampleStatement {
                 new CardLine(day.plusDays(9), "Farmácia", "02/03", Money.of("45.90"), null, "Saúde", false),
                 new CardLine(day.plusDays(15), "Streaming", "*", Money.of("21.90"), null, "Lazer", true));
         CardGroup card = new CardGroup("Itaú", List.of("1234"), period.atDay(10), lines, Money.of("130.20"));
-        List<ExpenseLine> fixed = List.of(new ExpenseLine(null, "Plano de saúde", Money.of("300.00"), "Saúde"));
-        List<ExpenseLine> variable = List.of(new ExpenseLine(period.atDay(4), "Feira", Money.of("35.00"), "Mercado"));
-        return new MemberStatement(0, "M", "Maria", false, period, LocalDate.now(), List.of(card), fixed, variable,
-                List.of(new CommittedPeriod(period.next(), Money.of("45.90"))), Money.ZERO, Money.of("130.20"),
-                Money.of("300.00"), Money.of("35.00"), null, null, Money.of("465.20"), period.atDay(10), "maria@example.com",
-                List.of("Streaming"), StatementOptions.DEFAULT);
+        List<ExpenseLine> fixed = List.of(new ExpenseLine(null, "Plano de saúde", Money.of("300.00"), "Saúde", false));
+        List<ExpenseLine> variable = List.of(new ExpenseLine(period.atDay(4), "Feira", Money.of("35.00"), "Mercado", false));
+        List<FuturePeriod> future = List.of(new FuturePeriod(period.next(), List.of(
+                new FutureLine("Farmácia", "03/03", Money.of("45.90")),
+                new FutureLine("Plano de saúde", null, Money.of("300.00"))), Money.of("345.90")));
+        return new MemberStatement(0, "M", "Maria", false, period, LocalDate.now(), List.of(card), fixed, variable, future,
+                Money.ZERO, Money.of("130.20"), Money.of("300.00"), Money.of("35.00"), null, null, Money.of("465.20"),
+                period.atDay(10), "maria@example.com", List.of("Streaming"), StatementOptions.DEFAULT);
     }
 }

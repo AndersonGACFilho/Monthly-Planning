@@ -88,6 +88,29 @@ describe('IncomesPage', () => {
     expect(ifMatch).toBe('"2"');
   });
 
+  it('IMP-63: a received month ends its income from the next month', async () => {
+    let body: unknown;
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    server.use(
+      http.get(`${base}/api/occurrences`, () =>
+        HttpResponse.json({ _embedded: { occurrences: [salary({ status: 'DONE', effectiveDate: '2026-11-05' })] } }),
+      ),
+      http.get(`${base}/api/recurrence-rules`, () =>
+        HttpResponse.json({
+          _embedded: { recurrenceRules: [{ id: 1, description: 'Salário', _links: { end: { href: `${base}/api/recurrence-rules/1/end` } } }] },
+        }),
+      ),
+      http.post(`${base}/api/recurrence-rules/1/end`, async ({ request }) => {
+        body = await request.json();
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderWithProviders(<IncomesPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Encerrar a partir de dezembro de 2026' }));
+    await waitFor(() => expect(body).toEqual({ billingPeriod: '2026-12' }));
+    vi.restoreAllMocks();
+  });
+
   it('RF-25: shows the total expense by member', async () => {
     server.use(http.get(`${base}/api/occurrences`, () => HttpResponse.json({})));
     renderWithProviders(<IncomesPage />);

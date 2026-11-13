@@ -17,7 +17,7 @@ export interface CategoryEditorProps {
 }
 
 /**
- * Form to create or edit a category: name, parent, colour and icon (RF-06, RF-07).
+ * Form to create or edit a category: name, parent, colour, icon and the subscription mark (RF-06, RF-07, IMP-65).
  *
  * @param props - {@link CategoryEditorProps}
  * @returns the form
@@ -29,6 +29,7 @@ export function CategoryEditor({ category, onDone }: CategoryEditorProps) {
   const [parentId, setParentId] = useState<number | null>(category?.parentId ?? null);
   const [color, setColor] = useState(category?.color ?? '#64748B');
   const [icon, setIcon] = useState(category?.icon ?? 'circle-ellipsis');
+  const [subscription, setSubscription] = useState(category?.subscription ?? false);
 
   return (
     <form
@@ -36,7 +37,7 @@ export function CategoryEditor({ category, onDone }: CategoryEditorProps) {
       aria-label={t('category.form')}
       onSubmit={async (event) => {
         event.preventDefault();
-        const request = { name, parentId: parentId ?? undefined, color, icon };
+        const request = { name, parentId: parentId ?? undefined, color, icon, subscription };
         const result = category?.id !== undefined
           ? await replaceCategory(category.id, request, ifMatch(category.version))
           : await createCategory(request);
@@ -58,6 +59,12 @@ export function CategoryEditor({ category, onDone }: CategoryEditorProps) {
       <Field label={t('category.icon')} htmlFor="category-icon">
         <IconPicker id="category-icon" value={icon} color={color} onChange={setIcon} />
       </Field>
+      {!category?.system && (
+        <label className="check-field" title={t('category.subscriptionHint')}>
+          <input type="checkbox" checked={subscription} onChange={(e) => setSubscription(e.target.checked)} />
+          {t('category.subscription')}
+        </label>
+      )}
       <button type="button" className="button" onClick={() => onDone()}>
         {t('action.cancel')}
       </button>

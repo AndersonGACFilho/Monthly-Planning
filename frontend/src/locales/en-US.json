@@ -39,7 +39,10 @@
   },
   "error": {
     "unexpected": "Something went wrong.",
-    "network": "Could not reach the local service."
+    "network": "Could not reach the local service.",
+    "copyDetails": "Copy details",
+    "screenFailed": "This screen failed to open. Reload to go on.",
+    "reload": "Reload"
   },
   "period": {
     "label": "Billing period",
@@ -138,7 +141,9 @@
     "searchIconHint": "Search: car, house, coffee…",
     "noIcon": "No icon found.",
     "moreIcons": "Showing {{shown}} of {{total}} icons. Refine the search to see others.",
-    "system": "System"
+    "system": "System",
+    "subscription": "Subscription",
+    "subscriptionHint": "Single card purchases in this category become subscriptions and are projected into the next months."
   },
   "entry": {
     "date": "Date",
@@ -277,6 +282,13 @@
     "chooseLink": "Choose the entry",
     "linkCandidate": "{{date}} · {{description}} · {{amount}}"
   },
+  "diagnostics": {
+    "title": "Diagnostics",
+    "debugMode": "Debug mode",
+    "debugModeHint": "To trace errors: the app writes details to the log and every error notice shows its code, request number and address, with a button to copy them. Leave it off in normal use.",
+    "logFolder": "Log folder",
+    "openLogFolder": "Open log folder"
+  },
   "settings": {
     "general": "General",
     "language": "Language",
@@ -335,7 +347,10 @@
     "linkedEntry": "Linked to the card entry",
     "waitingChoice": "More than one possible entry: choose it in the review queue",
     "notLinked": "No card entry yet",
-    "inBill": "in the bill"
+    "inBill": "in the bill",
+    "actions": "Actions",
+    "endFrom": "End from {{period}}",
+    "confirmEnd": "{{action}}? Earlier months stay as they are and later months not yet received or paid are removed."
   },
   "income": {
     "title": "Incomes",
@@ -384,6 +399,7 @@
     "unconfirmed_one": "{{count}} unconfirmed left out of the total",
     "unconfirmed_other": "{{count}} unconfirmed left out of the total",
     "markPaid": "Mark bill as paid",
+    "confirmPayOpen": "The bill is still open: purchases imported later still go into it. Mark it as paid anyway?",
     "import": "Import bill",
     "open": "Show entries of {{card}}",
     "fileTotal": "File total {{amount}}"
@@ -434,6 +450,7 @@
     "percentSpent": "% of income spent",
     "incomeHint": "{{main}} incomes + {{reimbursements}} reimbursements",
     "expenseHint": "Fixed {{fixed}} · Variable {{variable}} · Cards {{card}}",
+    "subscriptions": "Subscriptions {{amount}}",
     "noIncome": "no income",
     "alertWarning": "Warning: spending above {{percent}}% of income.",
     "alertDanger": "Spending above {{percent}}% of income.",
@@ -536,7 +553,7 @@
     },
     "showCategories": "Show categories",
     "useAlias": "Use renamed descriptions (alias)",
-    "includeFuture": "Include future installments",
+    "includeFuture": "Include future expenses",
     "language": "Language",
     "memberLanguage": "Each member’s language",
     "template": "Template",
@@ -608,7 +625,7 @@
       "CARDS": "Card entries",
       "FIXED_EXPENSES": "Fixed expenses",
       "VARIABLE_EXPENSES": "Variable expenses",
-      "COMMITTED": "Future installments",
+      "COMMITTED": "Future expenses",
       "PAYMENT": "Payment (PIX)",
       "NOTE": "Note"
     },
@@ -743,9 +760,15 @@
     "list": "Backups in data/backups",
     "exportJson": "Export all data (JSON)",
     "exportCsv": "Export all data (CSV)",
+    "exportDb": "Export database (.db)",
+    "importDb": "Import database (.db)",
     "eject": "Close the app before removing the drive, so no write is left half done."
   },
   "database": {
+    "export": "Export database",
+    "exportHint": "Saves the whole database as a .db file, a full copy that opens in any SQLite reader (Ctrl+Shift+E).",
+    "exportBlocked": "Go back to the live data to export the database.",
+    "imported": "Database imported and open to check. Use Restore to make it the live data.",
     "hint": "Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.",
     "when": "Copied on",
     "reason": "Reason",
@@ -754,6 +777,7 @@
       "before-update": "Before an update",
       "manual": "Made by you",
       "before-restore": "Before a restore",
+      "imported": "Imported",
       "other": "Other"
     },
     "open": "Open to check",
@@ -807,7 +831,7 @@
   },
   "shortcuts": {
     "title": "Shortcuts",
-    "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period"
+    "list": "Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+Shift+E export database · Ctrl+F search · Alt+←/→ billing period"
   },
   "registry": {
     "hint": "Members, cards and categories used across the app. To rename a card, edit its nickname.",

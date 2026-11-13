@@ -183,6 +183,16 @@ public class Purchase implements Auditable {
     }
 
     /**
+     * Tells whether the purchase may become a subscription: only a single purchase, never a credit, refund, IOF or fee
+     * (RN-23, IMP-65).
+     *
+     * @return {@code true} for a single purchase
+     */
+    public boolean canBecomeSubscription() {
+        return type == PurchaseType.SINGLE && kind == EntryKind.PURCHASE;
+    }
+
+    /**
      * Links this credit as a refund of another purchase (RN-26).
      *
      * @param originalId purchase being refunded

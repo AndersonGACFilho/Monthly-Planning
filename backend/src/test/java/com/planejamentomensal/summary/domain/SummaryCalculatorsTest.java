@@ -35,6 +35,22 @@ class SummaryCalculatorsTest {
     }
 
     @Test
+    @DisplayName("IMP-65: subscriptions add card subscriptions and expenses in subscription categories, each once")
+    void subscriptions() {
+        ExpenseLine netflix = new ExpenseLine(ExpenseSource.CARD, 1, 4L, m("39.90"), 9L, 1,
+                new ExpenseOrigin(1, "Netflix", NOV.atDay(3), "*"));
+        ExpenseLine spotify = new ExpenseLine(ExpenseSource.CARD, 1, 6L, m("21.90"), 9L, 1,
+                new ExpenseOrigin(2, "Spotify", NOV.atDay(4), "*"));
+        List<ExpenseLine> lines = List.of(netflix, spotify,
+                share(ExpenseSource.FIXED, 10, "Internet", 5, 1, 6L, "120.00"),
+                share(ExpenseSource.CARD, 30, "Mercado", 12, 1, 4L, "60.00"),
+                share(ExpenseSource.VARIABLE, 20, "Feira", 9, 1, null, "35.00"));
+
+        assertThat(SubscriptionTotalsCalculator.total(lines, Set.of(6L))).isEqualTo(m("181.80"));
+        assertThat(SubscriptionTotalsCalculator.total(lines, Set.of())).isEqualTo(m("61.80"));
+    }
+
+    @Test
     @DisplayName("RF-12, RF-38: a category opens into its fixed, variable and card items, shares joined per record")
     void categoryItems() {
         List<ExpenseLine> lines = List.of(

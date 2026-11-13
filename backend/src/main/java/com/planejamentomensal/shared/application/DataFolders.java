@@ -29,4 +29,11 @@ public interface DataFolders {
      * @return exports folder
      */
     Path exports();
+
+    /**
+     * Returns {@code data/logs/}, where the shell writes the backend log (RNF-11).
+     *
+     * @return logs folder
+     */
+    Path logs();
 }

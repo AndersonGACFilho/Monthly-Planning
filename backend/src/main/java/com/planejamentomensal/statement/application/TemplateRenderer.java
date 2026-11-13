@@ -34,7 +34,7 @@ public class TemplateRenderer {
     private static final List<String> LABELS = List.of("title", "member", "period", "issuedOn", "summary", "totalDue",
             "income", "balance", "cards", "date", "description", "installment", "amount", "share", "category", "subtotal",
             "dueDate", "fixedExpenses", "variableExpenses", "committed", "total", "payment", "pixKey", "note",
-            "pendingWarning", "empty", "fallbackWarning", "previousBalance", "carriedOut");
+            "pendingWarning", "empty", "fallbackWarning", "previousBalance", "carriedOut", "subscriptions");
 
     private final TemplateEngine engine;
     private final MessageSource messages;

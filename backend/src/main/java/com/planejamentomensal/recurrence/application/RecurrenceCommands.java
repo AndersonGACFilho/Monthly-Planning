@@ -130,6 +130,7 @@ public class RecurrenceCommands {
         if (!isDeletable(id)) {
             throw new BusinessRuleException("rule-has-history", id);
         }
+        occurrences.deleteByRuleId(id);
         rules.delete(rule(id));
     }
 
@@ -209,7 +210,7 @@ public class RecurrenceCommands {
      */
     @Transactional(readOnly = true)
     public boolean isDeletable(long id) {
-        return occurrences.findByRuleId(id).stream().noneMatch(o -> o.status() == OccurrenceStatus.DONE);
+        return !occurrences.existsByRuleIdAndStatus(id, OccurrenceStatus.DONE);
     }
 
     /**

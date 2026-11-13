@@ -38,13 +38,13 @@ public class CardBillModelAssembler implements RepresentationModelAssembler<Card
         model.add(linkTo(methodOn(CardBillController.class).cardBill(summary.cardId(), period)).withSelfRel());
         model.add(Link.of("/api/cards/" + summary.cardId(), "card"));
         model.add(Link.of("/api/bill-entries?billingPeriod=" + period + "&card=" + summary.cardId(), "bill-entries"));
-        switch (summary.bill().status()) {
-            case "OPEN" -> model.add(Link.of("/api/imports", Relations.IMPORT));
-            case "CLOSED" -> model.add(linkTo(methodOn(CardBillController.class).payCardBill(summary.cardId(), period, null))
+        String status = summary.bill().status();
+        if ("OPEN".equals(status)) {
+            model.add(Link.of("/api/imports", Relations.IMPORT));
+        }
+        if (!"PAID".equals(status)) {
+            model.add(linkTo(methodOn(CardBillController.class).payCardBill(summary.cardId(), period, null))
                     .withRel(Relations.MARK_PAID));
-            default -> {
-                // paid: nothing left to do
-            }
         }
         return model;
     }

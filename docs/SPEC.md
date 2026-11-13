@@ -53,7 +53,7 @@ Três cadastros sustentam todas as abas: contas, cartões e categorias.
 
 **Categorias**
 
-- RF-06: Cadastrar categorias (ex.: Mercado, Transporte, Saúde, Lazer, Assinaturas) com cor e ícone; suportar subcategoria opcional.
+- RF-06: Cadastrar categorias (ex.: Mercado, Transporte, Saúde, Lazer, Assinaturas) com cor e ícone; suportar subcategoria opcional. Uma categoria pode ser marcada como **assinatura**: compra única de cartão classificada nela vira assinatura `*` e é projetada (RN-09), e a visão geral e o extrato mostram o total de assinaturas (IMP-65).
 - RF-07: Toda despesa e lançamento tem categoria. Sem categoria, recebe "Não classificado" e aparece destacado.
 - RF-08: Regras de categorização automática: a categoria escolhida para uma descrição original é sugerida nos próximos lançamentos com a mesma descrição (ver alias, seção 7).
 
@@ -75,7 +75,7 @@ A visão geral responde, para a competência selecionada: quanto entrou, quanto 
 Rendas são parametrizadas: cadastra-se uma vez o modelo (fonte, valor, recorrência) e o sistema gera a renda em cada competência, permitindo ajustar o valor do mês.
 
 - RF-20: Cadastro de contas acessível nesta aba (mesmo cadastro da seção 3).
-- RF-21: Cadastro de renda parametrizada: descrição, conta, tipo (salário, freelance, bolsa, aluguel recebido, outro), valor padrão, recorrência (mensal, única, a cada N meses), dia previsto e vigência (início e fim opcional).
+- RF-21: Cadastro de renda parametrizada: descrição, conta, tipo (salário, freelance, bolsa, aluguel recebido, outro), valor padrão, recorrência (mensal, única, a cada N meses), dia previsto e vigência (início e fim opcional). Renda sem mês recebido pode ser excluída; com mês recebido, é encerrada a partir do mês escolhido, mantendo os meses anteriores e removendo os seguintes ainda não recebidos (IMP-63).
 - RF-22: Para cada competência, gerar as rendas previstas a partir dos parâmetros; o usuário pode alterar o valor só daquele mês sem mudar o padrão.
 - RF-23: Lançar renda avulsa (única) na competência.
 - RF-24: Marcar renda como recebida/prevista.
@@ -92,7 +92,7 @@ A aba reúne tudo o que sai no mês fora do detalhe de cartão, mais o total con
 
 - RF-30: Cadastro parametrizado igual às rendas: descrição, conta, categoria, valor padrão, recorrência, dia de vencimento, vigência e forma de pagamento (boleto, débito, PIX, cartão).
 - RF-31: Geração automática por competência, com ajuste do valor só do mês.
-- RF-32: Marcar como paga/pendente, com data de pagamento.
+- RF-32: Marcar como paga/pendente, com data de pagamento. Excluir ou encerrar a partir de um mês segue a regra da renda (RF-21).
 - RF-33: Despesa fixa paga no cartão não é somada duas vezes: ela é vinculada automaticamente, pela descrição (alias ou RN-16) e valor próximo, ao lançamento da fatura (ou a uma assinatura `*`).
 
 **Despesas dinâmicas**
@@ -102,7 +102,7 @@ A aba reúne tudo o que sai no mês fora do detalhe de cartão, mais o total con
 
 **Total por cartão**
 
-- RF-36: Card por cartão com total da fatura da competência, data de fechamento, data de vencimento e status (aberta, fechada, paga).
+- RF-36: Card por cartão com total da fatura da competência, data de fechamento, data de vencimento e status (aberta, fechada, paga). A fatura pode ser marcada como paga mesmo antes de fechar; continua paga quando a fatura fechada é importada depois (IMP-66).
 - RF-37: Detalhar o total do cartão em compras à vista, parcelas e assinaturas.
 - RF-38: Clicar no card leva à Aba 4 já filtrada por aquele cartão e competência.
 
@@ -326,10 +326,11 @@ Exibição da descrição: AliasOverride do lançamento → Alias da descrição
 - RNF-04: Arquivos importados não são guardados após o processamento, apenas o hash e o resumo do lote; números completos de cartão nunca são armazenados (só o final).
 - RNF-05: Toda alteração em lançamento confirmado gera registro de auditoria (antes, depois, data).
 - RNF-06: Interface que se adapta ao tamanho da janela, de 800 px de largura a telas largas (seção 14); funciona 100% offline, exceto o envio de e-mail.
-- RNF-07: Backup/exportação dos dados em CSV ou JSON.
+- RNF-07: Backup/exportação dos dados em CSV ou JSON, e do banco inteiro como um arquivo SQLite a partir da barra superior (IMP-69); um arquivo .db é importado para conferir e, se quiser, restaurar (IMP-72).
 - RNF-08: Parsers isolados por formato (interface comum), para adicionar outros bancos depois sem mexer nas regras de negócio.
 - RNF-09: Documentação Javadoc e testes automatizados por funcionalidade, conforme a seção 15.
 - RNF-10: Sem senha e sem login: o app abre direto na visão geral e um único usuário vê todas as contas. O arquivo de dados não é cifrado; quem tiver o SSD tem acesso aos dados.
+- RNF-11: Modo debug em Ajustes, guardado fora do banco: logs do app em DEBUG sem reiniciar, código de rastreio (request id) em toda resposta e erro, detalhes do erro com botão copiar, erros da interface gravados no log e atalho para a pasta do log.
 
 ## 12. Arquitetura e stack
 
@@ -411,7 +412,7 @@ A API segue REST nível 3: cada resposta em HAL (`application/hal+json`) traz li
 | Entrada | `/api` | `members`, `cards`, `categories`, `bill-entries`, `imports`, `summaries`, `statements`, `templates` |
 | Lançamento | `/api/bill-entries/{id}` | `rename` sempre; `restore-original` só com alias; `confirm` só se PROJECTED |
 | Compra | `/api/purchases/{id}` | `installments` (lançamentos da compra) |
-| Fatura | `/api/card-bills/{id}` | `import` se aberta; `mark-paid` se fechada e não paga |
+| Fatura | `/api/card-bills/{id}` | `import` se aberta; `mark-paid` se não paga (aberta ou fechada) |
 | Importação | `/api/imports/{id}` | `confirm` e `cancel` se em prévia; `undo` se confirmada e não desfeita |
 | Resumo mensal | `/api/summaries/{billingPeriod}` | `previous`, `next`, `by-member`, `by-category` |
 | Extrato da cota | `/api/statements/{billingPeriod}/{memberId}` | `pdf`, `png`, `xlsx`, `send-email`, `send-whatsapp` (este só se a cota tiver telefone) |
@@ -655,8 +656,8 @@ Para cada competência, o sistema gera um extrato por cota e o envia por e-mail,
 **Conteúdo do extrato**
 
 - RF-81: Selecionar a competência e uma ou mais cotas; o sistema gera um extrato por cota.
-- RF-82: O extrato traz: cabeçalho (cota, competência, data de emissão); resumo (saldo anterior e transportado para o mês seguinte quando houver (RF-28), total devido, renda e saldo quando aplicável); lançamentos da cota agrupados por cartão (data, descrição exibida, parcela, valor e % do rateio); despesas fixas e dinâmicas da cota; parcelas comprometidas nos próximos meses; total geral; dados para pagamento (PIX) e uma observação livre.
-- RF-83: Opções por exportação: mostrar ou ocultar categorias, usar alias ou descrição original, incluir ou não parcelas futuras.
+- RF-82: O extrato traz: cabeçalho (cota, competência, data de emissão); resumo (saldo anterior e transportado para o mês seguinte quando houver (RF-28), total devido, renda e saldo quando aplicável); lançamentos da cota agrupados por cartão (data, descrição exibida, parcela, valor e % do rateio); despesas fixas e dinâmicas da cota; gastos futuros dos próximos 3 meses (parcelas e despesas fixas fora do cartão, com descrição, valor e total do mês, IMP-64); total geral; dados para pagamento (PIX) e uma observação livre.
+- RF-83: Opções por exportação: mostrar ou ocultar categorias, usar alias ou descrição original, incluir ou não gastos futuros.
 - RF-84: Formatos: PDF (padrão), PNG (para colar no WhatsApp) e XLSX/CSV (para quem quer conferir em planilha).
 - RF-85: Prévia do extrato antes de enviar ou baixar.
 
@@ -718,7 +719,7 @@ Todo o código é escrito em inglês; a interface e os documentos enviados exist
 
 - I18N-08: Cada cota tem um idioma preferido (pt-BR ou en-US); o extrato, o PDF, o PNG, o assunto e o corpo do e-mail e a mensagem do WhatsApp saem nesse idioma, independentemente do idioma da interface.
 - I18N-09: Na exportação, o usuário pode trocar o idioma só daquele envio.
-- I18N-10: O template visual é um só; os rótulos fixos ("Total", "Vencimento", "Parcelas futuras") vêm do `MessageSource` com o `Locale` da cota, e números e datas seguem o I18N-05.
+- I18N-10: O template visual é um só; os rótulos fixos ("Total", "Vencimento", "Gastos futuros") vêm do `MessageSource` com o `Locale` da cota, e números e datas seguem o I18N-05.
 - I18N-11: Os textos personalizáveis do template (cabeçalho, rodapé, mensagem padrão) têm uma versão por idioma; se faltar a do idioma da cota, usa a outra e avisa na prévia.
 - I18N-12: O histórico de envios guarda o idioma usado, junto com a versão do template.
 

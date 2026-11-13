@@ -1,17 +1,22 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
+import { ErrorBoundary } from './app/ErrorBoundary';
+import { installGlobalErrorHandlers } from './app/globalErrors';
 import './i18n/i18n';
 import './styles.css';
 import { applyRememberedTheme } from './shared/theme';
 
 applyRememberedTheme();
+installGlobalErrorHandlers();
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 );

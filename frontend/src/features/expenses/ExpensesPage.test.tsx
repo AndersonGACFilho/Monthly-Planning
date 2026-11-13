@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { Route, Routes } from 'react-router';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../i18n/i18n';
 import { useBillingPeriodStore } from '../../shared/state/billingPeriod';
 import { renderWithProviders } from '../../test/render';
@@ -72,6 +72,29 @@ describe('ExpensesPage', () => {
     expect(screen.getByText(/1 não confirmado/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Marcar fatura como paga/ }));
     await waitFor(() => expect(ifMatch).toBe('"3"'));
+  });
+
+  it('IMP-66: an open bill is paid only after confirming that later purchases still go into it', async () => {
+    let paid = false;
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
+    server.use(
+      http.get(`${base}/api/variable-expenses`, () => HttpResponse.json({ items: [], total: 0 })),
+      http.get(`${base}/api/card-bills`, () => HttpResponse.json({ _embedded: { cardBills: [bill({ status: 'OPEN' })] } })),
+      http.post(`${base}/api/cards/7/bills/2026-11/payment`, () => {
+        paid = true;
+        return HttpResponse.json(bill({ status: 'PAID', _links: {} }));
+      }),
+    );
+    renderPage();
+    const button = await screen.findByRole('button', { name: /Marcar fatura como paga/ });
+    fireEvent.click(button);
+    expect(confirm).toHaveBeenCalledWith(
+      'A fatura ainda está aberta: compras importadas depois continuam entrando nela. Marcar como paga mesmo assim?',
+    );
+    expect(paid).toBe(false);
+    fireEvent.click(button);
+    await waitFor(() => expect(paid).toBe(true));
+    confirm.mockRestore();
   });
 
   it('RF-38: clicking a card total opens the card entries tab', async () => {

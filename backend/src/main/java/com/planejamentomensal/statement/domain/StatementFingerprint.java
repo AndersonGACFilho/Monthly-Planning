@@ -42,7 +42,8 @@ public final class StatementFingerprint {
         if (s.carriedOut() != null) {
             text.append("O|").append(s.carriedOut().billingPeriod()).append('|').append(s.carriedOut().amount()).append('\n');
         }
-        s.committed().forEach(c -> text.append("P|").append(c.billingPeriod()).append('|').append(c.amount()).append('\n'));
+        s.future().forEach(p -> p.lines().forEach(l -> text.append("P|").append(p.billingPeriod()).append('|')
+                .append(l.description()).append('|').append(l.installment()).append('|').append(l.amount()).append('\n')));
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             return HexFormat.of().formatHex(digest.digest(text.toString().getBytes(StandardCharsets.UTF_8)));

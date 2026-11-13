@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.planejamentomensal.card.application.SaveCardUseCase;
 import com.planejamentomensal.category.application.SaveCategoryUseCase;
+import com.planejamentomensal.category.domain.CategoryDetails;
 import com.planejamentomensal.entry.domain.ReviewStatus;
 import com.planejamentomensal.member.application.SaveMemberUseCase;
 import com.planejamentomensal.shared.domain.BillingPeriod;
@@ -40,7 +41,7 @@ class ReviewQueueIT {
     @BeforeEach
     void setUp() {
         f = new LedgerFixture(members, cards, "2");
-        market = categories.create("Mercado", null, "#000000", "cart").id();
+        market = categories.create(new CategoryDetails("Mercado", null, "#000000", "cart", false)).id();
     }
 
     private long pending(String description, String amount) {

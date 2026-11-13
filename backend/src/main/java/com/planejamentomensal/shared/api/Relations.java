@@ -17,6 +17,10 @@ public enum Relations implements LinkRelation {
     DELETE("delete", "Delete the resource; only offered when nothing depends on it."),
     /** Make an inactive resource active again. */
     ACTIVATE("activate", "Make the resource active again (PATCH with active=true)."),
+    /** End an income or fixed expense with history from a period on. */
+    END("end", "End an income or fixed expense that has received or paid months from a billing period on (IMP-63)."),
+    /** Send an error of the interface to the backend log. */
+    CLIENT_ERRORS("client-errors", "Write an error of the interface to the backend log, with its request id (RNF-11)."),
     /** Inactivate a resource that cannot be deleted. */
     INACTIVATE("inactivate", "Inactivate the resource (PATCH with active=false); used when it has history (RF-01)."),
     /** Rename the description of a bill entry (create or replace its alias). */
@@ -33,8 +37,8 @@ public enum Relations implements LinkRelation {
     UNDO("undo", "Undo a whole confirmed import batch (RF-72)."),
     /** Import a bill file into an open card bill. */
     IMPORT("import", "Import a bill file into this card bill (RF-60)."),
-    /** Mark a closed card bill as paid. */
-    MARK_PAID("mark-paid", "Mark a closed card bill or a fixed expense as paid (RF-32, RF-36)."),
+    /** Mark a card bill or a fixed expense as paid. */
+    MARK_PAID("mark-paid", "Mark a card bill, open or closed, or a fixed expense as paid (RF-32, RF-36, IMP-66)."),
 
     /** Mark an income received. */
     MARK_RECEIVED("mark-received", "Mark an expected income as received (RF-24)."),

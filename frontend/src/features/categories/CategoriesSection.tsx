@@ -53,7 +53,11 @@ export function CategoriesSection() {
             ),
           },
           { key: 'parent', header: t('category.parent'), render: (c) => (c.parentId != null ? names.get(c.parentId) : '') },
-          { key: 'system', header: t('common.type'), render: (c) => (c.system ? t('category.system') : '') },
+          {
+            key: 'system',
+            header: t('common.type'),
+            render: (c) => (c.system ? t('category.system') : c.subscription ? t('category.subscription') : ''),
+          },
         ]}
         actions={(c) => (
           <>

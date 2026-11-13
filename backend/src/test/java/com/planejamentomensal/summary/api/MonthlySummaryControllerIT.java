@@ -1,6 +1,7 @@
 package com.planejamentomensal.summary.api;
 
 import static com.planejamentomensal.shared.api.ApiTestSupport.authorized;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -100,16 +101,40 @@ class MonthlySummaryControllerIT {
     }
 
     @Test
+    @DisplayName("IMP-66: an open bill offers mark-paid next to import, is paid once and stays importable no more")
+    void payOpenBill() throws Exception {
+        String bill = "/api/cards/" + f.card + "/bills/2026-11";
+        mockMvc.perform(authorized(get(bill)))
+                .andExpect(jsonPath("$.status").value("OPEN"))
+                .andExpect(jsonPath("$._links.import").exists())
+                .andExpect(jsonPath("$._links.mark-paid.href").exists());
+        mockMvc.perform(authorized(post(bill + "/payment")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAID"))
+                .andExpect(jsonPath("$._links.mark-paid").doesNotExist());
+        mockMvc.perform(authorized(post(bill + "/payment"))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("bill-already-paid"));
+    }
+
+    @Test
+    @DisplayName("IMP-66: a bill known only by forecast is created to be paid")
+    void payForecastBill() throws Exception {
+        String bill = "/api/cards/" + f.card + "/bills/2027-03";
+        mockMvc.perform(authorized(get(bill))).andExpect(jsonPath("$.status").value("OPEN"));
+        mockMvc.perform(authorized(post(bill + "/payment")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PAID"));
+        assertThat(bills.findByCardIdAndBillingPeriod(f.card, BillingPeriod.of(2027, 3))).isPresent();
+    }
+
+    @Test
     @DisplayName("RF-36, IMP-31: an open bill offers import; a closed one offers mark-paid and becomes PAID")
     void cardBillLinks() throws Exception {
         String bill = "/api/cards/" + f.card + "/bills/2026-11";
         mockMvc.perform(authorized(get(bill)))
                 .andExpect(jsonPath("$.status").value("OPEN"))
                 .andExpect(jsonPath("$._links.import.href").value("/api/imports"))
-                .andExpect(jsonPath("$._links.mark-paid").doesNotExist())
                 .andExpect(jsonPath("$._links.bill-entries.href").value("/api/bill-entries?billingPeriod=2026-11&card=" + f.card));
-        mockMvc.perform(authorized(post(bill + "/payment"))).andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("bill-not-closed"));
         var stored = bills.findByCardIdAndBillingPeriod(f.card, NOV).orElseThrow();
         stored.recordFile(LocalDate.of(2026, 11, 3), LocalDate.of(2026, 11, 10), Money.of("120.00"), true);
         bills.save(stored);

@@ -57,18 +57,19 @@ public class CardBillQueries {
     }
 
     /**
-     * Marks a closed bill as paid (RF-36).
+     * Marks a bill as paid, open or closed; a bill known only by forecast is stored first (RF-36, IMP-66).
      *
      * @param cardId          primary card
      * @param period          billing period
      * @param expectedVersion version the client saw, or {@code null}
      * @return the bill
-     * @throws BusinessRuleException with code {@code bill-not-closed} unless the bill is closed
+     * @throws BusinessRuleException with code {@code bill-already-paid} if the bill was paid before
      */
     public CardBillView markPaid(long cardId, BillingPeriod period, Long expectedVersion) {
-        CardBill bill = bills.findByCardIdAndBillingPeriod(cardId, period)
-                .filter(b -> b.status() == BillStatus.CLOSED)
-                .orElseThrow(() -> new BusinessRuleException("bill-not-closed", cardId, period));
+        CardBill bill = bills.findByCardIdAndBillingPeriod(cardId, period).orElseGet(() -> new CardBill(cardId, period));
+        if (bill.status() == BillStatus.PAID) {
+            throw new BusinessRuleException("bill-already-paid", cardId, period);
+        }
         Versions.check(expectedVersion, bill.version());
         bill.markPaid();
         bills.save(bill);

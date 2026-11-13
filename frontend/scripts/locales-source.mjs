@@ -42,6 +42,9 @@ export default {
   error: {
     unexpected: ['Algo deu errado.', 'Something went wrong.'],
     network: ['Não foi possível falar com o serviço local.', 'Could not reach the local service.'],
+    copyDetails: ['Copiar detalhes', 'Copy details'],
+    screenFailed: ['Esta tela falhou ao abrir. Recarregue para continuar.', 'This screen failed to open. Reload to go on.'],
+    reload: ['Recarregar', 'Reload'],
   },
   period: {
     label: ['Competência', 'Billing period'],
@@ -135,6 +138,11 @@ export default {
     noIcon: ['Nenhum ícone encontrado.', 'No icon found.'],
     moreIcons: ['Mostrando {{shown}} de {{total}} ícones. Refine a busca para ver outros.', 'Showing {{shown}} of {{total}} icons. Refine the search to see others.'],
     system: ['Sistema', 'System'],
+    subscription: ['Assinatura', 'Subscription'],
+    subscriptionHint: [
+      'Compras à vista no cartão classificadas nesta categoria viram assinaturas e são projetadas nos próximos meses.',
+      'Single card purchases in this category become subscriptions and are projected into the next months.',
+    ],
   },
   entry: {
     date: ['Data', 'Date'],
@@ -273,6 +281,16 @@ export default {
     chooseLink: ['Escolha o lançamento', 'Choose the entry'],
     linkCandidate: ['{{date}} · {{description}} · {{amount}}', '{{date}} · {{description}} · {{amount}}'],
   },
+  diagnostics: {
+    title: ['Diagnóstico', 'Diagnostics'],
+    debugMode: ['Modo debug', 'Debug mode'],
+    debugModeHint: [
+      'Para rastrear erros: o app grava detalhes no log e cada aviso de erro mostra código, número da requisição e endereço, com botão para copiar. Deixe desligado no uso normal.',
+      'To trace errors: the app writes details to the log and every error notice shows its code, request number and address, with a button to copy them. Leave it off in normal use.',
+    ],
+    logFolder: ['Pasta do log', 'Log folder'],
+    openLogFolder: ['Abrir pasta do log', 'Open log folder'],
+  },
   settings: {
     general: ['Geral', 'General'],
     language: ['Idioma', 'Language'],
@@ -332,6 +350,12 @@ export default {
     waitingChoice: ['Mais de um lançamento possível: escolha na fila de validação', 'More than one possible entry: choose it in the review queue'],
     notLinked: ['Ainda sem lançamento no cartão', 'No card entry yet'],
     inBill: ['na fatura', 'in the bill'],
+    actions: ['Ações', 'Actions'],
+    endFrom: ['Encerrar a partir de {{period}}', 'End from {{period}}'],
+    confirmEnd: [
+      '{{action}}? Os meses anteriores ficam como estão e os seguintes ainda não recebidos ou pagos são removidos.',
+      '{{action}}? Earlier months stay as they are and later months not yet received or paid are removed.',
+    ],
   },
   income: {
     title: ['Rendas', 'Incomes'],
@@ -380,6 +404,10 @@ export default {
     unconfirmed_one: ['{{count}} não confirmado fora do total', '{{count}} unconfirmed left out of the total'],
     unconfirmed_other: ['{{count}} não confirmados fora do total', '{{count}} unconfirmed left out of the total'],
     markPaid: ['Marcar fatura como paga', 'Mark bill as paid'],
+    confirmPayOpen: [
+      'A fatura ainda está aberta: compras importadas depois continuam entrando nela. Marcar como paga mesmo assim?',
+      'The bill is still open: purchases imported later still go into it. Mark it as paid anyway?',
+    ],
     import: ['Importar fatura', 'Import bill'],
     open: ['Ver lançamentos de {{card}}', 'Show entries of {{card}}'],
     fileTotal: ['Total do arquivo {{amount}}', 'File total {{amount}}'],
@@ -430,6 +458,7 @@ export default {
     percentSpent: ['% da renda gasta', '% of income spent'],
     incomeHint: ['{{main}} de rendas + {{reimbursements}} de reembolsos', '{{main}} incomes + {{reimbursements}} reimbursements'],
     expenseHint: ['Fixas {{fixed}} · Dinâmicas {{variable}} · Cartões {{card}}', 'Fixed {{fixed}} · Variable {{variable}} · Cards {{card}}'],
+    subscriptions: ['Assinaturas {{amount}}', 'Subscriptions {{amount}}'],
     noIncome: ['sem renda', 'no income'],
     alertWarning: ['Atenção: gastos acima de {{percent}}% da renda.', 'Warning: spending above {{percent}}% of income.'],
     alertDanger: ['Gastos acima de {{percent}}% da renda.', 'Spending above {{percent}}% of income.'],
@@ -541,7 +570,7 @@ export default {
     },
     showCategories: ['Mostrar categorias', 'Show categories'],
     useAlias: ['Usar nomes renomeados (alias)', 'Use renamed descriptions (alias)'],
-    includeFuture: ['Incluir parcelas futuras', 'Include future installments'],
+    includeFuture: ['Incluir gastos futuros', 'Include future expenses'],
     language: ['Idioma', 'Language'],
     memberLanguage: ['Idioma de cada cota', 'Each member’s language'],
     template: ['Template', 'Template'],
@@ -613,7 +642,7 @@ export default {
       CARDS: ['Lançamentos no cartão', 'Card entries'],
       FIXED_EXPENSES: ['Despesas fixas', 'Fixed expenses'],
       VARIABLE_EXPENSES: ['Despesas dinâmicas', 'Variable expenses'],
-      COMMITTED: ['Parcelas futuras', 'Future installments'],
+      COMMITTED: ['Gastos futuros', 'Future expenses'],
       PAYMENT: ['Pagamento (PIX)', 'Payment (PIX)'],
       NOTE: ['Observação', 'Note'],
     },
@@ -808,9 +837,21 @@ export default {
     list: ['Cópias em data/backups', 'Backups in data/backups'],
     exportJson: ['Exportar todos os dados (JSON)', 'Export all data (JSON)'],
     exportCsv: ['Exportar todos os dados (CSV)', 'Export all data (CSV)'],
+    exportDb: ['Exportar banco (.db)', 'Export database (.db)'],
+    importDb: ['Importar banco (.db)', 'Import database (.db)'],
     eject: ['Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade.', 'Close the app before removing the drive, so no write is left half done.'],
   },
   database: {
+    export: ['Exportar banco', 'Export database'],
+    exportHint: [
+      'Salva o banco inteiro num arquivo .db, uma cópia completa que abre em qualquer leitor de SQLite (Ctrl+Shift+E).',
+      'Saves the whole database as a .db file, a full copy that opens in any SQLite reader (Ctrl+Shift+E).',
+    ],
+    exportBlocked: ['Volte aos dados reais para exportar o banco.', 'Go back to the live data to export the database.'],
+    imported: [
+      'Banco importado e aberto para conferir. Use Restaurar para torná-lo os dados reais.',
+      'Database imported and open to check. Use Restore to make it the live data.',
+    ],
     hint: [
       'Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.',
       'Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.',
@@ -822,6 +863,7 @@ export default {
       'before-update': ['Antes de atualizar', 'Before an update'],
       manual: ['Feita por você', 'Made by you'],
       'before-restore': ['Antes de restaurar', 'Before a restore'],
+      imported: ['Importado', 'Imported'],
       other: ['Outra', 'Other'],
     },
     open: ['Abrir para conferir', 'Open to check'],
@@ -881,7 +923,10 @@ export default {
   },
   shortcuts: {
     title: ['Atalhos', 'Shortcuts'],
-    list: ['Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência', 'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period'],
+    list: [
+      'Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+Shift+E exportar banco · Ctrl+F buscar · Alt+←/→ competência',
+      'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+Shift+E export database · Ctrl+F search · Alt+←/→ billing period',
+    ],
   },
   registry: {
     hint: ['Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.', 'Members, cards and categories used across the app. To rename a card, edit its nickname.'],

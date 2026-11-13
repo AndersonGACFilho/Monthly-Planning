@@ -1,16 +1,21 @@
 package com.planejamentomensal.shared.api;
 
 import com.planejamentomensal.shared.application.ActiveDatabase;
+import com.planejamentomensal.shared.application.ImportDatabaseUseCase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.hateoas.Link;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Database the app works on: the live data or a copy of a backup opened to check it, and restoring a backup as the
@@ -22,14 +27,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class DatabaseController {
 
     private final ActiveDatabase database;
+    private final ImportDatabaseUseCase importing;
 
     /**
      * Creates the controller.
      *
-     * @param database active database
+     * @param database  active database
+     * @param importing import of database files
      */
-    public DatabaseController(ActiveDatabase database) {
+    public DatabaseController(ActiveDatabase database, ImportDatabaseUseCase importing) {
         this.database = database;
+        this.importing = importing;
     }
 
     /**
@@ -93,6 +101,19 @@ public class DatabaseController {
     @PostMapping("/api/database/restores")
     public DatabaseModel restoreBackup(@Valid @RequestBody RestoreRequest request) {
         return DatabaseModel.of(database.restore(request.backup()));
+    }
+
+    /**
+     * Imports a database file, such as an exported one, and opens a copy of it to check (IMP-72); restoring it is the
+     * user's next step, so the live data never change here.
+     *
+     * @param file the SQLite file
+     * @return the database now in use: the imported copy
+     * @throws IOException if the upload cannot be read
+     */
+    @PostMapping(value = "/api/database/imports", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DatabaseModel importDatabase(@RequestParam("file") MultipartFile file) throws IOException {
+        return DatabaseModel.of(importing.importDatabase(file.getBytes()));
     }
 
     /**

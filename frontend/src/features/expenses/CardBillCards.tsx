@@ -102,7 +102,11 @@ function CardBillCard({ bill, period }: { bill: CardBillModel; period: string })
           <button
             type="button"
             className="button"
-            onClick={() => pay.mutate({ method: 'POST', version: `"${bill.version ?? 0}"` })}
+            onClick={() => {
+              if (bill.status !== 'OPEN' || window.confirm(t('cardBill.confirmPayOpen'))) {
+                pay.mutate({ method: 'POST', version: `"${bill.version ?? 0}"` });
+              }
+            }}
           >
             <Wallet size={14} aria-hidden /> {t('cardBill.markPaid')}
           </button>

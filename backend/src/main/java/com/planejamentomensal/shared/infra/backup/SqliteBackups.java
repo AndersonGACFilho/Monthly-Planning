@@ -1,6 +1,7 @@
 package com.planejamentomensal.shared.infra.backup;
 
 import com.planejamentomensal.shared.application.Backups;
+import com.planejamentomensal.shared.domain.InvalidInputException;
 import com.planejamentomensal.shared.infra.storage.AppPaths;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -30,6 +32,7 @@ public class SqliteBackups implements Backups {
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss-SSS");
     private static final String PREFIX = "planejamento-mensal-";
+    private static final String IMPORTED = "-imported.db";
 
     private final DataSource dataSource;
     private final AppPaths paths;
@@ -53,14 +56,7 @@ public class SqliteBackups implements Backups {
         Path dir = paths.backups();
         Path file = dir.resolve(PREFIX + LocalDateTime.now(clock).format(STAMP) + "-" + reason.replaceAll("[^a-z0-9-]", "") + ".db");
         copyTo(file);
-        List<Path> all = list();
-        all.stream().skip(KEPT).forEach(old -> {
-            try {
-                Files.deleteIfExists(old);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
+        list().stream().filter(old -> !isImported(old)).skip(KEPT).forEach(this::delete);
         return file;
     }
 
@@ -68,6 +64,50 @@ public class SqliteBackups implements Backups {
     public Path backupTo(Path destination) {
         copyTo(destination.toAbsolutePath());
         return destination.toAbsolutePath();
+    }
+
+    @Override
+    public byte[] copy() {
+        Path file = paths.temp().resolve("export-" + UUID.randomUUID() + ".db");
+        try {
+            copyTo(file);
+            return Files.readAllBytes(file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            deleteQuietly(file);
+        }
+    }
+
+    @Override
+    public Path importCopy(byte[] content) {
+        Path staged = paths.temp().resolve("import-" + UUID.randomUUID() + ".db");
+        try {
+            Files.write(staged, content);
+            if (!SqliteFileCheck.isAppDatabase(staged)) {
+                throw new InvalidInputException("database-file-invalid");
+            }
+            Path file = paths.backups().resolve(PREFIX + LocalDateTime.now(clock).format(STAMP) + IMPORTED);
+            Files.createDirectories(file.getParent());
+            return Files.move(staged, file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            deleteQuietly(staged);
+        }
+    }
+
+    @Override
+    public void delete(Path backup) {
+        try {
+            Files.deleteIfExists(backup);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static boolean isImported(Path backup) {
+        return backup.getFileName().toString().endsWith(IMPORTED);
     }
 
     @Override
@@ -82,6 +122,14 @@ public class SqliteBackups implements Backups {
                     .toList();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            // a leftover in data/tmp is removed with the folder; the export itself succeeded
         }
     }
 

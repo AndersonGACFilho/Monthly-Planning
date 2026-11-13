@@ -48,6 +48,9 @@ public class RecurrenceRuleModelAssembler implements RepresentationModelAssemble
         model.add(self.withRel(rule.active() ? Relations.INACTIVATE : Relations.ACTIVATE));
         if (commands.isDeletable(rule.id())) {
             model.add(self.withRel(Relations.DELETE));
+        } else {
+            model.add(linkTo(methodOn(RecurrenceRuleController.class).endRecurrenceRule(rule.id(), null))
+                    .withRel(Relations.END));
         }
         return model;
     }
