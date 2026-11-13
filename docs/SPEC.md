@@ -326,7 +326,7 @@ Exibição da descrição: AliasOverride do lançamento → Alias da descrição
 - RNF-04: Arquivos importados não são guardados após o processamento, apenas o hash e o resumo do lote; números completos de cartão nunca são armazenados (só o final).
 - RNF-05: Toda alteração em lançamento confirmado gera registro de auditoria (antes, depois, data).
 - RNF-06: Interface que se adapta ao tamanho da janela, de 800 px de largura a telas largas (seção 14); funciona 100% offline, exceto o envio de e-mail.
-- RNF-07: Backup/exportação dos dados em CSV ou JSON, e do banco inteiro como um arquivo SQLite a partir da barra superior (IMP-69).
+- RNF-07: Backup/exportação dos dados em CSV ou JSON, e do banco inteiro como um arquivo SQLite a partir da barra superior (IMP-69); um arquivo .db é importado para conferir e, se quiser, restaurar (IMP-72).
 - RNF-08: Parsers isolados por formato (interface comum), para adicionar outros bancos depois sem mexer nas regras de negócio.
 - RNF-09: Documentação Javadoc e testes automatizados por funcionalidade, conforme a seção 15.
 - RNF-10: Sem senha e sem login: o app abre direto na visão geral e um único usuário vê todas as contas. O arquivo de dados não é cifrado; quem tiver o SSD tem acesso aos dados.

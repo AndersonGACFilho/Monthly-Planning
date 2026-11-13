@@ -1,6 +1,6 @@
 # Implementation Plan
 
-Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 35/35 · M6 52/52 · M7 24/25 · M8 11/11 · M9 6/6 · M10 3/3 (total 319/321)
+Progress: M0 57/58 · M1 33/33 · M2 27/27 · M3 47/47 · M4 24/24 · M5 35/35 · M6 52/52 · M7 24/25 · M8 11/11 · M9 6/6 · M10 3/5 (total 319/323)
 
 Source: `docs/SPEC.md` (2026-10-26). Ids match the SPEC. Implied tasks that the SPEC does not name use `IMP-nn` and cite the origin requirement (AGT-02).
 Item format (AGT-03): `id — task · module · accept: criterion (ref) · tests · after: deps · state`.
@@ -362,11 +362,14 @@ Asked by the user on 2026-11-11 after using v0.3: an income could not be deleted
 
 ## M10 — User requests of 2026-11-13 (database export, log rotation, release items)
 
-Asked by the user on 2026-11-13: export the database more easily, and finish the remaining tasks. Log rotation was the gap left by RNF-11; POR-16 and POR-17 are closed with the CI and release evidence below. TST-07 (branch protection) and the Windows check of POR-18 need the repository owner.
+Asked by the user on 2026-11-13: export the database more easily, import a database file, and finish the remaining tasks. Log rotation was the gap left by RNF-11; POR-16 and POR-17 are closed with the CI and release evidence below. TST-07 (branch protection) and the Windows check of POR-18 need the repository owner.
 
 - [x] IMP-69 — The whole database exports as one SQLite file from the top bar (*Exportar banco*, Ctrl+Shift+E) and from *Settings → Backups and data*, in the desktop app and the browser preview: a consistent copy (`VACUUM INTO`, like the backups) named `planejamento-mensal-<yyyy-MM-dd>.db`, served by `GET /api/data-export?format=db`; refused while a backup is open, like a backup (origin RNF-07, POR-12) · shared/frontend · accept: the file opens as the same data; JSON and CSV unchanged · DatabaseExportIT, ExportFormatTest, DatabaseControllerIT, DatabaseExportButton.test.tsx, useShortcuts.test.tsx, SettingsPage.test.tsx · after: RNF-07 · open · done (this branch)
 - [x] IMP-70 — The shell keeps `data/logs/backend.log` small: at start, a log over 5 MB moves to `backend.1.log` (older ones to `.2` and `.3`, the oldest dropped), so the debug mode cannot fill the drive (origin RNF-11, POR-03) · shell · accept: never more than four log files · `backend::tests` (temp dirs) · after: RNF-11 · open · done (this branch)
 - [x] IMP-71 — Documentation review for M10 (origin §15, DOC-01) · docs · accept: reviewed · review · after: IMP-69, IMP-70 · open · done (2026-11-13 review)
+
+- [ ] IMP-72 — A database file (`.db`, such as one from IMP-69) is imported from *Settings → Backups and data*: the app checks it is an intact SQLite database of this app (header, `PRAGMA integrity_check`, Flyway history), keeps it in `data/backups/` as `planejamento-mensal-<stamp>-imported.db`, out of the automatic cleanup, and opens it as a copy to check (IMP-58), from where *Restore* makes it the live data after backing them up (`POST /api/database/imports`, multipart) (origin POR-14, RNF-07) · shared/frontend · accept: the live data never change on import; an invalid file is refused (400 `database-file-invalid`) and nothing is kept · BackupServiceTest, DatabaseImportIT, SettingsPage.test.tsx · after: IMP-69, IMP-58 · open
+- [ ] IMP-73 — Documentation review for IMP-72 (origin §15, DOC-01) · docs · accept: reviewed · review · after: IMP-72 · open
 
 ## Open questions
 
