@@ -761,12 +761,14 @@
     "exportJson": "Export all data (JSON)",
     "exportCsv": "Export all data (CSV)",
     "exportDb": "Export database (.db)",
+    "importDb": "Import database (.db)",
     "eject": "Close the app before removing the drive, so no write is left half done."
   },
   "database": {
     "export": "Export database",
     "exportHint": "Saves the whole database as a .db file, a full copy that opens in any SQLite reader (Ctrl+Shift+E).",
     "exportBlocked": "Go back to the live data to export the database.",
+    "imported": "Database imported and open to check. Use Restore to make it the live data.",
     "hint": "Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.",
     "when": "Copied on",
     "reason": "Reason",
@@ -775,6 +777,7 @@
       "before-update": "Before an update",
       "manual": "Made by you",
       "before-restore": "Before a restore",
+      "imported": "Imported",
       "other": "Other"
     },
     "open": "Open to check",

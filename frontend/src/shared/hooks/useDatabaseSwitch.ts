@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { restoreBackup, switchDatabase } from '../../api/generated/endpoints/database-controller/database-controller';
+import { importDatabase, restoreBackup, switchDatabase } from '../../api/generated/endpoints/database-controller/database-controller';
 import { reportError } from '../../app/queryClient';
 import { backupLabel } from '../backupName';
 import { useNotifications } from '../state/notifications';
@@ -14,11 +14,13 @@ export interface DatabaseSwitch {
   openLive: () => Promise<void>;
   /** Asks for confirmation, then makes a backup the live data. */
   restore: (fileName: string) => Promise<void>;
+  /** Imports a database file and opens it to check (IMP-72). */
+  importFile: (file: File) => Promise<void>;
 }
 
 /**
- * Returns the actions that switch between the live data and the backups. After each one every cached query is
- * refreshed, so every screen shows the database now in use.
+ * Returns the actions that switch between the live data, the backups and an imported database file. After each one
+ * every cached query is refreshed, so every screen shows the database now in use.
  *
  * @returns the actions
  */
@@ -50,6 +52,7 @@ export function useDatabaseSwitch(): DatabaseSwitch {
         if (!window.confirm(t('database.confirmRestore', { backup }))) return;
         await run(() => restoreBackup({ backup: fileName }), t('database.restored', { backup }));
       },
+      importFile: (file) => run(() => importDatabase({ file }), t('database.imported')),
     }),
     [run, t, i18n.language],
   );

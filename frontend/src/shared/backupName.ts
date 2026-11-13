@@ -1,5 +1,5 @@
-/** Why a backup was made, from the tag at the end of its file name (POR-12, POR-14, IMP-58). */
-export type BackupReason = 'start' | 'before-update' | 'manual' | 'before-restore' | 'other';
+/** Why a backup was made, from the tag at the end of its file name (POR-12, POR-14, IMP-58, IMP-72). */
+export type BackupReason = 'start' | 'before-update' | 'manual' | 'before-restore' | 'imported' | 'other';
 
 /** A backup file name read back into its parts. */
 export interface BackupName {
@@ -10,7 +10,7 @@ export interface BackupName {
 }
 
 const PATTERN = /^planejamento-mensal-(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})-\d{3}-([a-z-]+)\.db$/;
-const REASONS: readonly BackupReason[] = ['start', 'before-update', 'manual', 'before-restore'];
+const REASONS: readonly BackupReason[] = ['start', 'before-update', 'manual', 'before-restore', 'imported'];
 
 /**
  * Reads the date and the reason out of a backup file name such as

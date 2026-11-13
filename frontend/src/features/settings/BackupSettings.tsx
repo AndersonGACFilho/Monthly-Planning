@@ -12,9 +12,10 @@ import { useSaved } from '../../shared/hooks/useSaved';
 import { useNotifications } from '../../shared/state/notifications';
 
 /**
- * Backups and export of all data: automatic copies, "back up now" to data/backups or to a chosen file, JSON or CSV
- * export, and the advice to close the app before removing the drive (POR-12, POR-13, RNF-07). Each backup can be
- * opened to check it, with a way back to the live data, or restored as the live data (IMP-58).
+ * Backups and export of all data: automatic copies, "back up now" to data/backups or to a chosen file, JSON, CSV or
+ * database file export, and the advice to close the app before removing the drive (POR-12, POR-13, RNF-07, IMP-69).
+ * Each backup, or a database file imported here (IMP-72), can be opened to check it, with a way back to the live data,
+ * or restored as the live data (IMP-58).
  *
  * @returns the section
  */
@@ -22,7 +23,7 @@ export function BackupSettings() {
   const { t, i18n } = useTranslation();
   const saved = useSaved();
   const { data: database } = useDatabase();
-  const { openBackup, openLive, restore } = useDatabaseSwitch();
+  const { openBackup, openLive, restore, importFile } = useDatabaseSwitch();
   const { busy: exporting, run } = useFileExport();
   const databaseExport = useDatabaseExport();
   const live = database?.live !== false;
@@ -78,6 +79,19 @@ export function BackupSettings() {
         >
           {t('backup.exportDb')}
         </button>
+        <label className="button cursor-pointer">
+          {t('backup.importDb')}
+          <input
+            type="file"
+            accept=".db,application/vnd.sqlite3"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = '';
+              if (file) void importFile(file);
+            }}
+          />
+        </label>
       </div>
       {!live && (
         <p className="flex flex-wrap items-center gap-2 text-sm">

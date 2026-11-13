@@ -1306,6 +1306,43 @@
         "tags" : [ "database-controller" ]
       }
     },
+    "/api/database/imports" : {
+      "post" : {
+        "description" : "Imports a database file, such as an exported one, and opens a copy of it to check (IMP-72); restoring it is the\n user's next step, so the live data never change here.",
+        "operationId" : "importDatabase",
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "file" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "Itaú bill as PDF or XLSX"
+                  }
+                },
+                "required" : [ "file" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/hal+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DatabaseModel"
+                }
+              }
+            },
+            "description" : "the database now in use: the imported copy"
+          }
+        },
+        "summary" : "Imports a database file, such as an exported one, and opens a copy of it to check (IMP-72); restoring it is the\n user's next step, so the live data never change here.",
+        "tags" : [ "database-controller" ]
+      }
+    },
     "/api/database/restores" : {
       "post" : {
         "description" : "Makes a backup the live data, after backing the live data up.",

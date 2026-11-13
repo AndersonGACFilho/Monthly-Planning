@@ -10,6 +10,10 @@ describe('backupName', () => {
     expect(backupLabel('planejamento-mensal-2026-11-04T10-16-09-178-start.db', 'pt-BR')).toBe('04/11/2026, 10:16');
   });
 
+  it('IMP-72: an imported database file is listed as imported', () => {
+    expect(parseBackupName('planejamento-mensal-2026-11-13T10-44-50-123-imported.db').reason).toBe('imported');
+  });
+
   it('IMP-58: any other name is shown as it is', () => {
     expect(parseBackupName('copy.db')).toEqual({ date: null, reason: 'other' });
     expect(backupLabel('copy.db', 'pt-BR')).toBe('copy.db');

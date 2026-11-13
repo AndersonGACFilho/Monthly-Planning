@@ -1,6 +1,7 @@
 package com.planejamentomensal.shared.infra.backup;
 
 import com.planejamentomensal.shared.application.Backups;
+import com.planejamentomensal.shared.domain.InvalidInputException;
 import com.planejamentomensal.shared.infra.storage.AppPaths;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -31,6 +32,7 @@ public class SqliteBackups implements Backups {
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss-SSS");
     private static final String PREFIX = "planejamento-mensal-";
+    private static final String IMPORTED = "-imported.db";
 
     private final DataSource dataSource;
     private final AppPaths paths;
@@ -54,14 +56,7 @@ public class SqliteBackups implements Backups {
         Path dir = paths.backups();
         Path file = dir.resolve(PREFIX + LocalDateTime.now(clock).format(STAMP) + "-" + reason.replaceAll("[^a-z0-9-]", "") + ".db");
         copyTo(file);
-        List<Path> all = list();
-        all.stream().skip(KEPT).forEach(old -> {
-            try {
-                Files.deleteIfExists(old);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
+        list().stream().filter(old -> !isImported(old)).skip(KEPT).forEach(this::delete);
         return file;
     }
 
@@ -82,6 +77,37 @@ public class SqliteBackups implements Backups {
         } finally {
             deleteQuietly(file);
         }
+    }
+
+    @Override
+    public Path importCopy(byte[] content) {
+        Path staged = paths.temp().resolve("import-" + UUID.randomUUID() + ".db");
+        try {
+            Files.write(staged, content);
+            if (!SqliteFileCheck.isAppDatabase(staged)) {
+                throw new InvalidInputException("database-file-invalid");
+            }
+            Path file = paths.backups().resolve(PREFIX + LocalDateTime.now(clock).format(STAMP) + IMPORTED);
+            Files.createDirectories(file.getParent());
+            return Files.move(staged, file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            deleteQuietly(staged);
+        }
+    }
+
+    @Override
+    public void delete(Path backup) {
+        try {
+            Files.deleteIfExists(backup);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private static boolean isImported(Path backup) {
+        return backup.getFileName().toString().endsWith(IMPORTED);
     }
 
     @Override
