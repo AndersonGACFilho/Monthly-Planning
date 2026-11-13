@@ -6,6 +6,8 @@ milestones.
 
 ## Unreleased
 
+- **Release notes that say what changed**: a merged pull request is listed with its title and the commits it
+  brought, in the release page and in the update notice, instead of a single "Merge pull request" line.
 - **Export the database in one click**: *Exportar banco* at the top of the window (Ctrl+Shift+E) and a button in
   *Settings → Backups and data* download the whole database as `planejamento-mensal-<date>.db`, a consistent copy,
   also in the browser preview.
