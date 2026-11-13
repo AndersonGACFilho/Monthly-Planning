@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -71,6 +72,19 @@ public class SqliteBackups implements Backups {
     }
 
     @Override
+    public byte[] copy() {
+        Path file = paths.temp().resolve("export-" + UUID.randomUUID() + ".db");
+        try {
+            copyTo(file);
+            return Files.readAllBytes(file);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            deleteQuietly(file);
+        }
+    }
+
+    @Override
     public List<Path> list() {
         Path dir = paths.backups();
         if (Files.notExists(dir)) {
@@ -82,6 +96,14 @@ public class SqliteBackups implements Backups {
                     .toList();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    private static void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            // a leftover in data/tmp is removed with the folder; the export itself succeeded
         }
     }
 

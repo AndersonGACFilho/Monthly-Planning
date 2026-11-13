@@ -837,9 +837,16 @@ export default {
     list: ['Cópias em data/backups', 'Backups in data/backups'],
     exportJson: ['Exportar todos os dados (JSON)', 'Export all data (JSON)'],
     exportCsv: ['Exportar todos os dados (CSV)', 'Export all data (CSV)'],
+    exportDb: ['Exportar banco (.db)', 'Export database (.db)'],
     eject: ['Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade.', 'Close the app before removing the drive, so no write is left half done.'],
   },
   database: {
+    export: ['Exportar banco', 'Export database'],
+    exportHint: [
+      'Salva o banco inteiro num arquivo .db, uma cópia completa que abre em qualquer leitor de SQLite (Ctrl+Shift+E).',
+      'Saves the whole database as a .db file, a full copy that opens in any SQLite reader (Ctrl+Shift+E).',
+    ],
+    exportBlocked: ['Volte aos dados reais para exportar o banco.', 'Go back to the live data to export the database.'],
     hint: [
       'Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.',
       'Opening a backup shows a copy of it across the app so you can check it; the backup file never changes and what you change in the copy is dropped when you go back to the live data. Restoring replaces the live data with the backup, after backing up the current data.',
@@ -910,7 +917,10 @@ export default {
   },
   shortcuts: {
     title: ['Atalhos', 'Shortcuts'],
-    list: ['Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência', 'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+F search · Alt+←/→ billing period'],
+    list: [
+      'Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+Shift+E exportar banco · Ctrl+F buscar · Alt+←/→ competência',
+      'Ctrl+N new entry · Ctrl+I import · Ctrl+E export spreadsheet · Ctrl+Shift+E export database · Ctrl+F search · Alt+←/→ billing period',
+    ],
   },
   registry: {
     hint: ['Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.', 'Members, cards and categories used across the app. To rename a card, edit its nickname.'],

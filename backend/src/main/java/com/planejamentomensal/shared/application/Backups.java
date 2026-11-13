@@ -32,6 +32,13 @@ public interface Backups {
     Path backupTo(Path destination);
 
     /**
+     * Makes a consistent copy of the database to hand to the user (IMP-69); nothing is kept in {@code data/}.
+     *
+     * @return the SQLite file
+     */
+    byte[] copy();
+
+    /**
      * Lists the copies in {@code data/backups/}, newest first.
      *
      * @return files

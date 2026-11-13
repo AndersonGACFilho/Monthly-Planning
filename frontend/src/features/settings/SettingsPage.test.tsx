@@ -87,7 +87,7 @@ describe('SettingsPage', () => {
     delete document.documentElement.dataset.theme;
   });
 
-  it('POR-12, RNF-07: back up now writes to data/backups; all data can be exported', async () => {
+  it('POR-12, RNF-07, IMP-69: back up now writes to data/backups; all data and the database file can be exported', async () => {
     let backup: unknown;
     let exported = '';
     server.use(
@@ -110,5 +110,8 @@ describe('SettingsPage', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Exportar todos os dados (CSV)' }));
     await waitFor(() => expect(exported).toBe('csv'));
+    await new Promise((resolve) => setTimeout(resolve, 1100));
+    fireEvent.click(screen.getByRole('button', { name: 'Exportar banco (.db)' }));
+    await waitFor(() => expect(exported).toBe('db'));
   });
 });

@@ -37,6 +37,11 @@ class UpgradeMigrationIT {
             }
 
             @Override
+            public byte[] copy() {
+                return new byte[0];
+            }
+
+            @Override
             public List<Path> list() {
                 return List.of();
             }

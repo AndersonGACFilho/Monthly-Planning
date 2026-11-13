@@ -4,6 +4,7 @@ import { backupNow, useBackups } from '../../api/generated/endpoints/backup-cont
 import { useDatabase } from '../../api/generated/endpoints/database-controller/database-controller';
 import { apiFetchFile } from '../../api/http';
 import { reportError } from '../../app/queryClient';
+import { useDatabaseExport } from '../database/useDatabaseExport';
 import { backupLabel, parseBackupName } from '../../shared/backupName';
 import { useFileExport } from '../../shared/hooks/useFileExport';
 import { useDatabaseSwitch } from '../../shared/hooks/useDatabaseSwitch';
@@ -23,6 +24,7 @@ export function BackupSettings() {
   const { data: database } = useDatabase();
   const { openBackup, openLive, restore } = useDatabaseSwitch();
   const { busy: exporting, run } = useFileExport();
+  const databaseExport = useDatabaseExport();
   const live = database?.live !== false;
   const push = useNotifications((state) => state.push);
   const { data: files } = useBackups();
@@ -67,6 +69,14 @@ export function BackupSettings() {
         </button>
         <button type="button" className="button" disabled={exporting} onClick={() => exportAll('csv')}>
           {t('backup.exportCsv')}
+        </button>
+        <button
+          type="button"
+          className="button"
+          disabled={databaseExport.busy || !databaseExport.live}
+          onClick={() => void databaseExport.exportDatabase()}
+        >
+          {t('backup.exportDb')}
         </button>
       </div>
       {!live && (

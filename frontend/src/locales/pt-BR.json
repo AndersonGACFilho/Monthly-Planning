@@ -760,9 +760,13 @@
     "list": "Cópias em data/backups",
     "exportJson": "Exportar todos os dados (JSON)",
     "exportCsv": "Exportar todos os dados (CSV)",
+    "exportDb": "Exportar banco (.db)",
     "eject": "Antes de remover o SSD, feche o app: assim nenhuma gravação fica pela metade."
   },
   "database": {
+    "export": "Exportar banco",
+    "exportHint": "Salva o banco inteiro num arquivo .db, uma cópia completa que abre em qualquer leitor de SQLite (Ctrl+Shift+E).",
+    "exportBlocked": "Volte aos dados reais para exportar o banco.",
     "hint": "Abrir um backup mostra uma cópia dele em todo o app para você conferir; o arquivo do backup não muda e o que for alterado na cópia é descartado ao voltar aos dados reais. Restaurar troca os dados reais pelo backup, depois de copiar os dados atuais.",
     "when": "Data da cópia",
     "reason": "Motivo",
@@ -824,7 +828,7 @@
   },
   "shortcuts": {
     "title": "Atalhos",
-    "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+F buscar · Alt+←/→ competência"
+    "list": "Ctrl+N novo lançamento · Ctrl+I importar · Ctrl+E exportar planilha · Ctrl+Shift+E exportar banco · Ctrl+F buscar · Alt+←/→ competência"
   },
   "registry": {
     "hint": "Contas (cotas), cartões e categorias usados em todo o app. Para renomear um cartão, edite o apelido.",

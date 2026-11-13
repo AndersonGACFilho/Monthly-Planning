@@ -63,7 +63,7 @@
     "description" : "Card totals of a billing period with closing, due date and status (RF-36, RF-37, IMP-31).",
     "name" : "card-bill-controller"
   }, {
-    "description" : "Backups of the database and export of all data (POR-12, RNF-07).",
+    "description" : "Backups of the database and export of all data (POR-12, RNF-07, IMP-69).",
     "name" : "backup-controller"
   }, {
     "description" : "Aliases and the descriptions they group (RF-46 to RF-49, RN-24).",
@@ -1216,10 +1216,10 @@
     },
     "/api/data-export" : {
       "get" : {
-        "description" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "description" : "Exports all data as JSON, as a ZIP of CSV files or as the SQLite database file (RNF-07, IMP-69). The database\n file, like a backup, is refused while a backup is open.",
         "operationId" : "exportData",
         "parameters" : [ {
-          "description" : "<code>json</code> or <code>csv</code>",
+          "description" : "<code>json</code>, <code>csv</code> or <code>db</code>",
           "in" : "query",
           "name" : "format",
           "required" : false,
@@ -1237,6 +1237,12 @@
                   "format" : "byte"
                 }
               },
+              "application/vnd.sqlite3" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "byte"
+                }
+              },
               "application/zip" : {
                 "schema" : {
                   "type" : "string",
@@ -1247,7 +1253,7 @@
             "description" : "the file"
           }
         },
-        "summary" : "Exports all data as JSON or as a ZIP of CSV files (RNF-07).",
+        "summary" : "Exports all data as JSON, as a ZIP of CSV files or as the SQLite database file (RNF-07, IMP-69).",
         "tags" : [ "backup-controller" ]
       }
     },

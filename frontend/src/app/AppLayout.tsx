@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router';
 import { useReviewSummary } from '../api/generated/endpoints/review-queue-controller/review-queue-controller';
 import { useShortcuts } from './useShortcuts';
 import { UpdateBanner } from '../features/update/UpdateBanner';
+import { DatabaseExportButton } from '../features/database/DatabaseExportButton';
 import { WorkbookExportButton } from '../features/workbook/WorkbookExportButton';
 import { BillingPeriodSelector } from '../shared/components/BillingPeriodSelector';
 import { ThemeToggle } from '../shared/components/ThemeToggle';
@@ -51,6 +52,7 @@ export function AppLayout() {
           <span className="flex items-center justify-end gap-2">
             <ThemeToggle />
             <WorkbookExportButton />
+            <DatabaseExportButton />
           </span>
         </header>
         <UpdateBanner />
