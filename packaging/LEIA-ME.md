@@ -37,7 +37,10 @@ O atalho vale só para o computador onde foi criado e aponta para esta pasta:
 - A cada abertura o app copia o banco para `data/backups/` e guarda as 10 últimas.
 - **Exportar banco**, no topo da janela (ou Ctrl+Shift+E), baixa o banco inteiro num arquivo
   `planejamento-mensal-<data>.db`: uma cópia completa e consistente, para guardar em outro lugar ou abrir em qualquer
-  leitor de SQLite. Para voltar a ela, feche o app e substitua `data/planejamento-mensal.db` pelo arquivo exportado, com esse nome.
+  leitor de SQLite.
+- **Importar banco (.db)**, em **Ajustes → Cópias de segurança e dados**, traz de volta um arquivo exportado (ou
+  qualquer banco do app): ele é conferido, guardado em `data/backups/` como "Importado" (fora da limpeza automática) e
+  aberto para conferir, com a faixa amarela. Nada muda nos dados reais até você clicar em **Restaurar**.
 - Em **Ajustes → Cópias de segurança e dados** dá para fazer uma cópia agora (na pasta ou em outro lugar) e
   exportar todos os dados em JSON, CSV ou como o banco (.db).
 - **Conferir uma cópia:** na lista de cópias, **Abrir para conferir** mostra aquela cópia em todo o app, com uma
@@ -95,8 +98,9 @@ Windows and Linux.
 - **Open:** `PlanejamentoMensal.exe` on Windows; `PlanejamentoMensal.AppImage` on Linux, or `sh start-linux.sh` when the
   AppImage cannot run (no FUSE, or a drive mounted `noexec`).
 - **Export database:** the button at the top of the window (or Ctrl+Shift+E) downloads the whole database as one
-  `planejamento-mensal-<date>.db` file, a full and consistent copy. To go back to it, close the app and replace
-  `data/planejamento-mensal.db` with the exported file, renamed to that name.
+  `planejamento-mensal-<date>.db` file, a full and consistent copy. *Import database (.db)* in *Settings → Backups
+  and data* brings such a file back: it is checked, kept in `data/backups/` as "Imported" (out of the automatic
+  cleanup) and opened to check; the live data change only when you click *Restore*.
 - **Backups:** one copy per start in `data/backups/` (latest 10 kept); more in *Settings → Backups and data*. Each copy
   can be opened to check it (changes made there are dropped when you go back to the live data) or restored; restoring
   saves the current data as a new backup first. Without the app, close it and replace `data/planejamento-mensal.db`

@@ -9,6 +9,9 @@ milestones.
 - **Export the database in one click**: *Exportar banco* at the top of the window (Ctrl+Shift+E) and a button in
   *Settings → Backups and data* download the whole database as `planejamento-mensal-<date>.db`, a consistent copy,
   also in the browser preview.
+- **Import a database file**: *Settings → Backups and data → Import database (.db)* checks the file, keeps it with
+  the backups as *Imported* and opens it to check; *Restore* makes it the live data after backing them up. A file
+  that is not an intact database of the app is refused and nothing is kept.
 - **The log no longer grows forever**: over 5 MB, `backend.log` moves to `backend.1.log` when the app starts, and
   only the three previous logs are kept.
 - **Deleting incomes works again**: deleting an income or fixed expense failed with an error as soon as one of its
