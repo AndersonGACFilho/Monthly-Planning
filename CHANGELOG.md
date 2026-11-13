@@ -6,6 +6,11 @@ milestones.
 
 ## Unreleased
 
+- **Export the database in one click**: *Exportar banco* at the top of the window (Ctrl+Shift+E) and a button in
+  *Settings → Backups and data* download the whole database as `planejamento-mensal-<date>.db`, a consistent copy,
+  also in the browser preview.
+- **The log no longer grows forever**: over 5 MB, `backend.log` moves to `backend.1.log` when the app starts, and
+  only the three previous logs are kept.
 - **Deleting incomes works again**: deleting an income or fixed expense failed with an error as soon as one of its
   months had been shown. One with a received or paid month is now ended from a chosen month: earlier months stay,
   later months not yet received or paid are removed. Each month row offers delete or end, without opening the list
