@@ -14,7 +14,7 @@ from git_history import ROOT, git
 
 
 class Repository:
-    """A temporary git repository with linear history."""
+    """A temporary git repository; branches are merged with merge commits, as GitHub merges pull requests."""
 
     def __init__(self, folder: Path):
         self.path = folder
@@ -29,6 +29,17 @@ class Repository:
 
     def tag(self, name: str) -> None:
         git(self.path, "tag", name)
+
+    def branch(self, name: str) -> None:
+        git(self.path, "switch", "--quiet", "--create", name)
+
+    def switch(self, name: str) -> None:
+        git(self.path, "switch", "--quiet", name)
+
+    def merge(self, branch: str, subject: str, body: str = "") -> None:
+        messages = ["-m", subject] + (["-m", body] if body else [])
+        git(self.path, "-c", "user.name=Test", "-c", "user.email=test@example.com",
+            "merge", "--quiet", "--no-ff", *messages, branch)
 
 
 class RepositoryTest(unittest.TestCase):
@@ -118,6 +129,52 @@ class ReleaseNotesTest(RepositoryTest):
         self.repo.commit("Fix totals")
         self.repo.tag("v0.2.1")
         self.assertEqual(release_notes.notes(self.repo.path), "- Fix totals")
+
+    def test_merged_pull_request_lists_its_title_and_commits(self):
+        self.repo.commit("Start", {"VERSION": "0.3\n"})
+        self.repo.tag("v0.3.3")
+        self.repo.branch("feature/export")
+        self.repo.commit("Export the database")
+        self.repo.commit("Import a database file")
+        self.repo.switch("main")
+        self.repo.merge("feature/export", "Merge pull request #4 from owner/feature/export", "Export and import the database")
+        self.assertEqual(release_notes.notes(self.repo.path),
+                         "- Export and import the database (#4)\n"
+                         "  - Import a database file\n"
+                         "  - Export the database")
+
+    def test_merges_of_main_into_the_branch_are_left_out(self):
+        self.repo.commit("Start", {"VERSION": "0.3\n"})
+        self.repo.tag("v0.3.3")
+        self.repo.branch("feature/debug")
+        self.repo.commit("Add a debug mode")
+        self.repo.switch("main")
+        self.repo.commit("Fix the overview")
+        self.repo.switch("feature/debug")
+        self.repo.merge("main", "Merge branch 'main' into feature/debug")
+        self.repo.switch("main")
+        self.repo.merge("feature/debug", "Merge pull request #5 from owner/feature/debug", "Debug mode")
+        self.assertEqual(release_notes.notes(self.repo.path),
+                         "- Debug mode (#5)\n"
+                         "  - Add a debug mode\n"
+                         "- Fix the overview")
+
+    def test_merge_without_a_pull_request_title_keeps_its_subject(self):
+        self.repo.commit("Start", {"VERSION": "0.3\n"})
+        self.repo.branch("hotfix")
+        self.repo.commit("Fix the backup name")
+        self.repo.switch("main")
+        self.repo.merge("hotfix", "Merge branch 'hotfix'")
+        self.assertEqual(release_notes.notes(self.repo.path),
+                         "- Merge branch 'hotfix'\n  - Fix the backup name\n- Start")
+
+    def test_notes_of_an_earlier_release_are_rebuilt_from_its_tag(self):
+        self.repo.commit("Start", {"VERSION": "0.3\n"})
+        self.repo.tag("v0.3.3")
+        self.repo.commit("Fix totals")
+        self.repo.tag("v0.3.4")
+        self.repo.commit("Show the update notice")
+        self.assertEqual(release_notes.notes(self.repo.path, "v0.3.4"), "- Fix totals")
 
 
 if __name__ == "__main__":
