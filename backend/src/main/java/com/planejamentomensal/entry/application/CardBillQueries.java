@@ -8,7 +8,6 @@ import com.planejamentomensal.shared.domain.BillingPeriod;
 import com.planejamentomensal.shared.domain.BusinessRuleException;
 import com.planejamentomensal.shared.domain.Versions;
 import java.time.LocalDate;
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,15 +44,17 @@ public class CardBillQueries {
      */
     @Transactional(readOnly = true)
     public CardBillView bill(long cardId, BillingPeriod period) {
-        Optional<CycleView> cycle = cards.cycleFor(cardId, period);
-        LocalDate forecastDue = cycle.map(c -> period.atDay(c.dueDay())).orElse(null);
-        LocalDate forecastClosing = cycle.map(c -> closingBefore(forecastDue, c.closingDay())).orElse(null);
+        CycleView cycle = cards.cycleFor(cardId, period).orElse(null);
+        LocalDate forecastDue = cycle == null ? null : period.atDay(cycle.dueDay());
         return bills.findByCardIdAndBillingPeriod(cardId, period)
-                .map(b -> new CardBillView(b.id(), cardId, period, b.closingDate() != null ? b.closingDate() : forecastClosing,
-                        b.dueDate() != null ? b.dueDate() : forecastDue, b.status().name(), b.partial(), b.fileTotal(),
-                        b.version()))
-                .orElseGet(() -> new CardBillView(null, cardId, period, forecastClosing, forecastDue, BillStatus.OPEN.name(),
-                        false, null, 0));
+                .map(b -> {
+                    LocalDate due = b.dueDate() != null ? b.dueDate() : forecastDue;
+                    LocalDate closing = b.closingDate() != null ? b.closingDate() : forecastClosing(cycle, due);
+                    return new CardBillView(b.id(), cardId, period, closing, due, b.status().name(), b.partial(),
+                            b.fileTotal(), b.version());
+                })
+                .orElseGet(() -> new CardBillView(null, cardId, period, forecastClosing(cycle, forecastDue), forecastDue,
+                        BillStatus.OPEN.name(), false, null, 0));
     }
 
     /**
@@ -74,6 +75,18 @@ public class CardBillQueries {
         bill.markPaid();
         bills.save(bill);
         return bill(cardId, period);
+    }
+
+    /**
+     * Closing forecast from the card cycle before the bill's due date, so a due date read from a file moves the
+     * closing with it (RN-22).
+     *
+     * @param cycle card cycle of the period, or {@code null}
+     * @param due   due date of the bill, or {@code null}
+     * @return closing date, or {@code null} without a cycle or a due date
+     */
+    private static LocalDate forecastClosing(CycleView cycle, LocalDate due) {
+        return cycle == null || due == null ? null : closingBefore(due, cycle.closingDay());
     }
 
     /**

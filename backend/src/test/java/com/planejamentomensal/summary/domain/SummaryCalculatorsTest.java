@@ -51,6 +51,15 @@ class SummaryCalculatorsTest {
     }
 
     @Test
+    @DisplayName("IMP-65: a line is a subscription when marked * or when its category is marked as subscription")
+    void subscriptionLine() {
+        assertThat(SubscriptionTotalsCalculator.isSubscription("*", null, Set.of())).isTrue();
+        assertThat(SubscriptionTotalsCalculator.isSubscription("-", 6L, Set.of(6L))).isTrue();
+        assertThat(SubscriptionTotalsCalculator.isSubscription("-", 4L, Set.of(6L))).isFalse();
+        assertThat(SubscriptionTotalsCalculator.isSubscription(null, null, Set.of(6L))).isFalse();
+    }
+
+    @Test
     @DisplayName("RF-12, RF-38: a category opens into its fixed, variable and card items, shares joined per record")
     void categoryItems() {
         List<ExpenseLine> lines = List.of(

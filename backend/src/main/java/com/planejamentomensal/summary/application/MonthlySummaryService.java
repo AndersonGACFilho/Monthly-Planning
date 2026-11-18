@@ -1,7 +1,6 @@
 package com.planejamentomensal.summary.application;
 
 import com.planejamentomensal.category.application.CategoryQueries;
-import com.planejamentomensal.category.application.CategoryView;
 import com.planejamentomensal.entry.application.EntryRow;
 import com.planejamentomensal.member.application.MemberQueries;
 import com.planejamentomensal.shared.application.Setting;
@@ -93,7 +92,7 @@ public class MonthlySummaryService {
         List<MemberKindInfo> shownMembers = memberId == null ? all : all.stream().filter(m -> m.id() == memberId).toList();
 
         return new MonthlySummary(period, memberId, indicators, totals.mainIncome(), totals.reimbursements(), totals.fixed(),
-                totals.variable(), totals.card(), SubscriptionTotalsCalculator.total(lines, subscriptionCategories()),
+                totals.variable(), totals.card(), SubscriptionTotalsCalculator.total(lines, categories.subscriptionIds()),
                 CategoryTotalsCalculator.calculate(lines, previous.expenses().stream().filter(lineFilter).toList()),
                 MemberTotalsCalculator.calculate(shownMembers, current.incomes(), current.expenses(), current.carries()),
                 cards.build(period, current.entries(), future, entryFilter),
@@ -117,10 +116,6 @@ public class MonthlySummaryService {
         List<ExpenseLine> lines = data.collect(period).expenses().stream()
                 .filter(l -> memberId == null || l.memberId() == memberId).toList();
         return CategoryItemsCalculator.calculate(lines, categoryId);
-    }
-
-    private Set<Long> subscriptionCategories() {
-        return categories.all().stream().filter(CategoryView::subscription).map(CategoryView::id).collect(Collectors.toSet());
     }
 
     private static Money sum(List<Money> amounts) {
