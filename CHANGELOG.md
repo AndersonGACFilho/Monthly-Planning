@@ -4,7 +4,7 @@ Versions follow the `v<major>.<minor>.<patch>` tags. Since in-app updates, every
 with the commits since the previous release as notes (POR-17, see README "Releases"); this file keeps the
 milestones.
 
-## Unreleased
+## v1.0.0 — 2026-11-18
 
 - **Export the database in one click**: *Exportar banco* at the top of the window (Ctrl+Shift+E) and a button in
   *Settings → Backups and data* download the whole database as `planejamento-mensal-<date>.db`, a consistent copy,
