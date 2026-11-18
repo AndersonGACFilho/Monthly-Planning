@@ -143,4 +143,30 @@ class MonthlySummaryServiceTest {
         assertThat(empty.total()).isEqualTo(Money.ZERO);
         assertThat(empty.bill().cardBillId()).isNull();
     }
+
+    @Test
+    @DisplayName("RN-22, RF-36: without a closing date on the file, the closing is forecast before the file's due date")
+    void closingFollowsFileDueDate() {
+        ledger.recordBillFile(1L, f.card, OCT, null, LocalDate.of(2026, 11, 10), Money.of("445.90"), false, null);
+
+        CardBillSummary card = cardSummaries.forPeriod(OCT).stream().filter(c -> c.cardId() == f.card).findFirst().orElseThrow();
+        assertThat(card.bill().dueDate()).isEqualTo(LocalDate.of(2026, 11, 10));
+        assertThat(card.bill().closingDate()).isEqualTo(LocalDate.of(2026, 11, 3));
+    }
+
+    @Test
+    @DisplayName("IMP-65, RF-37: the card counts purchases of a category marked as subscription after they were classified")
+    void cardSubscriptionsFollowCategory() {
+        CategoryDetails unmarked = new CategoryDetails("Streaming", null, "#6366F1", "repeat", false);
+        long streaming = categories.create(unmarked).id();
+        BillEntry netflix = purchase("NETFLIX PREMIUM", "44.90", NOV, null, null);
+        entryCommands.classify(netflix.id(), streaming, false, null, null, null);
+
+        categories.update(streaming, new CategoryDetails("Streaming", null, "#6366F1", "repeat", true), null);
+
+        CardBillSummary card = cardSummaries.forPeriod(NOV).stream().filter(c -> c.cardId() == f.card).findFirst().orElseThrow();
+        assertThat(card.breakdown().subscriptions()).isEqualTo(Money.of("44.90"));
+        assertThat(card.breakdown().single()).isEqualTo(Money.of("355.90"));
+        assertThat(card.total()).isEqualTo(Money.of("490.80"));
+    }
 }

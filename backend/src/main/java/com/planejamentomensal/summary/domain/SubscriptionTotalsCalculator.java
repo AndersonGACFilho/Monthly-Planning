@@ -26,9 +26,21 @@ public final class SubscriptionTotalsCalculator {
      */
     public static Money total(List<ExpenseLine> lines, Set<Long> subscriptionCategories) {
         return lines.stream()
-                .filter(l -> SUBSCRIPTION.equals(l.origin().installment())
-                        || l.categoryId() != null && subscriptionCategories.contains(l.categoryId()))
+                .filter(l -> isSubscription(l.origin().installment(), l.categoryId(), subscriptionCategories))
                 .map(ExpenseLine::amount)
                 .reduce(Money.ZERO, Money::plus);
+    }
+
+    /**
+     * Tells whether a line is a subscription: a card subscription {@code *} or a line in a category marked as
+     * subscription.
+     *
+     * @param installment            {@code n/N}, {@code -}, {@code *}, or {@code null} outside the card
+     * @param categoryId             category, or {@code null}
+     * @param subscriptionCategories categories marked as subscription
+     * @return {@code true} for a subscription
+     */
+    public static boolean isSubscription(String installment, Long categoryId, Set<Long> subscriptionCategories) {
+        return SUBSCRIPTION.equals(installment) || categoryId != null && subscriptionCategories.contains(categoryId);
     }
 }

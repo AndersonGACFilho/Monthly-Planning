@@ -1,6 +1,7 @@
 package com.planejamentomensal.summary.application;
 
 import com.planejamentomensal.card.application.CardView;
+import com.planejamentomensal.category.application.CategoryQueries;
 import com.planejamentomensal.entry.application.CardBillQueries;
 import com.planejamentomensal.entry.application.EntryRow;
 import com.planejamentomensal.shared.domain.BillingPeriod;
@@ -8,6 +9,7 @@ import com.planejamentomensal.shared.domain.Money;
 import com.planejamentomensal.summary.domain.CardBillBreakdown;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator;
 import com.planejamentomensal.summary.domain.CommittedInstallmentsCalculator.FutureInstallment;
+import com.planejamentomensal.summary.domain.SubscriptionTotalsCalculator;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -21,24 +23,32 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Card totals of a period: one per active primary card and per card with entries (RF-14, RF-36, RF-37).
  *
+ * <p>Subscriptions follow the overview's rule: card subscriptions {@code *} plus lines in a category marked as
+ * subscription (IMP-65).</p>
+ *
  * @since 1.0
  */
 @Service
 @Transactional
 public class CardBillSummaries {
 
+    private static final String SUBSCRIPTION = "SUBSCRIPTION";
+
     private final PeriodData data;
     private final CardBillQueries bills;
+    private final CategoryQueries categories;
 
     /**
      * Creates the service.
      *
-     * @param data  period data
-     * @param bills card bills
+     * @param data       period data
+     * @param bills      card bills
+     * @param categories categories marked as subscription
      */
-    public CardBillSummaries(PeriodData data, CardBillQueries bills) {
+    public CardBillSummaries(PeriodData data, CardBillQueries bills, CategoryQueries categories) {
         this.data = data;
         this.bills = bills;
+        this.categories = categories;
     }
 
     /**
@@ -63,6 +73,7 @@ public class CardBillSummaries {
     List<CardBillSummary> build(BillingPeriod period, List<EntryRow> rows, List<EntryRow> future, Predicate<EntryRow> include) {
         Map<Long, Money> committed = CommittedInstallmentsCalculator.byCard(period, future.stream().filter(include)
                 .map(r -> new FutureInstallment(r.billingPeriod(), r.cardId(), r.amount())).toList());
+        Set<Long> subscriptionCategories = categories.subscriptionIds();
         Set<Long> cardIds = new LinkedHashSet<>();
         List<CardView> primary = data.primaryCards();
         primary.stream().filter(CardView::active).forEach(c -> cardIds.add(c.id()));
@@ -81,7 +92,9 @@ public class CardBillSummaries {
                     unconfirmed++;
                     continue;
                 }
-                breakdown = breakdown.plus(row.type(), row.amount());
+                boolean subscription = SubscriptionTotalsCalculator.isSubscription(row.installment(), row.categoryId(),
+                        subscriptionCategories);
+                breakdown = breakdown.plus(subscription ? SUBSCRIPTION : row.type(), row.amount());
                 if ("PENDING_REVIEW".equals(row.reviewStatus())) {
                     pending++;
                 }

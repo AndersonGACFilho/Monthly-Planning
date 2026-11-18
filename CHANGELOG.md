@@ -14,6 +14,12 @@ milestones.
   that is not an intact database of the app is refused and nothing is kept.
 - **The log no longer grows forever**: over 5 MB, `backend.log` moves to `backend.1.log` when the app starts, and
   only the three previous logs are kept.
+- **Card closing date follows the bill's due date**: an open bill (XLSX), which shows no closing date, now has its
+  closing forecast from the due date on the file, not from the period it was filed under. A bill due on 09/11
+  closes on 01/11, not 01/10.
+- **Subscriptions on the card**: the card's *Assinaturas* total counts purchases in a category marked as
+  subscription, the same rule as the overview, including purchases classified before the category was marked.
+  The seeded *Assinaturas* category, created before the mark existed, is marked when the app updates.
 - **Deleting incomes works again**: deleting an income or fixed expense failed with an error as soon as one of its
   months had been shown. One with a received or paid month is now ended from a chosen month: earlier months stay,
   later months not yet received or paid are removed. Each month row offers delete or end, without opening the list

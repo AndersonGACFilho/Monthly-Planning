@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -95,6 +97,15 @@ public class CategoryQueries {
      */
     public boolean isSubscription(Long id) {
         return id != null && categories.findById(id).map(Category::subscription).orElse(false);
+    }
+
+    /**
+     * Returns the categories marked as subscription (IMP-65).
+     *
+     * @return their ids
+     */
+    public Set<Long> subscriptionIds() {
+        return categories.findAll().stream().filter(Category::subscription).map(Category::id).collect(Collectors.toSet());
     }
 
     /**
